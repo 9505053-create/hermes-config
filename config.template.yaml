@@ -1,0 +1,21 @@
+# Hermes Config Template
+# Replace <YOUR_VALUE> with actual values. NEVER commit real tokens.
+
+models:
+  provider: openrouter
+  default_model: deepseek/deepseek-v4-pro
+  # api_key: <YOUR_OPENROUTER_API_KEY>
+
+telegram:
+  enabled: true
+  bot_token: "<YOUR_TELEGRAM_BOT_TOKEN>"
+  home_channel_id: <YOUR_TELEGRAM_CHAT_ID>
+
+github:
+  enabled: true
+  # token: <YOUR_GITHUB_TOKEN>
+  default_visibility: public
+
+mcp:
+  enabled: true
+  servers: []

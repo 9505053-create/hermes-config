@@ -1,0 +1,48 @@
+# === CREDENTIALS & TOKENS (NEVER COMMIT) ===
+.env
+.env.*
+auth.json
+auth.lock
+*.token
+*_token*
+*credentials*
+
+# === DATABASES & STATE (contains conversation data) ===
+state.db
+state.db-shm
+state.db-wal
+*.db
+gateway_state.json
+gateway.pid
+gateway.lock
+.hermes_history
+channel_directory.json
+models_dev_cache.json
+
+# === SESSION DATA (chat history) ===
+sessions/
+checkpoints/
+memories/
+
+# === CACHES ===
+cache/
+image_cache/
+pastes/
+sandboxes/
+.hermes_backup/
+
+# === LOGS ===
+logs/
+
+# === RUNTIME ===
+gateway.lock
+.restart_last_processed.json
+.update_check
+bin/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+*.pyo
