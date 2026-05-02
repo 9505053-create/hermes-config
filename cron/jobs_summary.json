@@ -1,0 +1,74 @@
+[
+  {
+    "id": "c8b29b3f5b3f",
+    "name": "🔍 每週資安情蒐 (Phase 1)",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 4 * * 6",
+      "display": "0 4 * * 6"
+    },
+    "repeat": {
+      "times": null,
+      "completed": 2
+    },
+    "state": "scheduled",
+    "skills": [
+      "weekly-security-audit"
+    ],
+    "prompt_snippet": "執行 Phase 1：網路資安情蒐 + 風險評估 + 知識轉化。\n\n## 第一步：平行蒐集最新威脅（用 execute_code 一次做完）\n\n使用 execu..."
+  },
+  {
+    "id": "7604fc2fa9ec",
+    "name": "🛡️ 每週自我配置檢查 (Phase 2)",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 6 * * 6",
+      "display": "0 6 * * 6"
+    },
+    "repeat": {
+      "times": null,
+      "completed": 0
+    },
+    "state": "scheduled",
+    "skills": [
+      "weekly-security-audit"
+    ],
+    "prompt_snippet": "執行 Phase 2：Hermes 自身配置與 Skill 安全檢查（唯讀）。\n\n遵循 weekly-security-audit skill 中 Phase ..."
+  },
+  {
+    "id": "51a220e78c85",
+    "name": "📊 每週報告整合 + Email (Phase 3)",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 9 * * 6",
+      "display": "0 9 * * 6"
+    },
+    "repeat": {
+      "times": null,
+      "completed": 0
+    },
+    "state": "scheduled",
+    "skills": [
+      "weekly-security-audit"
+    ],
+    "prompt_snippet": "執行 Phase 3：整合 Phase 1 和 Phase 2 結果，產出完整報告、寄送 Email、同步 Supabase。\n\n你收到的 context_fr..."
+  },
+  {
+    "id": "5f0d4a07fa0d",
+    "name": "💾 每日 Hermes 設定備份到 GitHub",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 0 * * *",
+      "display": "0 0 * * *"
+    },
+    "repeat": {
+      "times": null,
+      "completed": 0
+    },
+    "state": "scheduled",
+    "skills": [
+      "github-repo-management"
+    ],
+    "prompt_snippet": "執行 Hermes 設定備份腳本。\n\n請在終端機中執行：\nbash ~/.hermes/scripts/hermes-backup-sync.sh\n\n這個腳本會..."
+  }
+]

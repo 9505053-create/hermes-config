@@ -1,48 +1,61 @@
-# === CREDENTIALS & TOKENS (NEVER COMMIT) ===
+# === 機密資訊 — 絕對禁止上傳 ===
 .env
-.env.*
-auth.json
-auth.lock
-*.token
-*_token*
-*credentials*
+*.env
+*key*
+*token*
+*secret*
+*credential*
+*password*
+*.pem
+*.key
+*.crt
+id_rsa*
+*.pfx
+*.p12
 
-# === DATABASES & STATE (contains conversation data) ===
-state.db
-state.db-shm
-state.db-wal
-*.db
-gateway_state.json
-gateway.pid
-gateway.lock
-.hermes_history
-channel_directory.json
-models_dev_cache.json
-
-# === SESSION DATA (chat history) ===
+# === Session 記錄 ===
 sessions/
-checkpoints/
-memories/
+*.session
+session_*.json
+*.jsonl
 
-# === CACHES ===
-cache/
-image_cache/
-pastes/
-sandboxes/
-.hermes_backup/
+# === Browser / Automation State ===
+browser/
+.cache/
+*.cookie*
+webdriver/
+chrome-profile/
 
-# === LOGS ===
-logs/
+# === Email / Message 記錄 ===
+email/
+messages/
+*.mbox
 
-# === RUNTIME ===
-gateway.lock
-.restart_last_processed.json
-.update_check
-bin/
+# === 完整執行 Log ===
+logs/*.log
+*.trace
+cron/output/
 
-# === OS ===
-.DS_Store
-Thumbs.db
+# === Database Files ===
+*.db
+*.sqlite
+*.sqlite3
+supabase/
+postgres/
+
+# === Runtime / Temp ===
 __pycache__/
 *.pyc
 *.pyo
+.pytest_cache/
+node_modules/
+.envrc
+.env.local
+
+# === MCP / External Config (可能有 credentials) ===
+.mcp.json
+mcp_servers/
+
+# === 第三方 API Key 設定 ===
+platforms/telegram/token*
+platforms/*/credentials*

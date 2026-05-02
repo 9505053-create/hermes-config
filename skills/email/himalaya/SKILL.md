@@ -270,6 +270,34 @@ Full trace with backtrace:
 RUST_LOG=trace RUST_BACKTRACE=1 himalaya envelope list
 ```
 
+## Known Pitfalls
+
+### Non-English Gmail Folder Names (e.g. Chinese 寄件備份)
+
+`himalaya message send` and `himalaya template send` always try to save a copy to the "Sent" folder after sending. On Gmail accounts with **non-English** language settings, the Sent folder has a localized name (e.g. Chinese: `寄件備份`, Japanese: `送信済み`), but `himalaya` hardcodes `"Sent"` — ignoring both `message.send.folder` and `folder.alias.sent` config keys. This causes: `unexpected NO response: Folder doesn't exist.`
+
+**Symptoms:**
+- `message.send.folder = "寄件備份"` in config has no effect
+- `folder.alias.sent = "寄件備份"` has no effect  
+- IMAP UTF-7 encoded folder name (`&W8RO9lCZTv0-`) also ignored
+- Debug log always shows: `adding imap message to folder Sent`
+
+**Workaround — Python smtplib (recommended for outbound-only):**
+
+When you only need to *send* email (no folder management, no reading), use Python's `smtplib` directly. A reusable script is at `~/.hermes/scripts/send-mail.py`:
+
+```bash
+# Send email via Python smtplib + Gmail SMTP
+echo "Email body" | python3 ~/.hermes/scripts/send-mail.py \
+  -s "Subject" \
+  -t "recipient@example.com" \
+  -f "Sender Name"
+```
+
+The script reads `GMAIL_APP_PASSWORD` from `~/.hermes/.env` — no IMAP folder resolution needed, so the Chinese folder bug is irrelevant. It connects to `smtp.gmail.com:587` with STARTTLS.
+
+**When to still use himalaya:** Reading, searching, organizing, and replying to emails — all IMAP operations that don't require the Sent folder. `himalaya envelope list` and `himalaya message read` work fine regardless of folder language.
+
 ## Tips
 
 - Use `himalaya --help` or `himalaya <command> --help` for detailed usage.
