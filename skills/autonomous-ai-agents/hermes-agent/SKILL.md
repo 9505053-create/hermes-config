@@ -548,15 +548,33 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 3. Load explicitly: `/skill name` or `hermes -s name`
 
 ### Gateway issues
-Check logs first:
+
+**Diagnostic checklist (in order):**
+1. `hermes gateway status` — shows systemd service state, PID, uptime, and any warnings about outdated unit files
+2. `systemctl status hermes-gateway.service` (or `hermes-gateway`) — detailed systemd view including exit code and last log lines
+3. `journalctl -u hermes-gateway.service -n 50 --no-pager` — full recent logs; look for `HTTP 429`, `RateLimitError`, `exit-code`, `SIGTERM`
+4. `ps aux | grep hermes` — confirm whether the gateway process is actually running (may be alive outside systemd)
+
+**Recovery steps:**
 ```bash
-grep -i "failed to send\|error" ~/.hermes/logs/gateway.log | tail -20
+# Start stopped service
+sudo systemctl start hermes-gateway.service
+
+# Or via hermes CLI (cannot be run from inside the gateway — circular dependency)
+hermes gateway start --system
+
+# Update outdated service definition + restart
+sudo hermes gateway restart --system
 ```
 
-Common gateway problems:
+**⚠️ Circular dependency:** You CANNOT run `hermes gateway restart` from within the gateway session itself. Use an external terminal or `sudo systemctl` directly.
+
+**Common gateway problems:**
 - **Gateway dies on SSH logout**: Enable linger: `sudo loginctl enable-linger $USER`
 - **Gateway dies on WSL2 close**: WSL2 requires `systemd=true` in `/etc/wsl.conf` for systemd services to work. Without it, gateway falls back to `nohup` (dies when session closes).
 - **Gateway crash loop**: Reset the failed state: `systemctl --user reset-failed hermes-gateway`
+- **Free model rate-limit cascade**: A free-tier model (e.g. `google/gemma-*-it:free` on OpenRouter) hits HTTP 429, Hermes retries 3×, all fail, gateway exits with `exit-code`. Fix: set a fallback provider (`hermes fallback add`) or use a non-free model. The journalctl log will show `RateLimitError` → `Max retries exhausted` → `Failed with result 'exit-code'`.
+- **Service definition outdated**: `hermes gateway status` warns with "Run: sudo hermes gateway restart --system". This auto-refreshes the systemd unit file.
 
 ### Platform-specific issues
 - **Discord bot silent**: Must enable **Message Content Intent** in Bot → Privileged Gateway Intents.

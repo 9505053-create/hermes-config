@@ -16,10 +16,62 @@ Delegate coding tasks to [Codex](https://github.com/openai/codex) via the Hermes
 
 ## Prerequisites
 
-- Codex installed: `npm install -g @openai/codex`
-- OpenAI API key configured
-- **Must run inside a git repository** — Codex refuses to run outside one
+- Codex installed: `npm install -g @openai/codex` (Windows) or equivalent
+- Authentication: Either OpenAI API key OR ChatGPT account (see limitations below)
+- **Must run inside a git repository** — Codex refuses to run outside one (use `--skip-git-repo-check` to bypass)
 - Use `pty=true` in terminal calls — Codex is an interactive terminal app
+
+### WSL Cross-Platform Setup (Windows + WSL)
+
+If Codex is installed on Windows, call it from WSL via cmd.exe:
+
+```bash
+# Find Windows installation path
+/mnt/c/Windows/System32/cmd.exe /c "where codex"
+# Usually: C:\Users\<username>\AppData\Roaming\npm\codex.cmd
+
+# Call from WSL
+/mnt/c/Windows/System32/cmd.exe /c "cd /d C:\Users\<username> && C:\Users\<username>\AppData\Roaming\npm\codex.cmd exec --skip-git-repo-check 'your prompt'"
+```
+
+**Key flags for WSL invocation:**
+- `--skip-git-repo-check` — Bypasses git repository requirement
+- `cd /d C:\Users\<username>` — Sets working directory to Windows user home
+
+### Authentication Methods & Model Limitations
+
+**ChatGPT Account (OAuth login):**
+- ✅ Works with Codex CLI
+- ❌ Does NOT support: `gpt-4o`, `gpt-4o-mini`, `gpt-5.5` and other ChatGPT-exclusive models
+- ✅ Uses default model from config
+
+**OpenAI API Key:**
+- ✅ Supports all models
+- Set via environment variable: `OPENAI_API_KEY`
+- Or in config: `~/.codex/config.toml`
+
+**Check current config:**
+```bash
+# Windows
+type %USERPROFILE%\\.codex\\config.toml
+# WSL via Windows
+/mnt/c/Windows/System32/cmd.exe /c "type C:\\Users\\<username>\\.codex\\config.toml"
+```
+
+**Verify Codex version:**
+```bash
+codex --version
+# If version < 0.128.0, update: npm update -g codex
+```
+
+**Verify linked ChatGPT account:**
+- Codex uses ChatGPT OAuth by default when logged in via browser
+- Check config for `model = "gpt-5.5"` indicating subscription access
+- ChatGPT subscribers get access to latest models (gpt-5.5)
+
+**Version update requirement:**
+- Codex v0.121.0 has model compatibility issues
+- Update to v0.128.0+ for gpt-5.5 support: `npm update -g codex`
 
 ## One-Shot Tasks
 

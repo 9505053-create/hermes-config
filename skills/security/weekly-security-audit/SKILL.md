@@ -169,6 +169,38 @@ INSERT INTO public.hermes_skill_log (skill_name, action, risk_level, source_desc
 
 ---
 
+## Phase 1.5: Snyk Agent Scan 自動化 Skill 掃描（05:00，Phase 1 與 2 之間）
+
+> 自 2026-05-04 起新增。使用 Snyk 出品的 `snyk-agent-scan` 工具自動掃描已安裝的 Skill。
+
+### 前置條件
+- 已安裝：`python3 -m pip install snyk-agent-scan`
+- 環境變數 `SNYK_TOKEN` 需設定（Snyk 免費帳號 API Token）
+- Token 到期日需追蹤（免費帳號最長 90 天），到期前通知 Scott 續期
+- Scott 帳號：9505053@gmail.com
+- Token 存放：透過環境變數傳入，不在 Skill 中硬編碼
+
+### 執行指令
+```bash
+SNYK_TOKEN='<token>' snyk-agent-scan scan --skills ~/.hermes/skills/ 2>&1
+```
+
+### 結果解讀
+- **W008 (Secret detected)**: Skill 中暴露了高熵值字串（API key、folder ID 等）
+- **W011 (Third-party content exposure)**: Skill 會處理外部不可信內容（間接 prompt injection 向量）
+- 風險等級：0.00-1.00，>0.70 為 HIGH
+- 這類發現不是說 Skill 本身是惡意的，而是它們處理外部資料的特性構成攻擊面
+
+### 結果整合
+- 掃描結果併入 Phase 3 報告的「Hermes 自身配置與 Skill 檢查結果」章節
+- 與手動 grep 掃描結果交叉比對
+- 新發現的項目加入報告，已知項目標註「前期已發現」
+
+### Token 到期管理
+- 目前 Token 到期：2026-08-02
+- 到期前 7 天在週報中提醒 Scott 續期
+- Token 失效時降級為僅執行手動 grep 掃描
+
 ## Phase 2: Hermes 自身配置檢查（06:00）
 
 ### 檢查範圍（唯讀）
@@ -182,6 +214,8 @@ INSERT INTO public.hermes_skill_log (skill_name, action, risk_level, source_desc
 - cron / scheduled tasks
 - startup scripts
 - `~/.hermes/SOUL.md`
+- `~/.hermes/AGENTS.md`
+- `~/.hermes/SECURITY_TRUST_BOUNDARY.md`（2026-05-04 新增，包含 Level A/B/C 分級規則）
 
 ### 高風險 shell 指令（尋找以下模式）
 ```
