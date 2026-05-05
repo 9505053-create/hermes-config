@@ -299,6 +299,13 @@ let link = (item.match(/<link>(.*?)<\/link>/) || ['',''])[1];
 link = link.replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
 ```
 
+## Docker 限制
+
+**n8n 跑在 Docker 容器 (`n8n`) 內，無法存取主機 CLI 工具。**
+- 主機上安裝的 `gemini`、`claude`、`codex` CLI 在 n8n Code node 中不可用
+- 正確做法：n8n 用 HTTP Request node 呼叫外部 API（如 Gemini REST API、OpenRouter API）
+- 或由 Hermes 直接用 execute_code 呼叫 API，不經過 n8n
+
 ## Pitfalls Learned
 1. **`n8n-nodes-base.executeCommand` 不可用** — v2.16.1 改用 `n8n-nodes-base.code` (typeVersion: 2)，在 JS 裡用 `require('child_process').execSync()`
 2. **`active` 是 read-only** — PUT 不含 `active`，用 `POST /api/v1/workflows/{id}/activate`
@@ -314,6 +321,8 @@ link = link.replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
 12. **Python f-string 中的 curl `%{http_code}`** — Python 會把 `{http_code}` 當 f-string 變數報 NameError。用普通字串拼接或 `{{http_code}}`（但在 JS node 中不需要）
 13. **JS vs Python 語法混淆（session 過長時常犯）** — Python 用 `re.search()` 不是 `.test()`；`now.day` 不是 `now.getDate()`；`if x:` 不是 `if (x) {}`。每次開頭固定 `import os, re, json, subprocess, urllib.request, urllib.parse`
 14. **批量建 workflow 用 Python 輔助函數** — 不要在對話中逐個 JSON 手打，用 `build_wf()` + `create_and_activate()` 批次執行，減少 token 浪費和語法錯誤
+15. **n8n 2.16.1 Code node 封鎖所有 HTTP 方法** — `require('https')`、`require('http')`、`fetch()`、`$http`、`require('node-fetch')`、`require('got')` 全部不可用。即使 `N8N_RUNNERS_ENABLED=false` 也無效。解法：**用 HTTP Request node (typeVersion 4.2, responseFormat: text) 取代 Code node 的 HTTP 呼叫，再用下一個 Code node 做 XML 解析。** 多 feed 用 chain 式 HTTP Request nodes 串接，最後 Code node 用 `$input.all()` 取得所有 feed 資料。這是 2026-05-05 Daily News Digest 1700 排查中發現的 breaking change。
+16. **Schedule Trigger 定時觸發** — `hoursInterval: 24` 是從激活時間算 24 小時，不是每天固定時間觸發。要用 `cronExpression` 如 `0 17 * * *` 才能指定每天 17:00。`triggerAtHour` 可能導致激活失敗。
 
 ## Token Savings
 | 任務 | Hermes (tokens/次) | n8n (tokens) | 每月估算節省 |
