@@ -274,29 +274,32 @@ curl -s -X PATCH "https://api.notion.com/v1/pages/PAGE_ID" \
 #### Claude CLI (Anthropic)
 - **Path**: `C:\Users\chien\AppData\Roaming\npm\claude.cmd`
 - **Model**: Claude Sonnet 4.6
-- **Command** (verified 2026-05-03):
+- **Command** (verified 2026-05-06):
 ```bash
-cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\claude.cmd --print"
+cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\claude.cmd --print --allowedTools Bash Write Edit"
 ```
-- ⚠️ 寫入需 Scott 授權
+- `--allowedTools Bash Write Edit` 讓 Claude 可在硬碟讀寫檔案
 
 #### CODEX CLI (OpenAI)
 - **Path**: `C:\Users\chien\AppData\Roaming\npm\codex.cmd`
 - **Model**: GPT-5.5
-- **Command** (verified 2026-05-03):
+- **Command** (verified 2026-05-06):
 ```bash
-cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\codex.cmd exec --skip-git-repo-check"
+cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\codex.cmd exec --skip-git-repo-check --sandbox workspace-write"
 ```
-- ⚠️ exec 模式沙箱只讀，從 stdout 收集結果
+- `--sandbox workspace-write` 讓 Codex 可在 workdir（3AI workspace）+ `~/.codex/memories` 讀寫檔案
+- 注意：`--full-auto` 已 deprecated，正式旗標為 `--sandbox workspace-write`
 
 #### Gemini CLI (Google)
 - **Path**: `C:\Users\chien\AppData\Roaming\npm\gemini.cmd`
 - **Model**: Gemini 3.1 Pro Preview
-- **Command** (verified 2026-05-03):
+- **Command** (verified 2026-05-06):
 ```bash
-cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\gemini.cmd --skip-trust"
+cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\gemini.cmd --skip-trust --approval-mode yolo"
 ```
+- `--approval-mode yolo` 自動批准所有操作（含檔案讀寫）
 - ⚠️ 沒有 `-p` 參數，只能用 stdin 管道
+- ⚠️ 沙盒範圍為全域（不限於 3AI workspace），但 Scott 同意接受此風險
 
 ### Skills Available
 - `3ai-commander` — Strategic delegation to 3AI tools

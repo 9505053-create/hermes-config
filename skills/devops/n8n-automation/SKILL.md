@@ -323,6 +323,68 @@ link = link.replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1');
 14. **批量建 workflow 用 Python 輔助函數** — 不要在對話中逐個 JSON 手打，用 `build_wf()` + `create_and_activate()` 批次執行，減少 token 浪費和語法錯誤
 15. **n8n 2.16.1 Code node 封鎖所有 HTTP 方法** — `require('https')`、`require('http')`、`fetch()`、`$http`、`require('node-fetch')`、`require('got')` 全部不可用。即使 `N8N_RUNNERS_ENABLED=false` 也無效。解法：**用 HTTP Request node (typeVersion 4.2, responseFormat: text) 取代 Code node 的 HTTP 呼叫，再用下一個 Code node 做 XML 解析。** 多 feed 用 chain 式 HTTP Request nodes 串接，最後 Code node 用 `$input.all()` 取得所有 feed 資料。這是 2026-05-05 Daily News Digest 1700 排查中發現的 breaking change。
 16. **Schedule Trigger 定時觸發** — `hoursInterval: 24` 是從激活時間算 24 小時，不是每天固定時間觸發。要用 `cronExpression` 如 `0 17 * * *` 才能指定每天 17:00。`triggerAtHour` 可能導致激活失敗。
+17. **`Module 'X' is disallowed` 大規模失敗** — n8n 2.x task runner 沙箱封鎖內建/外部模組。需要兩個環境變數：`NODE_FUNCTION_ALLOW_BUILTIN`（`child_process`、`https`、`fs` 等內建模組）和 `NODE_FUNCTION_ALLOW_EXTERNAL`（`axios`、`lodash` 等 npm 模組）。2026-05-05 發現 20+ workflow 全部失敗的根因。
+18. **`N8N_RUNNERS_ENABLED=false` 可能不生效** — 設了但 task runner 還在跑。解法：保持 `true`，改用 allowlist 模組白名單。
+19. **Docker 容器內沒有 `curl`** — n8n 容器是精簡映像，只有 `wget`、`pgrep`、`node`。Code node 中的 HTTP 檢查一律用 `wget -q -O /dev/null --spider --timeout=3 http://host:port && echo OK || echo FAIL`，不用 `curl`。
+20. **Docker 容器內看不到宿主機進程和 systemd** — `systemctl is-active xxx` 永遠失敗，`pgrep -f xxx` 找不到宿主機進程。改用 HTTP health check：`wget` 目標服務的 HTTP 端口來判斷存活。
+21. **Docker 容器內檢查宿主機服務** — 用宿主機 IP `192.168.1.88` 或 `172.17.0.1`（Docker bridge）或 `host.docker.internal`。不確定哪個可用時先測試：`docker exec n8n wget -q -O /dev/null --spider --timeout=3 http://192.168.1.88:PORT`
+22. **n8n API PUT 的 read-only 欄位** — `active`、`versionId` 都是 read-only，PUT body 只放 `name`、`nodes`、`connections`、`settings`。
+23. **避免重建 workflow 時名字被覆蓋** — 批量更新時確保 PUT payload 的 `name` 欄位保留原始 workflow 名稱，不要用 placeholder。
+
+### Docker 內 Code node 安全寫法模板
+```javascript
+const { execSync } = require("child_process");
+// ✅ 用 wget 檢查 HTTP（容器內可用）
+try {
+    const r = execSync("wget -q -O /dev/null --spider --timeout=3 http://192.168.1.88:5678 && echo OK").toString().trim();
+    // r === "OK" 表示服務正常
+} catch(e) { /* 服務異常 */ }
+
+// ✅ 用 wget 檢查 Telegram API
+try {
+    const r = execSync("wget -q -O /dev/null --spider --timeout=5 https://api.telegram.org && echo OK").toString().trim();
+} catch(e) {}
+
+// ❌ 絕對不要用 curl（容器內不存在）
+// ❌ 絕對不要用 systemctl（容器內看不到宿主機 systemd）
+// ❌ 絕對不要用 pgrep -f hermes（容器內看不到宿主機進程）
+```
+
+### 減少假陽性警報的設計原則
+- **容器重啟後抖動**：n8n 重啟時所有 workflow 重新激活，監控 workflow 會瞬間觸發。用 `allDown` 檢查（全部服務都 down 才 suppress）來避免
+- **只在真正異常時警報**：Filter node 只在 `hasFailure === true` 時通過，正常情況靜默
+- **Telegram token 正確傳遞**：在 Code node output 中帶 `token` 和 `chatId`，HTTP Request node 的 URL 用 `{{ $json.token }}` 引用
+
+## 故障診斷 SOP（anti-wandering 鐵律）
+
+遇到 n8n/workflow 故障時，**嚴禁即興發揮**，依序執行：
+
+| Step | 動作 | 命令 |
+|------|------|------|
+| 1 | Container 狀態 | `docker ps \| grep n8n` |
+| 2 | 最近日誌 | `docker logs n8n --tail 50` |
+| 3 | 環境變數 | `docker inspect n8n --format '{{json .Config.Env}}'` |
+| 4 | 失敗紀錄 | `docker exec n8n cat /home/node/.n8n/n8nEventLog.log \| grep "failed"` |
+| 5 | Disallowed 模組 | `docker exec n8n cat /home/node/.n8n/n8nEventLog.log \| grep "disallowed"` |
+| 6 | Cron 觸發驗證 | event log 搜 `workflow.started` |
+| 7 | compose.yaml 修正 | 改 `/mnt/c/docker/n8n/compose.yaml` → `docker compose up -d n8n` |
+
+**硬性上限**：最多 12 個工具呼叫。超過停下等 Scott 指示。**不要反覆宣稱找到根因**——全部查完一次性總結。
+
+### 常見根因速查
+
+| 症狀 | 根因 | 修法 |
+|------|------|------|
+| `Module 'X' is disallowed` | task runner 沙箱封鎖 | 加 `NODE_FUNCTION_ALLOW_BUILTIN` 或 `NODE_FUNCTION_ALLOW_EXTERNAL` |
+| cron 時間偏移 | TZ 未設 | `TZ=Asia/Taipei` + `GENERIC_TIMEZONE=Asia/Taipei` |
+| workflow 不觸發 | Inactive | n8n UI 重新啟用 |
+| `require('https')` 失敗 | 沙箱封鎖 HTTP | 用 HTTP Request node 替代 Code node |
+| 重啟後假陽性警報 | 監控 workflow 瞬間偵測到抖動 | 等 1-2 分鐘觀察，不需立即處理 |
+| `curl: not found` | 容器內沒 curl | 改用 `wget` |
+| `systemctl is-active` 失敗 | 容器看不到宿主機 systemd | 改用 HTTP health check |
+| `pgrep -f xxx` 找不到 | 容器看不到宿主機進程 | 改用 HTTP health check |
+| Telegram 404 `resource not found` | bot token 無效或截斷 | 確認 `.env` 中 `TELEGRAM_BOT_TOKEN` 完整 |
+| PUT 400 `active is read-only` | PUT body 含 read-only 欄位 | 只放 `name`/`nodes`/`connections`/`settings` |
 
 ## Token Savings
 | 任務 | Hermes (tokens/次) | n8n (tokens) | 每月估算節省 |

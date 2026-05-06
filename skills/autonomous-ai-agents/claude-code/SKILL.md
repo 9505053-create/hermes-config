@@ -10,7 +10,27 @@ metadata:
     related_skills: [codex, hermes-agent, opencode]
 ---
 
-# Claude Code — Hermes Orchestration Guide
+## Filesystem Write in Headless Mode (WSL)
+
+When invoking Claude Code in print mode from WSL to write files, you must pre-authorize tools since there's no interactive approval dialog:
+
+```bash
+/mnt/c/Windows/System32/cmd.exe /c "cd /d C:\Users\<username> && type prompt.txt | C:\Users\<username>\AppData\Roaming\npm\claude.cmd --print --allowedTools Bash Write Edit"
+```
+
+**Key flags for WSL headless file writes:**
+- `--allowedTools Bash Write Edit` — pre-approves shell commands, file creation, and file editing
+- Without this, Claude will say "write permission hasn't been granted yet" and refuse to write
+- `--dangerously-skip-permissions` also works but is more risky (approves ALL tools including network)
+
+**Comparison with other CLI agents:**
+| Agent | File Write Flag | Scope |
+|-------|----------------|-------|
+| Claude | `--allowedTools Bash Write Edit` | Pre-authorizes specific tools |
+| Codex | `--sandbox workspace-write` | Restricts to workdir + memories |
+| Gemini | `--approval-mode yolo` | Global — no directory restriction |
+
+## Claude Code — Hermes Orchestration Guide
 
 Delegate coding tasks to [Claude Code](https://code.claude.com/docs/en/cli-reference) (Anthropic's autonomous coding agent CLI) via the Hermes terminal. Claude Code v2.x can read files, write code, run shell commands, spawn subagents, and manage git workflows autonomously.
 

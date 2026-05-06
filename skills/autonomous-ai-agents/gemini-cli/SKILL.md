@@ -77,6 +77,68 @@ gemini -m gemini-2.5-pro -p "Your prompt"
 | `-m MODEL` | Specify model (e.g., gemini-2.5-pro) |
 | `-o json` | Output as JSON |
 | `--skip-trust` | Trust workspace without prompting |
+| `--approval-mode <mode>` | Approval mode: `default`, `auto_edit`, `yolo`, `plan` |
+| `--yolo` / `-y` | ⚠️ Deprecated — use `--approval-mode yolo` instead. Auto-approve ALL actions (global filesystem access) |
+| `--sandbox` / `-s` | Run in sandboxed environment (process isolation, NOT directory restriction) |
+| `--policy <path>` | Load additional policy file(s) for fine-grained control |
+
+## Filesystem Read/Write (Headless from WSL)
+
+Gemini CLI does **NOT** have directory-scoped sandbox like Codex's `--sandbox workspace-write`. The approval modes are:
+
+| Mode | Scope | Risk |
+|------|-------|------|
+| `default` | Prompt for every action | Safe but needs interaction |
+| `auto_edit` | Auto-approve edit tools only | Medium — shell commands still prompt |
+| `yolo` | Auto-approve EVERYTHING | High — full filesystem access, no directory restriction |
+| `plan` | Read-only mode | Safest |
+
+**For headless file writes from WSL, use `--approval-mode yolo`:**
+
+```bash
+/mnt/c/Windows/System32/cmd.exe /c "cd /d C:\Users\<username> && type prompt.txt | C:\Users\<username>\AppData\Roaming\npm\gemini.cmd --skip-trust --approval-mode yolo"
+```
+
+⚠️ **`--yolo` grants GLOBAL filesystem access** — unlike Codex which restricts to workdir. There is no Gemini equivalent to `--sandbox workspace-write`.
+
+### Mitigation: Policy Engine Safety Net
+
+Create `~/.gemini/policies/3ai-safety.toml` to block dangerous operations:
+
+```toml
+# Block dangerous deletions
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = "rm -rf"
+decision = "deny"
+priority = 999
+denyMessage = "Dangerous rm -rf blocked by safety policy"
+
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = "format"
+decision = "deny"
+priority = 999
+
+[[rule]]
+toolName = "run_shell_command"
+commandPrefix = "diskpart"
+decision = "deny"
+priority = 999
+
+# Block credential file access
+[[rule]]
+toolName = "read_file"
+argsPattern = 'auth.json'
+decision = "deny"
+priority = 999
+```
+
+**Policy locations:**
+- User: `~/.gemini/policies/*.toml`
+- Admin: `C:\ProgramData\gemini-cli\policies` (Windows)
+
+**Note:** Workspace-level policies (`$WORKSPACE/.gemini/policies/`) are currently non-functional (bug #18186). Use User or Admin policies instead.
 
 ## Multi-AI Collaboration (3AI Pattern)
 

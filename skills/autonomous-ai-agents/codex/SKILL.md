@@ -88,7 +88,7 @@ terminal(command="cd $(mktemp -d) && git init && codex exec 'Build a snake game 
 
 ```
 # Start in background with PTY
-terminal(command="codex exec --full-auto 'Refactor the auth module'", workdir="~/project", background=true, pty=true)
+terminal(command="codex exec --sandbox workspace-write 'Refactor the auth module'", workdir="~/project", background=true, pty=true)
 # Returns session_id
 
 # Monitor progress
@@ -107,8 +107,17 @@ process(action="kill", session_id="<id>")
 | Flag | Effect |
 |------|--------|
 | `exec "prompt"` | One-shot execution, exits when done |
-| `--full-auto` | Sandboxed but auto-approves file changes in workspace |
+| `--sandbox workspace-write` | Write access to workdir + `~/.codex/memories`. **Recommended for filesystem tasks.** Replaces deprecated `--full-auto`. |
+| `--full-auto` | ⚠️ Deprecated — use `--sandbox workspace-write` instead |
 | `--yolo` | No sandbox, no approvals (fastest, most dangerous) |
+
+### Sandbox Modes
+
+| Mode | Read | Write | Use Case |
+|------|------|-------|----------|
+| `read-only` (default) | ✅ workdir | ❌ | Review, analysis, stdout-only tasks |
+| `workspace-write` | ✅ everywhere | ✅ workdir + memories | Building, file output, coding tasks |
+| `full-access` | ✅ everywhere | ✅ everywhere | Unrestricted (avoid unless necessary) |
 
 ## PR Reviews
 
@@ -159,7 +168,7 @@ terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
 1. **Always use `pty=true`** — Codex is an interactive terminal app and hangs without a PTY
 2. **Git repo required** — Codex won't run outside a git directory. Use `mktemp -d && git init` for scratch
 3. **Use `exec` for one-shots** — `codex exec "prompt"` runs and exits cleanly
-4. **`--full-auto` for building** — auto-approves changes within the sandbox
+4. **`--sandbox workspace-write` for building** — allows file writes in workdir while maintaining sandbox protection
 5. **Background for long tasks** — use `background=true` and monitor with `process` tool
 6. **Don't interfere** — monitor with `poll`/`log`, be patient with long-running tasks
 7. **Parallel is fine** — run multiple Codex processes at once for batch work
