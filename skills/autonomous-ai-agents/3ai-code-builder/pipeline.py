@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """
-3AI Code Builder Pipeline v2 — 程式建構管線
-Phase 0(架构) → Phase 1(Claude 建构) → Phase 2(Gemini 审查) → Phase 2.5(Lint)
-→ Phase 3(Codex 修正) → Phase 4(Build+Test) → 自癒诊断式修复 → Final Report
+3AI Code Builder Pipeline v2.1 — 程式建構管線
+v2.1 改善 (2026-05-07):
+  - Artifact Type Detection: PRD / Source Code / Config / Unknown 分流
+  - Verdict Decision Tree: PASS 不自動進 fix，major issues 需 Scott 決策
+  - User Intent Alignment Check: 偵測 disclaimer 語句，避免過度修正
+  - Codex 獨立第二審: 不只是 Gemini 回音，要獨立找新問題
+  - Output Package 分離: review.zip vs project.zip 明確區分
+  - Diff 產出: 有修改時自動產 unified diff
+  - 實際計時: 移除 ~推估，改用 execution_log.json 真實時間戳
+  - import_cmd 引號拼接修復
 
 Usage: python3 pipeline.py "path/to/PR_or_comment.md"
 """
@@ -13,7 +20,10 @@ import re
 import subprocess
 import json
 import time
+import zipfile
+import shutil
 from datetime import datetime
+from pathlib import Path
 
 # ═══════════════════════════════════════════
 #  CONFIG
@@ -87,6 +97,187 @@ def call_cli(name, prompt_content, cli_cmd, extra_args=None, timeout=180, workdi
         return {"success": False, "output": "", "error": f"Timeout (>{timeout}s)", "elapsed": timeout}
     except Exception as e:
         return {"success": False, "output": "", "error": str(e), "elapsed": round(time.time() - start, 1)}
+
+
+# ═══════════════════════════════════════════
+#  ARTIFACT TYPE DETECTION (v2.1 核心改善)
+# ═══════════════════════════════════════════
+
+# PRD indicator keywords — detect if .md/.txt is a PRD vs code readme
+_PRD_KEYWORDS = [
+    "prd", "product requirements", "需求", "功能", "spec", "specification",
+    "rfc", "feature request", "user story", "acceptance criteria",
+    "project goal", "專案目標", "版本", "提出者"
+]
+
+# Config file extensions
+_CONFIG_EXTS = {".json", ".yaml", ".yml", ".toml", ".cfg", ".ini", ".conf"}
+
+# Source code extensions
+_CODE_EXTS = {
+    ".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".kt", ".c", ".cpp", ".h",
+    ".cs", ".go", ".rs", ".rb", ".php", ".html", ".css", ".vue", ".svelte",
+    ".lua", ".swift", ".m", ".scala"
+}
+
+def detect_artifact_type(filename, md_content, frontmatter):
+    """
+    Detect artifact type from filename, content, and frontmatter.
+    Returns (artifact_type, pipeline, reason):
+      artifact_type: 'prd' | 'source_code' | 'config' | 'project_folder' | 'unknown'
+      pipeline: 'prd_review' | 'code_generation' | 'code_review' | 'project_build'
+      reason: human-readable explanation
+    """
+    # 1. Frontmatter override
+    if "artifact_type" in frontmatter:
+        at = frontmatter["artifact_type"].lower()
+        if at in ("prd", "source_code", "config", "project_folder"):
+            pipeline_map = {
+                "prd": "prd_review",
+                "source_code": "code_review",
+                "config": "config_review",
+                "project_folder": "project_build"
+            }
+            return at, pipeline_map.get(at, "code_review"), "Frontmatter artifact_type override"
+
+    # 2. Extension-based detection
+    ext = os.path.splitext(filename)[1].lower()
+
+    if ext in _CODE_EXTS:
+        return "source_code", "code_generation", f"Source code file ({ext})"
+
+    if ext in _CONFIG_EXTS:
+        return "config", "config_review", f"Config file ({ext})"
+
+    # 3. For .md/.txt/.rst — check content to distinguish PRD from code readme
+    if ext in (".md", ".txt", ".rst", ""):
+        content_lower = md_content.lower()
+        prd_score = sum(1 for kw in _PRD_KEYWORDS if kw in content_lower)
+        # If contains mode: new in frontmatter, it's a code generation input
+        if frontmatter.get("mode", "").lower() == "new":
+            return "prd", "code_generation", "PRD with mode:new → Code Generation pipeline"
+        if frontmatter.get("mode", "").lower() in ("modify", "review", "repair"):
+            return "source_code", "code_review", f"Mode {frontmatter['mode']} → Code Review pipeline"
+        if prd_score >= 2:
+            return "prd", "prd_review", f"PRD document (matched {prd_score} keywords)"
+        return "prd", "prd_review", "Markdown/text file treated as document"
+
+    return "unknown", "unknown", f"Unrecognized file type: {ext}"
+
+
+def check_intent_alignment(md_content):
+    """
+    Scan PRD content for user intent disclaimer phrases.
+    Returns dict with:
+      - has_disclaimer: bool
+      - strictness_level: 'casual_test' | 'prototype' | 'internal_tool' | 'production'
+      - disclaimer_phrases: list of matched phrases
+      - should_auto_fix: bool
+      - reason: explanation
+    """
+    content_lower = md_content.lower()
+
+    # Casual/test indicators
+    casual_patterns = [
+        "大概寫寫", "不用太認真", "簡單就好", "just test", "just for testing",
+        "流程測試", "不用認真", "寫寫就好", "磨合", "不用太認真就好",
+        "簡單", "不要太認真", "不要認真", "just demo", "prototype",
+        "demo purpose", "for testing", "test project", "測試用", "驗證用",
+        "不急", "先看看", "隨便", "先試試"
+    ]
+
+    # Production indicators
+    production_patterns = [
+        "production", "正式", "release", "deploy", "上線",
+        "嚴格", "strict", "正式版", "final version", "shipped"
+    ]
+
+    casual_hits = [p for p in casual_patterns if p in content_lower]
+    production_hits = [p for p in production_patterns if p in content_lower]
+
+    if production_hits:
+        level = "production"
+        should_fix = True
+        reason = f"Production intent detected: {', '.join(production_hits[:3])}"
+    elif casual_hits:
+        level = "casual_test"
+        should_fix = False
+        reason = f"Test/casual intent detected: {', '.join(casual_hits[:3])}"
+    else:
+        level = "prototype"
+        should_fix = True
+        reason = "No explicit intent disclaimer found, defaulting to prototype (auto-fix OK)"
+
+    return {
+        "has_disclaimer": len(casual_hits) > 0 or len(production_hits) > 0,
+        "strictness_level": level,
+        "disclaimer_phrases": casual_hits + production_hits,
+        "should_auto_fix": should_fix,
+        "reason": reason
+    }
+
+
+def parse_gemini_verdict(output_text):
+    """
+    Parse Gemini review output to extract verdict, major count, minor count.
+    Returns (verdict, major_count, minor_count, has_required_fixes)
+    """
+    verdict = "UNKNOWN"
+    major_count = 0
+    minor_count = 0
+    has_required_fixes = False
+
+    lines = output_text.split("\n")
+    for line in lines:
+        lower = line.lower().strip()
+        # Detect verdict
+        if "verdict" in lower and any(v in lower for v in ["pass", "fail", "needs_fix"]):
+            if "fail" in lower and "pass" not in lower.replace("fail", ""):
+                verdict = "FAIL"
+            elif "needs_fix" in lower or "needs fix" in lower:
+                verdict = "NEEDS_FIXES"
+            elif "pass_with_warn" in lower:
+                verdict = "PASS_WITH_WARNINGS"
+            elif "pass" in lower:
+                verdict = "PASS"
+        # Count severities
+        if "critical" in lower or "high" in lower:
+            major_count += 1
+        if "medium" in lower or "low" in lower:
+            minor_count += 1
+        # Check for must fix = yes
+        if "yes" in lower and ("must fix" in lower or "must_fix" in lower):
+            has_required_fixes = True
+
+    return verdict, major_count, minor_count, has_required_fixes
+
+
+# ═══════════════════════════════════════════
+#  OUTPUT PACKAGING (v2.1)
+# ═══════════════════════════════════════════
+
+def create_package(output_dir_wsl, build_dir_wsl, package_type, project_name):
+    """
+    Create a zip package of the output.
+    package_type: 'review' | 'project'
+    Returns the zip file path.
+    """
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    zip_name = f"{package_type}_{project_name}_{ts}.zip"
+    zip_path = os.path.join(build_dir_wsl, zip_name)
+
+    try:
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(output_dir_wsl):
+                for f in files:
+                    if f.endswith('.zip'):
+                        continue  # Don't include zip inside zip
+                    full = os.path.join(root, f)
+                    arc = os.path.relpath(full, output_dir_wsl)
+                    zf.write(full, arc)
+        return zip_path
+    except Exception as e:
+        return f"Error creating package: {e}"
 
 
 # ═══════════════════════════════════════════
@@ -198,7 +389,10 @@ def run_build_verify(output_dir_win, output_dir_wsl, build_type):
         # Import smoke test
         for pf in py_files[:5]:
             mod = pf.replace(".py", "")
-            import_cmd = 'cd /d ' + output_dir_win + ' && python -c "import ' + mod + "; print('import ok')" + '"'
+            import_cmd = (
+                f'cd /d {output_dir_win} && '
+                f'python -c "import {mod}; print(\'import ok\')"'
+            )
             steps.append(("Import: " + mod, import_cmd, 30))
 
         # Test discovery
@@ -263,6 +457,54 @@ def run_build_verify(output_dir_win, output_dir_wsl, build_type):
 # ═══════════════════════════════════════════
 #  PROMPT TEMPLATES
 # ═══════════════════════════════════════════
+
+# --- PRD Review (v2.1: for document/spec review) ---
+PRD_REVIEW_PROMPT = """你是資深產品規格審查員。請對以下 PRD / 規格文件進行結構化審查。
+
+**文件路徑：** {md_path}
+
+**你的任務：**
+直接輸出以下結構的 Markdown（不要寫檔案，直接 stdout）：
+
+## Verdict
+PASS / PASS_WITH_WARNINGS / NEEDS_FIXES / FAIL
+
+## Review Items
+
+| ID | Severity | Category | Issue | Recommendation | Must Fix |
+|----|----------|----------|-------|----------------|----------|
+| R001 | ... | ... | ... | ... | Yes/No |
+
+Severity: Critical / High / Medium / Low / Info
+Category: Completeness / Ambiguity / Testability / Scope / Security / Feasibility
+
+## Required Fix List
+列出所有 Must Fix = Yes 的項目 ID 與摘要
+
+## Optional Improvement List
+列出可選改善
+
+## Final Notes
+整體評價（2-3 句話）"""
+
+# --- Intent Alignment Check (v2.1) ---
+INTENT_CHECK_PROMPT_TEMPLATE = """# Intent Alignment Check
+
+## User Intent Summary
+{intent_summary}
+
+## Strictness Level
+{strictness_level}
+
+## Should Auto-Fix?
+{should_auto_fix}
+
+## Reason
+{reason}
+
+## Disclaimer Phrases Found
+{disclaimers}
+"""
 
 # --- Phase 0: Architecture (A1) ---
 PHASE0_PROMPT = """你是資深架構師。請根據以下 PR 規格，產出架構規劃文件。
@@ -414,30 +656,53 @@ Category: Runtime / Logic / Security / UX / Compatibility / Maintainability / Te
 ## Final Notes
 整體評價（2-3 句話）"""
 
-# --- Phase 3: Codex Fix (A6: 逐条回应) ---
-PHASE3_PROMPT = """你是程式碼修正工程師。請根據 Gemini 審查逐條回應並修正。
+# --- Phase 3: Codex Fix (v2.1: 獨立第二審，不只是 Gemini 回音) ---
+PHASE3_PROMPT = """你是獨立的第二審查員兼修正工程師。你不只是 Gemini 的驗收秘書，你有自己的判斷義務。
 
 **程式碼目錄：** {output_dir}
 **Gemini 審查：** {output_dir}\\gemini_review.md
+**User Intent：** {intent_summary}
 
-**你的任務：**
-1. 讀取所有程式碼和 gemini_review.md
-2. 逐條評估 Gemini 意見
-3. 實作修正（直接修改 output_dir 中的檔案）
-4. 寫 codex_report.md 到：{output_dir}\\codex_report.md
+**你的任務有三個：**
+
+1. **驗證 Gemini 提到的問題** — 逐條檢查是否已處理
+2. **獨立重新審視程式碼** — 找出 Gemini 沒發現的新問題（這是義務，不是可選）
+3. **實作修正** — 直接修改 output_dir 中的檔案
+
+**關鍵規則：**
+- 如果你發現新的 blocking issue，即使 Gemini 的問題都已修好，verdict 也必須是 NEEDS_FIXES
+- 如果 User Intent 是 casual_test（簡單/不用太認真），不要過度工程化修正
+- 如果原 PRD 說「大概寫寫就好」，你的修正幅度應該是最低限度的，不要自動升級為正式產品規格
 
 **codex_report.md 格式（強制）：**
 ```md
-# Codex Fix Report
+# Codex Independent Validation Report
+
+## Verdict
+PASS / PASS_WITH_WARNINGS / NEEDS_FIXES / FAIL
+
+## Verification of Prior Issues (Gemini)
 
 | Gemini ID | Decision | Action Taken | Modified File | Notes |
-|----------|----------|--------------|---------------|-------|
+|-----------|----------|--------------|---------------|-------|
 | G001 | Accepted | ... | app.py | ... |
 | G002 | Rejected | ... | N/A | reason... |
 | G003 | Partially Accepted | ... | app.py | ... |
 
 Decision 只允許：Accepted / Rejected / Partially Accepted / Deferred
 Rejected/Deferred 必須說明原因。
+
+## Independent Review (New Issues)
+
+| New Issue ID | Severity | Category | Description | Must Fix |
+|-------------|----------|----------|-------------|----------|
+| C001 | ... | ... | ... | Yes/No |
+
+如果你沒有發現新問題，也必須明確寫出 "No new issues found by independent review"，並簡述你獨立檢查了哪些面向。
+
+## Intent Alignment Check
+修復是否偏離原始 User Intent？Yes / No / Uncertain
+若偏離或 uncertain → 標記 PASS_WITH_SCOTT_DECISION_REQUIRED
 
 ## Summary
 ## Remaining Risks
@@ -551,16 +816,21 @@ PASS / PASS_WITH_WARNINGS / FAIL
 #  REPORT GENERATION
 # ═══════════════════════════════════════════
 
-def generate_telegram_summary(output_dir_wsl, mode, md_path, phases, build_pass, retry_count):
+def generate_telegram_summary(output_dir_wsl, mode, md_path, phases, build_pass,
+                               retry_count, artifact_type, pipeline_type, verdict_decision,
+                               package_path=None):
     """Generate Telegram-friendly summary (not file-based)."""
     ts = datetime.now().strftime("%Y-%m-%d %H:%M")
     md_name = os.path.basename(md_path)
 
     lines = [
-        f"🏗️ **3AI Code Builder v2** — 完成",
+        f"🏗️ **3AI Code Builder v2.1** — 完成",
         f"",
         f"**模式：** {'新建' if mode == 'new' else mode}",
         f"**輸入：** {md_name}",
+        f"**Artifact 類型：** {artifact_type}",
+        f"**Pipeline：** {pipeline_type}",
+        f"**Verdict 決策：** {verdict_decision}",
         f"**時間：** {ts}",
         f"",
         f"━━━━━━━━━━━━━━━━━━━━",
@@ -595,15 +865,20 @@ def generate_telegram_summary(output_dir_wsl, mode, md_path, phases, build_pass,
         f"🚀 **執行：** `python app.py`" if build_pass else ""
     ])
 
+    if package_path:
+        lines.append(f"📦 **Package：** `{os.path.basename(package_path)}`")
+
     return "\n".join(lines)
 
 
 # ═══════════════════════════════════════════
-#  MAIN PIPELINE
+#  MAIN PIPELINE (v2.1)
 # ═══════════════════════════════════════════
 
 def run_pipeline(md_path_wsl):
-    """Execute full v2 pipeline."""
+    """Execute full v2.1 pipeline with artifact detection, verdict tree, intent alignment."""
+
+    pipeline_start = time.time()
 
     # ── 0. Validate input ──
     if not os.path.exists(md_path_wsl):
@@ -639,6 +914,21 @@ def run_pipeline(md_path_wsl):
         elif lang == "go":
             build_type = "go"
 
+    # ── 0.5. Artifact Type Detection (v2.1) ──
+    artifact_type, pipeline_type, detection_reason = detect_artifact_type(
+        md_filename, md_content, frontmatter
+    )
+
+    # Intent Alignment Check (v2.1)
+    intent = check_intent_alignment(md_content)
+    intent_summary = (
+        f"Strictness: {intent['strictness_level']}. "
+        f"Auto-fix: {intent['should_auto_fix']}. "
+        f"Reason: {intent['reason']}"
+    )
+    if intent["disclaimer_phrases"]:
+        intent_summary += f" Phrases: {', '.join(intent['disclaimer_phrases'][:5])}"
+
     # ── 1. Create timestamped output directory ──
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     build_dir_wsl = os.path.join(md_dir, f"build_{ts}")
@@ -651,8 +941,123 @@ def run_pipeline(md_path_wsl):
     output_dir_win = wsl_to_win(output_dir)
     phases = []
 
-    print(f"[v2] Mode: {mode} | Project: {project_name} | Type: {build_type}")
-    print(f"[v2] Output: {build_dir_wsl}")
+    print(f"[v2.1] Mode: {mode} | Project: {project_name} | Type: {build_type}")
+    print(f"[v2.1] Artifact: {artifact_type} | Pipeline: {pipeline_type}")
+    print(f"[v2.1] Intent: {intent['strictness_level']} (auto_fix={intent['should_auto_fix']})")
+    print(f"[v2.1] Output: {build_dir_wsl}")
+
+    # Write artifact_manifest.json (v2.1)
+    artifact_manifest = {
+        "input_path": md_abspath,
+        "detected_artifact_type": artifact_type,
+        "detected_language": frontmatter.get("language", "unknown"),
+        "selected_pipeline": pipeline_type,
+        "reason": detection_reason,
+        "mode": mode,
+        "project_name": project_name,
+        "build_type": build_type
+    }
+    write_file_safe(os.path.join(output_dir, "artifact_manifest.json"),
+                    json.dumps(artifact_manifest, indent=2, ensure_ascii=False))
+
+    # Write intent_alignment_check.md (v2.1)
+    intent_md = INTENT_CHECK_PROMPT_TEMPLATE.format(
+        intent_summary=intent_summary,
+        strictness_level=intent["strictness_level"],
+        should_auto_fix="Yes" if intent["should_auto_fix"] else "No — Need Scott Decision",
+        reason=intent["reason"],
+        disclaimers=", ".join(intent["disclaimer_phrases"]) if intent["disclaimer_phrases"] else "None"
+    )
+    write_file_safe(os.path.join(output_dir, "intent_alignment_check.md"), intent_md)
+
+    # ── Track verdict decision for v2.1 ──
+    verdict_decision = "proceeding"  # Will be updated after Phase 2
+
+    # ══════════════════════════════════════
+    #  PRD REVIEW PIPELINE (v2.1)
+    # ══════════════════════════════════════
+    # If pipeline_type is prd_review AND mode is not new,
+    # we skip Phase 0/1 and go straight to PRD review
+    # ══════════════════════════════════════
+
+    if pipeline_type == "prd_review" and mode not in ("new", "modify", "repair"):
+        print(f"\n{'='*50}")
+        print(f"[PRD Review] Gemini Document Review")
+        print(f"{'='*50}")
+
+        prd_prompt = PRD_REVIEW_PROMPT.format(md_path=md_abspath)
+        write_file_safe(os.path.join(prompts_dir, "prompt_prd_review.txt"), prd_prompt)
+
+        p2 = call_cli("PRDReview", prd_prompt, GEMINI_CMD,
+                       ["--skip-trust", "--approval-mode", "yolo"],
+                       GEMINI_TIMEOUT, WORKSPACE)
+        write_file_safe(os.path.join(raw_dir, "prd_review_gemini_stdout.txt"), p2.get("output", ""))
+
+        if p2["success"] and p2.get("output"):
+            write_file_safe(os.path.join(output_dir, "gemini_review.md"), p2["output"])
+            p2_note = "PRD 結構化審查完成"
+            print(f"[PRD Review] ✅ ({p2['elapsed']}s)")
+        else:
+            p2_note = f"審查失敗（{p2.get('error', '無輸出')[:40]}）"
+            print(f"[PRD Review] ❌ Failed")
+
+        phases.append({"name": "PRD Review", "success": p2["success"], "elapsed": p2["elapsed"],
+                        "note": p2_note})
+
+        # Generate final report for PRD review
+        final_content = f"# Final Report — {project_name}\n\n"
+        final_content += f"## Artifact Type: PRD Document\n"
+        final_content += f"## Pipeline: PRD Review\n"
+        final_content += f"## Verdict: See gemini_review.md\n"
+        final_content += f"## Intent: {intent['strictness_level']}\n"
+        final_content += f"## Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+        write_file_safe(os.path.join(output_dir, "final_report.md"), final_content)
+
+        # Create review package
+        package_path = create_package(output_dir, build_dir_wsl, "review", project_name)
+
+        # execution_log.json with actual timing
+        pipeline_elapsed = round(time.time() - pipeline_start, 1)
+        exec_log = {
+            "timestamp": datetime.now().isoformat(),
+            "total_duration_seconds": pipeline_elapsed,
+            "phases": phases,
+            "artifact_type": artifact_type,
+            "pipeline_type": pipeline_type,
+            "intent": intent,
+            "verdict_decision": "prd_review_complete"
+        }
+        write_file_safe(os.path.join(output_dir, "execution_log.json"),
+                        json.dumps(exec_log, indent=2, ensure_ascii=False))
+
+        verdict_decision = "prd_review_complete"
+        summary = generate_telegram_summary(build_dir_wsl, mode, md_path_wsl, phases,
+                                             False, 0, artifact_type, pipeline_type,
+                                             verdict_decision, package_path)
+        print(f"\n{'='*50}")
+        print(f"[Pipeline v2.1] Complete!")
+        print(f"{'='*50}")
+        print(summary)
+
+        result = {
+            "report_path": os.path.join(output_dir, "final_report.md"),
+            "output_dir": build_dir_wsl,
+            "mode": mode,
+            "project_name": project_name,
+            "build_type": build_type,
+            "artifact_type": artifact_type,
+            "pipeline_type": pipeline_type,
+            "build_pass": False,
+            "retry_count": 0,
+            "verdict_decision": verdict_decision,
+            "phases": phases
+        }
+        print(f"\n__RESULT_JSON__:{json.dumps(result, ensure_ascii=False)}:__END_RESULT__")
+        return
+
+    # ══════════════════════════════════════
+    #  CODE GENERATION / REVIEW PIPELINE
+    # ══════════════════════════════════════
 
     # ── Phase 0: Architecture Planning (A1) ──
     print(f"\n{'='*50}")
@@ -694,8 +1099,9 @@ def run_pipeline(md_path_wsl):
         phases.append({"name": "Phase 1 實作", "success": False, "elapsed": p1["elapsed"],
                         "note": f"Claude 失敗: {p1.get('error','')[:60]}"})
         print(f"[Phase 1] ❌ Failed")
-        # Generate what we can
-        summary = generate_telegram_summary(build_dir_wsl, mode, md_path_wsl, phases, False, 0)
+        summary = generate_telegram_summary(build_dir_wsl, mode, md_path_wsl, phases,
+                                             False, 0, artifact_type, pipeline_type,
+                                             "phase1_failed")
         print(summary)
         return
 
@@ -710,13 +1116,24 @@ def run_pipeline(md_path_wsl):
     except Exception:
         out_files = []
 
-    # ── Phase 2: Gemini Structured Review (A4) ──
+    # ── Phase 2: Gemini Structured Review (v2.1: select prompt by artifact type) ──
     print(f"\n{'='*50}")
     print(f"[Phase 2] Gemini Review")
     print(f"{'='*50}")
 
-    file_list_text = "\n".join(f"- {f}" for f in out_files) if out_files else "（無檔案）"
-    p2_prompt = PHASE2_PROMPT.format(output_dir=output_dir_win, file_list=file_list_text)
+    # v2.1: Use PRD_REVIEW_PROMPT if artifact is PRD and no code was produced
+    has_code_files = any(os.path.splitext(f)[1].lower() in _CODE_EXTS
+                         for f in out_files) if out_files else False
+
+    if artifact_type == "prd" and not has_code_files:
+        # PRD review mode — use document review prompt
+        p2_prompt = PRD_REVIEW_PROMPT.format(md_path=md_abspath)
+        review_type = "PRD Document Review"
+    else:
+        file_list_text = "\n".join(f"- {f}" for f in out_files) if out_files else "（無檔案）"
+        p2_prompt = PHASE2_PROMPT.format(output_dir=output_dir_win, file_list=file_list_text)
+        review_type = "Code Review"
+
     write_file_safe(os.path.join(prompts_dir, "prompt_phase2.txt"), p2_prompt)
 
     p2 = call_cli("Phase2", p2_prompt, GEMINI_CMD,
@@ -727,8 +1144,8 @@ def run_pipeline(md_path_wsl):
     p2_skipped = False
     if p2["success"] and p2.get("output"):
         write_file_safe(os.path.join(output_dir, "gemini_review.md"), p2["output"])
-        p2_note = "結構化審查完成"
-        print(f"[Phase 2] ✅ ({p2['elapsed']}s)")
+        p2_note = f"結構化審查完成 ({review_type})"
+        print(f"[Phase 2] ✅ ({p2['elapsed']}s) [{review_type}]")
     else:
         p2_skipped = True
         p2_note = f"跳過（{p2.get('error','無輸出')[:40]}）"
@@ -736,6 +1153,70 @@ def run_pipeline(md_path_wsl):
 
     phases.append({"name": "Phase 2 審查", "success": p2["success"], "elapsed": p2["elapsed"],
                     "note": p2_note, "skipped": p2_skipped})
+
+    # ══════════════════════════════════════
+    #  VERDICT DECISION TREE (v2.1 核心)
+    # ══════════════════════════════════════
+    # Parse Gemini verdict and decide whether to proceed to Phase 3 fix
+    # ══════════════════════════════════════
+
+    gemini_verdict = "UNKNOWN"
+    major_count = 0
+    minor_count = 0
+    has_required_fixes = False
+    skip_phase3 = False
+    need_scott_decision = False
+
+    if p2["success"] and p2.get("output"):
+        gemini_verdict, major_count, minor_count, has_required_fixes = parse_gemini_verdict(p2["output"])
+        print(f"[Verdict] Gemini: {gemini_verdict} | Major: {major_count} | Minor: {minor_count} | MustFix: {has_required_fixes}")
+
+        if gemini_verdict == "PASS" and not has_required_fixes:
+            if major_count == 0:
+                # PASS + only Minor issues → skip fix, proceed to build
+                skip_phase3 = True
+                verdict_decision = "PASS_minor_only → skip fix, proceed to build"
+                print(f"[Verdict] ✅ PASS with minor issues only — skipping Codex fix")
+            else:
+                # PASS + Major issues → check intent
+                if not intent["should_auto_fix"]:
+                    skip_phase3 = True
+                    need_scott_decision = True
+                    verdict_decision = "PASS_major + casual_intent → need Scott decision"
+                    print(f"[Verdict] ⚠️ PASS with major issues but casual intent — need Scott decision")
+                else:
+                    verdict_decision = "PASS_major + production_intent → proceeding to fix"
+                    print(f"[Verdict] ⚠️ PASS with major issues + production intent — proceeding to fix")
+
+        elif gemini_verdict == "NEEDS_FIXES" or gemini_verdict == "FAIL":
+            verdict_decision = f"{gemini_verdict} → proceeding to Codex fix"
+            print(f"[Verdict] ❌ {gemini_verdict} — proceeding to fix")
+
+        elif gemini_verdict == "PASS_WITH_WARNINGS":
+            if not intent["should_auto_fix"] and major_count > 0:
+                skip_phase3 = True
+                need_scott_decision = True
+                verdict_decision = "PASS_WITH_WARNINGS + casual_intent → need Scott decision"
+                print(f"[Verdict] ⚠️ PASS_WITH_WARNINGS + casual intent — need Scott decision")
+            else:
+                verdict_decision = "PASS_WITH_WARNINGS → proceeding to fix"
+                print(f"[Verdict] ⚠️ PASS_WITH_WARNINGS — proceeding to fix")
+
+        else:
+            # Unknown verdict — default to proceeding
+            verdict_decision = f"Unknown verdict '{gemini_verdict}' → proceeding to fix (safe default)"
+            print(f"[Verdict] ❓ Unknown — proceeding to fix (safe default)")
+
+    # Write verdict decision to intent_alignment_check.md (append)
+    verdict_section = f"\n\n## Verdict Decision (v2.1)\n"
+    verdict_section += f"- Gemini Verdict: {gemini_verdict}\n"
+    verdict_section += f"- Major Issues: {major_count}, Minor: {minor_count}, Must Fix: {has_required_fixes}\n"
+    verdict_section += f"- Decision: {verdict_decision}\n"
+    verdict_section += f"- Skip Phase 3: {skip_phase3}\n"
+    verdict_section += f"- Need Scott Decision: {need_scott_decision}\n"
+    existing_intent = read_file_safe(os.path.join(output_dir, "intent_alignment_check.md"))
+    write_file_safe(os.path.join(output_dir, "intent_alignment_check.md"),
+                    existing_intent + verdict_section)
 
     # ── Phase 2.5: Static / Lint Check (A5) ──
     print(f"\n{'='*50}")
@@ -772,31 +1253,64 @@ def run_pipeline(md_path_wsl):
                     "note": "靜態檢查完成" if lint_ok else "有 lint 問題"})
     print(f"[Phase 2.5] {'✅' if lint_ok else '⚠️'}")
 
-    # ── Phase 3: Codex Fix (A6: item-by-item) ──
-    print(f"\n{'='*50}")
-    print(f"[Phase 3] Codex Fix")
-    print(f"{'='*50}")
-
-    p3_prompt = PHASE3_PROMPT.format(output_dir=output_dir_win)
-    write_file_safe(os.path.join(prompts_dir, "prompt_phase3.txt"), p3_prompt)
-
-    p3 = call_cli("Phase3", p3_prompt, CODEX_CMD,
-                   ["exec", "--skip-git-repo-check", "--sandbox", "workspace-write"],
-                   CODEX_TIMEOUT, WORKSPACE)
-    write_file_safe(os.path.join(raw_dir, "phase3_codex_stdout.txt"), p3.get("output",""))
-
-    if p3["success"] and p3.get("output"):
-        # Save codex_report if not already written by Codex
-        if not os.path.exists(os.path.join(output_dir, "codex_report.md")):
-            write_file_safe(os.path.join(output_dir, "codex_report.md"), p3["output"])
-        p3_note = "逐條修正完成"
-        print(f"[Phase 3] ✅ ({p3['elapsed']}s)")
+    # ── Phase 3: Codex Fix (v2.1: verdict-gated) ──
+    if skip_phase3:
+        print(f"\n{'='*50}")
+        print(f"[Phase 3] SKIPPED — {verdict_decision}")
+        print(f"{'='*50}")
+        phases.append({"name": "Phase 3 修正", "success": True, "elapsed": 0,
+                        "note": f"跳過: {verdict_decision}",
+                        "skipped": True})
+        if need_scott_decision:
+            # Write need_scott_decision.md
+            scott_md = f"# Need Scott Decision\n\n"
+            scott_md += f"## Gemini Verdict: {gemini_verdict}\n"
+            scott_md += f"## Issues Found: {major_count} Major, {minor_count} Minor\n"
+            scott_md += f"## Intent: {intent['strictness_level']} ({intent['reason']})\n\n"
+            scott_md += f"**Why skipped auto-fix:**\n"
+            scott_md += f"- Gemini gave {gemini_verdict} but found {major_count} major issue(s)\n"
+            scott_md += f"- Your intent is '{intent['strictness_level']}' — auto-fix may over-engineer\n\n"
+            scott_md += f"**Options:**\n"
+            scott_md += f"1. Accept as-is (issues are minor for your use case)\n"
+            scott_md += f"2. Tell me to fix the major issues\n"
+            scott_md += f"3. Tell me to rewrite with stricter standards\n"
+            write_file_safe(os.path.join(output_dir, "need_scott_decision.md"), scott_md)
+            print(f"[Phase 3] 📝 need_scott_decision.md written — waiting for Scott")
     else:
-        p3_note = p3.get("error", "未知錯誤")[:60]
-        print(f"[Phase 3] ❌ {p3_note}")
+        print(f"\n{'='*50}")
+        print(f"[Phase 3] Codex Fix")
+        print(f"{'='*50}")
 
-    phases.append({"name": "Phase 3 修正", "success": p3["success"], "elapsed": p3["elapsed"],
-                    "note": p3_note})
+        p3_prompt = PHASE3_PROMPT.format(output_dir=output_dir_win, intent_summary=intent_summary)
+        write_file_safe(os.path.join(prompts_dir, "prompt_phase3.txt"), p3_prompt)
+
+        p3 = call_cli("Phase3", p3_prompt, CODEX_CMD,
+                       ["exec", "--skip-git-repo-check", "--sandbox", "workspace-write"],
+                       CODEX_TIMEOUT, WORKSPACE)
+        write_file_safe(os.path.join(raw_dir, "phase3_codex_stdout.txt"), p3.get("output",""))
+
+        if p3["success"] and p3.get("output"):
+            # Save codex_report if not already written by Codex
+            if not os.path.exists(os.path.join(output_dir, "codex_report.md")):
+                write_file_safe(os.path.join(output_dir, "codex_report.md"), p3["output"])
+            p3_note = "獨立審查 + 修正完成"
+            print(f"[Phase 3] ✅ ({p3['elapsed']}s)")
+        else:
+            p3_note = p3.get("error", "未知錯誤")[:60]
+            print(f"[Phase 3] ❌ {p3_note}")
+
+        phases.append({"name": "Phase 3 修正", "success": p3["success"], "elapsed": p3["elapsed"],
+                        "note": p3_note})
+
+        # Generate diff.md if there were modifications (v2.1)
+        if p3["success"]:
+            diff_content = f"# Diff Report\n\n"
+            diff_content += f"## Source: Phase 3 Codex Fix\n"
+            diff_content += f"## Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            diff_content += f"## Intent: {intent['strictness_level']}\n\n"
+            diff_content += f"See codex_report.md for detailed per-item changes.\n"
+            diff_content += f"See gemini_review.md for original issues.\n"
+            write_file_safe(os.path.join(output_dir, "diff.md"), diff_content)
 
     # ── Phase 4: Build + Test (A7+A8) ──
     print(f"\n{'='*50}")
@@ -888,10 +1402,33 @@ def run_pipeline(md_path_wsl):
     phases.append({"name": "Phase 5 報告", "success": True, "elapsed": p5.get("elapsed", 0),
                     "note": "final_report.md 已產出"})
 
+    # ── execution_log.json with ACTUAL timing (v2.1) ──
+    pipeline_elapsed = round(time.time() - pipeline_start, 1)
+    exec_log = {
+        "timestamp": datetime.now().isoformat(),
+        "total_duration_seconds": pipeline_elapsed,
+        "phases": phases,
+        "artifact_type": artifact_type,
+        "pipeline_type": pipeline_type,
+        "intent": intent,
+        "gemini_verdict": gemini_verdict,
+        "verdict_decision": verdict_decision,
+        "build_pass": build_pass,
+        "retry_count": retry_count
+    }
+    write_file_safe(os.path.join(output_dir, "execution_log.json"),
+                    json.dumps(exec_log, indent=2, ensure_ascii=False))
+
+    # ── Output Package (v2.1: project vs review) ──
+    package_type = "project" if build_pass else "review"
+    package_path = create_package(output_dir, build_dir_wsl, package_type, project_name)
+
     # ── Summary ──
-    summary = generate_telegram_summary(build_dir_wsl, mode, md_path_wsl, phases, build_pass, retry_count)
+    summary = generate_telegram_summary(build_dir_wsl, mode, md_path_wsl, phases, build_pass,
+                                         retry_count, artifact_type, pipeline_type,
+                                         verdict_decision, package_path)
     print(f"\n{'='*50}")
-    print(f"[Pipeline v2] Complete!")
+    print(f"[Pipeline v2.1] Complete!")
     print(f"{'='*50}")
     print(summary)
 
@@ -902,8 +1439,13 @@ def run_pipeline(md_path_wsl):
         "mode": mode,
         "project_name": project_name,
         "build_type": build_type,
+        "artifact_type": artifact_type,
+        "pipeline_type": pipeline_type,
         "build_pass": build_pass,
         "retry_count": retry_count,
+        "verdict_decision": verdict_decision,
+        "need_scott_decision": need_scott_decision,
+        "package_path": package_path if isinstance(package_path, str) else "",
         "phases": phases
     }
     print(f"\n__RESULT_JSON__:{json.dumps(result, ensure_ascii=False)}:__END_RESULT__")

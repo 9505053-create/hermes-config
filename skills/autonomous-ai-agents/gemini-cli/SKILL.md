@@ -222,10 +222,46 @@ gemini --help  # Should show available commands without auth errors
 gemini -m gemini-2.5-pro "Your prompt"
 ```
 
+## 429 錯誤診斷（常見陷阱）
+
+Gemini CLI 經常遇到 429 錯誤，但有兩種完全不同的原因：
+
+| 錯誤類型 | 訊息 | 原因 | 解法 |
+|----------|------|------|------|
+| **容量不足** | `RESOURCE_EXHAUSTED` / `MODEL_CAPACITY_EXHAUSTED` | Google 端模型伺服器滿載（全球用戶搶） | 等待，或指定其他模型（如 `gemini-2.5-pro`） |
+| **額度用盡** | `rateLimitExceeded` / daily quota | 你的帳號請求次數到頂 | 等隔天重置，或升級訂閱 |
+
+**重要：429 不代表輸出一定失敗。** Gemini CLI 有內建重試機制，即使 stderr 洗滿 429 錯誤，stdout 仍可能產出正確結果。收到 429 後要檢查目標檔案是否已寫入，不要直接判定失敗。
+
+### 查詢登入帳號
+
+```bash
+# 查看目前登入的 Google 帳號
+cat ~/.gemini/google_accounts.json
+# {"active": "your-email@gmail.com", "old": []}
+
+# 查看認證方式
+cat ~/.gemini/settings.json
+# {"security": {"auth": {"selectedType": "oauth-personal"}}}
+
+# 查看 OAuth token 是否存在
+ls -la ~/.gemini/oauth_creds.json
+```
+
+### 免費 vs 付費額度差異
+
+| 方案 | 每日上限 | 模型 |
+|------|----------|------|
+| Google 帳號（免費） | ~1,000 requests | gemini-3-flash-preview 為主 |
+| Google AI Pro 訂閱 | 更高（未公開） | 可選更新模型 |
+| Gemini API Key（免費） | ~250 requests | 按 key 計 |
+| Gemini API Key（付費） | 無上限（按量計費） | 全模型 |
+
 ## Rules
 
-1. **WSL invocation** - Use `/mnt/c/Windows/System32/cmd.exe /c "cd /d C:\Users\<username> && ..."` pattern
-2. **Non-interactive for automation** - Use `-p` flag for headless operation
+1. **WSL invocation** - Use `/mnt/c/Windows/System32/cmd.exe /c "cd /d C:\\Users\\<username> && ..."` pattern
+2. **Non-interactive for automation** - Use `-p` flag for headless operation, or pipe with `type prompt.txt | gemini.cmd`
 3. **Interactive for exploration** - Use interactive mode for complex discussions
 4. **Model specification** - Use `-m` to select specific Gemini model versions
 5. **No API key needed** - OAuth authentication handles access
+6. **429 不一定是失敗** - 檢查目標檔案是否有產出，Gemini 有時會在錯誤中仍完成工作

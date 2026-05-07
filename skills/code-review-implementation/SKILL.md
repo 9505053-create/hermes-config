@@ -126,6 +126,27 @@ When 3AI reviews are stored in `_3AI_WorkSpace/completed/`:
 3. After fixing, update the project `README.md` with fix status and remaining TODOs
 4. Push to GitHub, then record lessons to `lessons/dev/`
 
+## Special Case: Pipeline/Workflow Self-Optimization
+
+When the reviews are about the **pipeline or workflow itself** (not a user application), the task is self-optimization — the code being fixed is the system that does the work.
+
+**Differences from normal code review implementation:**
+1. The "application" is the pipeline (e.g., `pipeline.py`, `SKILL.md`, agent config)
+2. Changes affect **future** runs, not a deployed product
+3. Verification = syntax check + dry-run mental simulation (no user to break)
+4. Output must also update the corresponding SKILL.md documentation
+
+**Workflow adjustment:**
+1. Synthesize reviews into a prioritized table: Issue → Sources → Severity → Code Location
+2. Present a **modification plan** to Scott before implementing (this is his workflow preference)
+3. After Scott confirms, implement changes systematically
+4. Run `py_compile` on every modified Python file before declaring done
+5. Sync to any mirror directories (e.g., `projects/hermes-config/`)
+6. Update SKILL.md with changelog and flow diagram
+7. Report completion with summary of all changes
+
+**Example**: Scott provides Gemini + ChatGPT + Claude reviews of the 3AI Code Builder pipeline. Agent synthesizes 9 issues, presents plan, implements changes to pipeline.py, updates SKILL.md, verifies syntax.
+
 ## Notes
 - Always preserve reviewer attribution
 - Don't implement suggestions that conflict with user's stated preferences

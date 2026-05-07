@@ -265,6 +265,21 @@ Chat ID: 7292751008 (Scott)
 
 **不可用（403/超時）：** NCC、ETSI、Telecoms.com、Wireless Week
 
+### 天氣 API（wttr.in，免 API key）
+用於每日快訊氣象預報：
+```bash
+curl -s "https://wttr.in/Bade+District,Taiwan?format=j1"
+```
+回傳 JSON，取 `weather[0].maxtempC`、`mintempC`、`hourly[4].weatherDesc[0].value`、`hourly[4].chanceofrain`。
+中文地名需 URL encode，英文地名直接用。先用 Google Translate 翻譯天氣描述（英文→繁中）。
+
+### Google News RSS（法規/認證/無線新聞）
+```bash
+# 無線/電信/認證相關
+curl -s "https://news.google.com/rss/search?q=WiFi+OR+5G+OR+無線認證+OR+NCC+OR+Wi-Fi+7+OR+Bluetooth&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
+```
+Google News RSS 的 `<link>` 包含 CDATA，解析需處理。用黑名單過濾（排除鼠患、教育認證等無關項目），不要用白名單（太嚴會抓不到新聞）。
+
 ### Google Translate (free, no API key)
 用於 RSS 英文標題自動翻譯繁中：
 ```javascript
@@ -355,7 +370,9 @@ try {
 - **只在真正異常時警報**：Filter node 只在 `hasFailure === true` 時通過，正常情況靜默
 - **Telegram token 正確傳遞**：在 Code node output 中帶 `token` 和 `chatId`，HTTP Request node 的 URL 用 `{{ $json.token }}` 引用
 
-## 故障診斷 SOP（anti-wandering 鐵律）
+24. **Python vs JS Unicode 格式差異** — `\U0001f4f0` 是 Python 8-digit Unicode，在 JavaScript 中完全無效，會被當成字面文字 `U0001f4f0` 顯示。JS 需要：`\u{1f4f0}`（ES6）或 surrogate pairs `\uD83D\uDCF0`，或直接用 emoji 字元 `📰`。這會導致 Email 主旨顯示亂碼而非 emoji。解法：在 n8n Code node 中**直接用 emoji 字元**（📰🌍🤖🏛️），不要用任何 Unicode escape。
+25. **RSS 過濾太嚴導致新聞消失** — `twAllow = /總統|經濟|GDP/i` 這類白名單過濾太嚴，40 則 LTN 新聞可能只過 4 則。解法：改用**黑名單模式**（`twBlock = /星座|美食|NBA/i`），只排除明確不相關的類別，其餘全收。寧可多收也不要讓新聞區變成「無更新」。
+26. **英文新聞翻譯** — RSS 英文標題應自動翻譯繁中。用 Google Translate 免費 API（`translate.googleapis.com/translate_a/single`），先判斷 `needsTranslate()`（無中文 + 純英文 + >15字元），再翻譯。翻譯後保留原文標註 `<span>(original title)</span>` 供查證。
 
 遇到 n8n/workflow 故障時，**嚴禁即興發揮**，依序執行：
 
