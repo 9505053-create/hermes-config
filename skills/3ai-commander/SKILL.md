@@ -163,25 +163,27 @@ cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\ch
 **目錄結構**: `active/` (工作進行) → `completed/` (工作完成) → `logs/` (系統日誌) → `intel/` (情報) → `debates/` (辯論) → `temp/` (暫存)
 **索引**: 見共享空間根目錄 `INDEX.md`
 
-### 呼叫模板
+### 呼叫模板（附 log 輸出）
 ```bash
-# Claude
-cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\claude.cmd --print"
+# 時間戳變數（Hermes terminal 中使用 $(date ...)）
+TS=$(date +%Y%m%d_%H%M%S)
 
-# CODEX
-cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\codex.cmd exec --skip-git-repo-check"
+# Claude（輸出到 temp/claude_<timestamp>.log）
+cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\claude.cmd --print > temp\claude_${TS}.log"
 
-# Gemini
-cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\gemini.cmd --skip-trust"
+# CODEX（輸出到 temp/codex_<timestamp>.log）
+cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\codex.cmd exec --skip-git-repo-check > temp\codex_${TS}.log"
+
+# Gemini（輸出到 temp/gemini_<timestamp>.log）
+cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\chien\AppData\Roaming\npm\gemini.cmd --skip-trust > temp\gemini_${TS}.log"
 ```
 
 ### 快速使用
 1. `write_file` 寫 prompt.md → 共享空間
-2. `terminal` 管道呼叫對應 CLI
+2. `terminal` 管道呼叫對應 CLI（輸出導向 temp/）
 3. CLI 讀取 MD + 共享空間內檔案
-4. 結果輸出到 stdout (Hermes 可直接接收)
+4. 結果同時輸出到 stdout（Hermes 接收）+ temp/*.log（Scott 可查看）
 5. 如需 CLI 寫回 → CODEX 只讀、Claude 需 Scott 授權
-
 ### 絕對禁忌
 - ❌ 不要用 `-p` 參數傳遞含空格/中文的長指令 (會截斷)
 - ❌ 不要省略 `cd /d` (CLI 無法存取 WSL 路徑)
@@ -230,3 +232,24 @@ Permission Level: 100% authorized to operate Claude, CODEX, Gemini CLI without a
 2. **Strategic delegation** based on task complexity
 3. **Dynamic coordination** among 3AI members
 4. **Maintain memory continuity** across sessions
+
+## Bug Fix 自主判定矩陣（2026-05-08 更新）
+
+**交付標準**：成品，不是半成品。包含完整程式碼 + 開發歷程。
+
+### 判定表
+
+| 消耗來源 | 風險評估 | 行動 |
+|---------|---------|------|
+| **Hermes 令牌**（我的推理/執行） | 高成本 = 真金白銀 | ⚠️ 記錄在開發歷程，等顧問團建議後一起修 |
+| **3AI CLI 配額**（Claude/CODEX/Gemini） | 低風險 = 只是冷卻等待 | ✅ 直接修，配額用完無妨 |
+
+### 具體操作
+
+1. **小 bug、明確解法** → 直接修，交付成品
+2. **複雜 bug 但 3AI CLI 能解** → 派工給 Claude/CODEX/Gemini 修，消耗配額無所謂
+3. **複雜 bug 且需要大量 Hermes 推理** → 寫進開發歷程，標註「待顧問團審視後修復」
+4. **顧問團 COMMENT 回來後** → 統整意見，再一起修
+
+### 核心心法
+> 我交付的是成品，不該有明顯BUG。但若修復會消耗大量Hermes token，則記錄在歷程讓顧問團給建議；若消耗的是3AI配額，直接修，因為只有冷卻等待，沒有額外費用。

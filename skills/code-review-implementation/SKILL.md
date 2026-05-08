@@ -20,13 +20,27 @@ category: software-development
 - Identify which issues are critical vs. nice-to-have
 - Note any conflicting feedback between reviewers
 
-### Step 2: Prioritize Fixes
+### Step 2: Prioritize Fixes + Cost-Based Autonomy Decision
 Priority order:
 1. **Security issues** — vulnerabilities, credential exposure
 2. **Functional bugs** — broken features, logic errors
 3. **Performance issues** — efficiency problems, resource usage
 4. **Code quality** — maintainability, readability
 5. **Style/cosmetic** — formatting, naming conventions
+
+**After prioritization, apply the autonomous fix-or-wait decision:**
+
+| 修復成本來源 | 風險 | 行動 |
+|-------------|------|------|
+| **Hermes tokens**（本機推理/執行） | 高成本 = 真金白銀 | ⚠️ 複雜問題記錄在開發歷程，等更多回饋後再修 |
+| **3AI CLI 配額**（Claude/CODEX/Gemini） | 低風險 = 固定月費，只是冷卻等待 | ✅ 直接派工修，配額用完無妨 |
+| **明確小 bug + 已有修復代碼** | 極低成本 | ✅ 直接修，交付成品 |
+
+**決策流程：**
+1. Reviewer 給了具體修復代碼（如 Claude 附了 `_format_decimal` 修正）→ 直接修，成本極低
+2. 複雜 bug 但 3AI CLI 能處理 → 派工給 CLI，消耗配額無所謂
+3. 複雜 bug 且需大量 Hermes 推理才解得開 → 記錄在歷程，等顧問團/Scott 回饋
+4. Scott 明確指示「去修」→ 直接修，不用再判斷
 
 ### Step 3: Create Fix Plan
 - List each issue with its source (ChatGPT, Gemini, etc.)
@@ -61,6 +75,32 @@ After all fixes are implemented and pushed:
 - Summarize common themes across reviewers
 - Prioritize issues mentioned by multiple reviewers
 - Document your reasoning when choosing one approach over another
+
+### Consensus Table Technique (2026-05-08)
+When processing multi-reviewer feedback, build a **consensus table**:
+| 問題 | Reviewer A | Reviewer B | Reviewer C | 共識 |
+|------|-----------|-----------|-----------|------|
+| Bug X | ✅ P0 | ✅ 重大 | ✅ 建議改 | **三人一致 → 最高優先** |
+| Feature Y | ⚠️ P1 | - | ✅ 缺少 | **兩人提到 → 中優先** |
+
+- Issues flagged by **multiple reviewers** = almost certainly real bugs (fix first)
+- Issues flagged by **only one reviewer** = verify manually before fixing
+- Use P0/P1/P2 severity levels for implementation ordering
+
+### Regression Tests Per Fix (2026-05-08)
+- Add regression tests **as you fix each issue**, not at the end
+- Each test class maps to one reviewer-identified issue
+- Final pytest run must show: all original tests pass + all new tests pass
+- Report test count: `N passed in Xs` (e.g., `28 passed in 0.20s`)
+
+### Delivery Format for Code Review Fixes (2026-05-08)
+When delivering to Scott, include:
+1. **修改檔案清單** — which files changed and what
+2. **Bug 修復摘要** — issue → location → fix method
+3. **驗收測試結果** — checklist of expected vs actual behavior
+4. **pytest 結果** — exact pass/fail counts
+5. **已知限制** — what wasn't fixed and why
+6. **開發歷程** — step-by-step of what was done (timestamps optional)
 
 ### For Large Feedback Sets
 - Group related issues (e.g., all CSS issues, all logic bugs)

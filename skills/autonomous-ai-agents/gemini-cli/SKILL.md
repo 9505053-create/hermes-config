@@ -248,14 +248,20 @@ cat ~/.gemini/settings.json
 ls -la ~/.gemini/oauth_creds.json
 ```
 
-### 免費 vs 付費額度差異
+### 免費 vs 付費額度差異（2026-05 查證）
 
-| 方案 | 每日上限 | 模型 |
-|------|----------|------|
-| Google 帳號（免費） | ~1,000 requests | gemini-3-flash-preview 為主 |
-| Google AI Pro 訂閱 | 更高（未公開） | 可選更新模型 |
-| Gemini API Key（免費） | ~250 requests | 按 key 計 |
-| Gemini API Key（付費） | 無上限（按量計費） | 全模型 |
+| 方案 | CLI 每日上限 | 模型 | 備註 |
+|------|------------|------|------|
+| Google 帳號（免費） | 1,000 requests | gemini-3-flash-preview 為主 | 目前最穩定的免費方案 |
+| Google AI Pro 訂閱 | 理論 1,500 | 可選 Pro 模型 | ⚠️ **已知 bug**：CLI 辨識為免費帳號，實際額度可能仍為 1,000 |
+| Google AI Ultra 訂閱 | 理論 2,000 | 全模型 | ⚠️ 同上辨識問題 |
+| Gemini API Key（免費） | 250 requests | 僅 Flash | 需申請 API key |
+| Gemini API Key（付費） | 按量計費 | 全模型 | 唯一保證不被限流的方式 |
+
+**⚠️ 重要發現（2026-05）：**
+- 多位付費訂閱用戶回報 CLI 仍被當免費帳號對待（GitHub issue #1714）
+- **MODEL_CAPACITY_EXHAUSTED ≠ 額度用盡**：前者是 Google 端伺服器擁擠（全球搶資源），後者才是你帳號的請求次數到頂
+- 目前不建議為了 CLI 使用而升級付費訂閱（辨識 bug + 429 多為容量問題非額度問題）
 
 ## Rules
 

@@ -299,6 +299,8 @@ Write your report now.
 | Gemini Error: "Path not in workspace" | `--approval-mode yolo` sandbox 限制，只能讀工作目錄下的檔案 | CLI 命令 `cd /d` 到 review 目錄（非 `_3AI_WorkSpace`），source 檔案會被拒絕是預期外行為，但 review 目錄內的 prompt/output 檔案可正常操作 |
 | `cmd.exe` UNC path warning | WSL 啟動 cmd.exe 時的工作目錄是 `\\wsl.localhost\...`，Windows 不支援 UNC 作為 cwd | 無害，可忽略。`cd /d` 會正確切換到 Windows 路徑 |
 | Gemini Node.js pty crash | Gemini CLI 內部 conpty_console_list_agent 崩潰 | 不影響主流程，Gemini 仍會完成 review 並寫入檔案 |
+| ChatGPT Web 被 Cloudflare 阻擋 | Cloudflare bot detection 阻止 browser 工具訪問 chatgpt.com | 改用 Gemini CLI 做 code review（同為 3AI 顧問團成員），或用 Claude CLI。寫好 review prompt 後用 `build_background_cmd("gemini", prompt_path, "review")` 啟動 |
+| 使用者要求「GPT 審查」但 Web 不可用 | 同上 | 告知 Scott ChatGPT Web 被 Cloudflare 阻擋，建議改用 Gemini CLI。Gemini 的 code review 能力與 GPT 相當，輸出同樣可給 PR-style verdict + issues + feature suggestions |
 | Claude `--print` 無互動 | 這是預期行為，stdout 直接回傳結果 | 無需修復 |
 
 ## 注意事項

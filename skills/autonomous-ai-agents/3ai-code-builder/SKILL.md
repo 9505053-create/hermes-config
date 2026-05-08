@@ -1,23 +1,76 @@
 ---
 name: 3ai-code-builder
-description: "3AI 程式建構管線 v2.4 — 用 ~!!! 觸發，Artifact Detection→Phase 0(架構+sanity check)→Contract Check(fail-closed)→Codex(建構)→Gemini(審查)→Verdict Decision Tree→Lint→Claude(獨立修正+Regression Test)→Build+Test(AST安全檢查+動態掃描)→診斷式修復→Final Report→自動清理"
+description: "3AI 程式建構管線 v2.6 — 用 ~!!! 觸發，Pre-flight(B 計畫+經驗教訓注入)→Build Package(PRD 快照)→Phase 0(架構+sanity check)→Contract Check v2(檔案/類別/方法/狀態)→Codex(建構)→Gemini/Claude(審查+PRD 交叉驗證)→Verdict Gate(嚴格化)→Lint→Claude(修正)→Build+Test→Final Verdict(PASS/PASS_WITH_UNVERIFIED_UI/FAIL)→Phase 5 Git→Phase 6 Dev Log→自動清理"
 category: autonomous-ai-agents
 trigger: "~!!!"
 ---
 
-# 3AI Code Builder v2.4 — 程式建構管線
+# 3AI Code Builder v2.6 — 程式建構管線
 
 ## 核心原則
 **Hermes 在此技能中完全不讀取、不分析程式碼。** 只做：
 1. 驗證 MD 檔案存在、判斷模式（frontmatter > 檔名 fallback）
-2. 建立時間戳目錄（`build_YYYYMMDD_HHMMSS/prompts/`、`output/`、`raw/`）
-3. 用 `write_file` 產生各 phase 的 prompt 檔案到 `prompts/` 目錄
-4. 依序呼叫 3AI CLI（Codex→Gemini→Claude）執行各 phase
-5. 驗證各 phase 產出檔案存在
-6. 產出 execution_log.json + 打包 zip
-7. 通知 Scott 結果
+2. 建立時間戳目錄（`build_YYYYMMDD_HHMMSS/prompts/`、`output/`、`raw/`、`input/`）
+3. 複製 PRD 到 `input/` 目錄 + 計算 SHA256（Build Package 可審計性）
+4. 讀取經驗教訓 INDEX.md，提取與本次任務相關的教訓注入 Phase 0/1 prompt
+5. 用 `write_file` 產生各 phase 的 prompt 檔案到 `prompts/` 目錄
+6. 依序呼叫 3AI CLI（Codex→Gemini→Claude）執行各 phase
+7. 驗證各 phase 產出檔案存在
+8. 任務結束時收集 lesson 檔案，通過 3 問 Gate 後寫入對應分類 Lessons
+9. 產出 final_report.md + git_summary.md + notion_log_ready.md
+10. 通知 Scott 結果
 
 **Prompt 寫入方式：** 直接用 Hermes `write_file` 工具寫到 `{build_dir}/prompts/prompt_phaseN.txt`，不需要 Python 腳本中轉。
+
+## 經驗教訓系統（v2.6 強制）
+
+### 目錄結構
+```
+C:\Users\chien\_3AI_WorkSpace\hermes-knowledge\
+├── INDEX.md                    ← 任務類型 → 對應 Lessons 檔案
+├── LESSONS_GENERAL.md          ← 跨類通用（嚴格篩選）
+├── LESSONS_CALCULATOR.md       ← 計算/數值類
+├── LESSONS_UI.md               ← UI 類（tkinter/WPF/HTML）
+├── LESSONS_WEB.md              ← Web/爬蟲類
+├── LESSONS_POWERSHELL.md       ← PowerShell/系統類
+└── LESSONS_SECURITY.md         ← 安全類
+```
+
+### 每條 Lesson 強制格式
+```markdown
+## [ID] 短標題
+- 觸發場景：具體情境（非泛化）
+- 錯誤表現：bug 長怎樣
+- 根本原因：為什麼發生
+- 修復方式：正確做法 + code snippet（如有）
+- 適用邊界：什麼時候「不」適用 ← 防 cargo cult 關鍵欄位
+- 不適用場景：明確排除
+- 是否需要自動測試：是/否
+- 來源任務與日期：YYYY-MM-DD 專案名
+```
+
+### 讀取協議（Pre-flight 額外步驟）
+1. 根據任務類型判斷應該讀哪些 Lessons 分類檔
+2. 讀取 INDEX.md → 找到對應分類
+3. **只摘錄相關條目**，不整包塞入 prompt
+4. 將摘錄附加到 Phase 0/1 prompt 開頭：
+   「請先讀取以下經驗教訓，避免重複犯錯：...」
+
+### 寫入協議（任務結束時）
+1. 各 AI CLI 在自己的 output/ 寫 `lesson_phaseN.txt`
+2. Hermes 讀取 lesson 檔案（不讀全程 debug log）
+3. 每條候選經驗必須通過 **3 問 Gate**：
+   - ① 這個錯誤未來是否高機率重現？
+   - ② 是否有清楚適用邊界？
+   - ③ 是否值得未來消耗 token 讀取？
+4. 三個 Yes → 寫入對應分類檔
+5. 否則 → 只留在本案 final_report，不寫入長期 Lessons
+
+### 通膨控制（每 20 條觸發 pruning）
+- 合併重複項
+- 刪除低價值項
+- 把零碎 bug 收斂成 coding guideline
+- 保持每個分類檔短小、可讀、可注入
 
 ## 預檢步驟（觸發 ~!!! 前建議執行）
 
@@ -134,27 +187,66 @@ target_python: "3.8+"
 | 額度管理原則 | 無 | 顧問團用 Opus 4.7，需保留配額給高品質分析 |
 | pytest 快取清理 | Phase 5 後清理 | **Phase 4 pytest 後立即清理**（避免 Windows 權限鎖死） |
 | build_runner.py | 無自動清理 | pytest 完成後自動 walk + rmtree 快取目錄 |
-| 前置檢查 | ❌ 無 | **Pre-flight Check**：CLI 可用性 + Gemini 429 壓力測試（10 次，>3 次 429 就停止） |
+| 前置檢查 | ❌ 無 | **Pre-flight Check**：CLI 可用性 + Gemini 429 壓力測試（10 次，>3 次 429 就暫停） |
 | 腳本工具 | ❌ 無 | cli_availability_check.py + gemini_availability_test.py |
 
-## 流程架構 v2.2
+## v2.5 改動摘要 (2026-05-07, 基於 Gemini 擁塞備案)
+
+| 項目 | v2.4 | v2.5 |
+|------|------|------|
+| Gemini 429 > 30% | 🛑 停止，等冷卻 | ❓ **詢問 Scott**：啟動 B 計畫 或 中止 |
+| B 計畫 | ❌ 無 | Gemini 職責（Phase 2 審查 + 診斷式修復分析）**全數轉交 Claude** |
+| 正常流程 | Codex→Gemini→Claude | Codex→Gemini→Claude（維持不變） |
+| B 計畫流程 | ❌ 無 | Codex→Claude(審查)→Claude(修正)（Gemini 不可用時） |
+| 管線完整性 | 依賴三棒 | **雙棒也能跑完全流程**，不因 Gemini 缺席而產出殘缺結果 |
+
+## v2.6 改動摘要 (2026-05-08, 基於顧問團三方共識)
+
+| 項目 | v2.5 | v2.6 |
+|------|------|------|
+| Build Package | 只有產出 | **input/ 目錄**：複製 PRD.md + SHA256 hash + source_manifest.json |
+| 經驗教訓 | 無 | **INDEX.md + 分類 Lessons 檔**，Pre-flight 注入到 Phase 0/1 prompt |
+| Lesson 寫入 | Hermes 直接寫 | **3 問 Gate**：① 會重現嗎？② 有明確邊界嗎？③ 值得付 token 嗎？ |
+| Lesson 通膨控制 | 無 | **每 20 條 pruning**：合併重複、刪除低價值、收斂成 coding guideline |
+| Contract Check | 只查檔案存在 | **v2**：檔案 + 類別 + public methods + 狀態名稱 + forbidden pattern + headless import |
+| PRD 交叉驗證 | 無 | Phase 2 後新增 **PRD Compliance Cross-Check**：不確定語氣升級、硬規格不可標 Low |
+| Phase 3 Skip Gate | PASS + Minor → skip | **嚴格化**：PASS + Low ≤ 2 + 不涉 PRD MUST + 不涉測試缺口 + 無 unverified critical surface |
+| UI 測試 skipped | Final Verdict: PASS | **PASS_WITH_UNVERIFIED_UI** + 明確列出未驗證項目 |
+| Phase 5 Git | 無 | **自動 commit/push**，權限不足標 BLOCKED_BY_PERMISSION |
+| Phase 6 Dev Log | 無 | 產 **notion_log_ready.md**（build id、PRD hash、test result、limitations、next action） |
+| 專案複雜度 | 無 | **complexity: small/medium/large**，控制 arch_plan 行數（small ≤ 180 行） |
+| Fallback 模式 | Normal / B-Plan | **Normal / Degraded / Minimal** 三級，final_report 必須標註 mode |
+| Final Verdict | PASS / FAIL | **PASS / PASS_WITH_UNVERIFIED_UI / PASS_WITH_WARNINGS / FAIL** |
+
+## 流程架構 v2.6
 
 ```
 Scott 給 MD 路徑 (~!!! ...)
   │
   ▼
-★ Step 0: Pre-flight Check（v2.4 強制）★
+★ Step 0: Pre-flight Check（v2.6 升級）★
   1. cli_availability_check.py — 確認 Claude/Codex/Gemini 能回應
   2. gemini_availability_test.py --count 10 --interval 3 — 連續 10 條測試
-     判斷規則：429 出現 > 3 次（不含 3）→ 🛑 停止，通知 Scott
-     判斷規則：429 出現 ≤ 3 次 → ✅ 通過，繼續流程
-  3. 三個 CLI 都必須 ✅ HEALTHY 才能繼續
-  若任何一項不通過 → 通知 Scott「前置檢查未通過，建議等待」，停止管線
+  3. Pipeline Mode 判斷：
+     - 三個 CLI 都 ✅ HEALTHY 且 Gemini 429 ≤ 3/10 → **Normal**（Codex→Gemini→Claude）
+     - Claude + Codex ✅ 但 Gemini 429 > 3/10 → ❓ 詢問 Scott：
+       - **選項 A：B 計畫** → Gemini 職責轉交 Claude
+       - **選項 B：Degraded** → 跳過 Gemini Review，Codex 自審 + Hermes 規則式檢查
+     - Claude 或 Codex 不可用 → 🛑 **Minimal**：只跑 Hermes rule-based checks
+  4. 經驗教訓注入：讀取 INDEX.md → 摘錄相關 Lessons → 附加到 Phase 0/1 prompt 開頭
+  5. 等待 Scott 指示後才繼續
   │
   ▼
-Step 0.5: Artifact Type Detection
-  副檔名+內容+frontmatter → PRD / Source Code / Config / Unknown
-  產 artifact_manifest.json
+Step 0.5: Build Package + Artifact Detection
+  1. 建立 input/ 目錄，複製 PRD.md
+  2. 計算 PRD SHA256 hash → input/PRD.sha256
+  3. 產 source_manifest.json（來源路徑、時間、hash、build id）
+  4. 副檔名+內容+frontmatter → PRD / Source Code / Config / Unknown
+  5. 判斷 complexity: small / medium / large
+     - small：arch_plan ≤ 180 行，prompt 壓縮
+     - medium：標準流程
+     - large：展開詳細 prompt
+  產 artifact_manifest.json（含 complexity 欄位）
   │
   ▼
 Step 0.5: Intent Alignment Check
@@ -165,42 +257,57 @@ Step 0.5: Intent Alignment Check
   │
   ▼ (mode:new / source_code / config)
 Phase 0: 架構規劃（Codex）
-  讀 PR → 產 arch_plan.md
+  讀 PR + 注入經驗教訓 → 產 arch_plan.md
   │
   ▼
 Phase 1: 實作（Codex）
-  讀 PR + arch_plan → 產程式碼 + README + tests/ + requirements.txt
+  讀 PR + arch_plan + 注入經驗教訓 → 產程式碼 + README + tests/ + requirements.txt
   │
   ▼
-★ Phase 1.5: Contract Check（v2.2 新增）★
-  比對 arch_plan.md 預期檔案 vs output/ 實際檔案
-  產 contract_check.md
+★ Phase 1.5: Contract Check v2（v2.6 升級）★
+  比對 arch_plan.md 預期 vs output/ 實際：
+  1. File contract：預期檔案是否存在
+  2. Class contract：arch_plan 宣告的類別是否實作
+  3. Method contract：public methods 是否存在
+  4. State contract：state enum 名稱是否一致
+  5. Test contract：對應測試是否存在
+  6. Forbidden pattern：eval/exec/subprocess
+  7. Headless import：core engine 是否可無 GUI 依賴 import
+  產 contract_check.md + contract_check.json
   │
   ├── 無 drift → 繼續
   ├── drift + casual → 記錄 accepted → 繼續
   └── drift + production → 報警 → 修正後才能繼續
   │
   ▼
-Phase 2: 結構化審查（Gemini）
+Phase 2: 結構化審查（Gemini）— 正常流程
   讀程式碼 → 產 gemini_review.md（表格格式）
   │
-  ▼
-★ Verdict Decision Tree（v2.2 升級）★
+  ├─ Gemini 可用 → 正常執行
+  ├─ B 計畫啟動時 → Claude 執行（產 claude_review.md）
+  └─ Degraded 模式 → Codex 自審 + Hermes 規則式檢查
   │
-  ├── PASS + Minor only ──→ 跳過 Phase 3 → Phase 4 Build
-  ├── PASS + Low + 可重現邏輯錯誤 ──→ 自動新增 regression test → Phase 4
-  ├── PASS + Low + 純 style/doc ──→ defer（記錄原因）→ Phase 4
-  ├── PASS + Medium ──→ Phase 3 Fix
-  ├── PASS + Major + casual_intent ──→ need_scott_decision.md → 等 Scott
-  ├── PASS + Major + production_intent ──→ 進 Phase 3 Fix
-  ├── PASS_WITH_WARNINGS ──→ 同上邏輯
-  ├── NEEDS_FIXES / FAIL ──→ 進 Phase 3 Fix
-  └── Unknown ──→ 安全預設進 Phase 3
-
-  判斷「可重現邏輯錯誤」規則：
-  - Review 提到 "state transition"、"incorrect behavior"、"bug"
-  - Review 有具體重現步驟（"press X then Y → wrong result"）
-  - Category 是 Correctness 或 UI Logic
+  ▼
+★ PRD Compliance Cross-Check（v2.6 新增）★
+  1. 比對 gemini_review.md PRD Compliance 表格 vs input/PRD.md
+  2. 若 reviewer 用 maybe/consider/might/but/however/建議/可能 → 標記 risk_notes
+  3. 若 PRD MUST requirement 判為 Low/Style → 升級為 Must Review
+  4. 若 PRD hard requirement 沒有測試覆蓋 → Phase 3 不可 skip
+  產 prd_cross_check.md
+  │
+  ▼
+★ Verdict Decision Tree（v2.6 嚴格化）★
+  │
+  ├── PASS + Low ≤ 2 + 不涉 PRD MUST + 不涉測試缺口 + 無 unverified critical surface → 跳過 Phase 3 → Phase 4
+  ├── PASS + Low > 2 → Phase 3 Fix
+  ├── PASS + 任何涉及 PRD MUST → Phase 3 Fix
+  ├── PASS + 有測試缺口 → Phase 3 Fix
+  ├── PASS + risk_notes 存在 → need_scott_decision.md → 等 Scott
+  ├── PASS + Major + casual_intent → need_scott_decision.md → 等 Scott
+  ├── PASS + Major + production_intent → Phase 3 Fix
+  ├── PASS_WITH_WARNINGS → 同上邏輯
+  ├── NEEDS_FIXES / FAIL → Phase 3 Fix
+  └── Unknown → 安全預設進 Phase 3
   │
   ▼
 Phase 2.5: 靜態檢查（v2.2 強化）
@@ -226,12 +333,46 @@ Phase 4: Build + Test（v2.2 強化證據鏈）
   │
   ├── PASS → Phase 5
   └── FAIL → 診斷式修復（最多 2 輪）
-              Gemini 分析根因 → 產 fix_instruction.md
+              正常：Gemini 分析根因 → 產 fix_instruction.md
+              B 計畫：Claude 分析根因 → 產 fix_instruction.md
               Codex 照指令修正 → 重新 Build
   │
   ▼
-Phase 5: 最終報告（Claude）
+★ Final Verdict（v2.6 升級）★
+  - PASS：所有 Phase 通過，無 UI test skip
+  - PASS_WITH_UNVERIFIED_UI：通過但 UI test 因 headless skipped
+  - PASS_WITH_WARNINGS：通過但有未處理 warning
+  - FAIL：build 失敗或有 Critical 未修復
+  │
+  ▼
+Phase 5: Git Commit / Push（v2.6 新增）
+  1. git status → 檢查變更
+  2. git diff summary → 變更摘要
+  3. git add + commit → 含結構化 commit message
+  4. git push → 推送到 remote
+  5. 記錄 commit hash
+  → 產 git_summary.md
+  │
+  ├── PASS → Phase 6
+  └── BLOCKED_BY_PERMISSION → 標註 Scott 需處理事項，不影響 verdict
+  │
+  ▼
+Phase 6: Dev Log（v2.6 新增）
+  整合所有資訊 → 產 notion_log_ready.md：
+  - build_id, project_name, prd_hash
+  - changed_files, test_result, review_result
+  - known_limitations, next_action
+  - pipeline_mode, token_usage
+  │
+  ▼
+Phase 7: 最終報告（Hermes）
   整合所有報告 → 產 final_report.md
+  │
+  ▼
+經驗教訓收集（v2.6 新增）
+  1. 讀取各 AI CLI 的 lesson_phaseN.txt（如有）
+  2. 通過 3 問 Gate → 寫入對應分類 Lessons
+  3. 不通過 → 只記錄在本案 final_report
   │
   ▼
 Auto Cleanup（v2.2 新增）
@@ -239,7 +380,7 @@ Auto Cleanup（v2.2 新增）
   保留精簡目錄供 Scott 打包
   │
   ▼
-Hermes: 通知 Scott 結果 + 路徑（不再自動產 ZIP）
+Hermes: 通知 Scott 結果 + 路徑 + Pipeline Mode + Final Verdict
 ```
 
 ★ Intent × Severity 決策矩陣（v2.2）★
@@ -270,7 +411,12 @@ Hermes: 通知 Scott 結果 + 路徑（不再自動產 ZIP）
 
 ```
 {MD所在目錄}/build_YYYYMMDD_HHMMSS/
-├── prompts/                    ← 所有 prompt 檔案
+├── input/                         ← v2.6: Build Package 可審計輸入
+│   ├── PRD.md                    ← 複製的原始 PRD
+│   ├── PRD.sha256               ← PRD hash
+│   └── source_manifest.json      ← 來源路徑、時間、hash、build id
+│
+├── prompts/                       ← 所有 prompt 檔案
 │   ├── prompt_phase0.txt
 │   ├── prompt_phase1.txt
 │   ├── prompt_phase2.txt
@@ -279,46 +425,51 @@ Hermes: 通知 Scott 結果 + 路徑（不再自動產 ZIP）
 │   ├── prompt_diagnose1.txt   ← 診斷式修復（如有）
 │   └── prompt_fix1.txt
 │
-├── output/                     ← 所有產出
-│   ├── artifact_manifest.json  ← 檔案類型偵測結果
-│   ├── intent_alignment_check.md ← User Intent 分析
-│   ├── arch_plan.md           ← Phase 0 架構規劃
-│   ├── contract_check.md      ← v2.2: Phase 1.5 契約檢查
-│   ├── claude_plan.md         ← Phase 1 實作計劃
-│   ├── app.py / *.js / ...    ← 程式碼
-│   ├── README.md              ← 專案說明
-│   ├── requirements.txt       ← 依賴
-│   ├── tests/test_basic.py    ← 基本測試
-│   ├── tests/test_regression*.py ← v2.2: 回歸測試（如有）
-│   ├── gemini_review.md       ← Phase 2 結構化審查
-│   ├── lint_report.md         ← Phase 2.5 靜態檢查（LLM 摘要）
-│   ├── codex_report.md        ← Phase 3 獨立審查報告
-│   ├── diff.md                ← 修改 diff
-│   ├── regression_test_report.md ← v2.2: 回歸測試報告（如有）
-│   ├── build_log.md           ← Phase 4 Build 記錄（LLM 摘要）
-│   ├── fix_instruction.md     ← 診斷式修復指引（如有）
-│   ├── need_scott_decision.md ← 需 Scott 決策時產出
-│   ├── final_report.md        ← Phase 5 最終報告
-│   └── execution_log.json     ← 真實計時
+├── output/                        ← 所有產出
+│   ├── artifact_manifest.json    ← 含 complexity 欄位（v2.6）
+│   ├── intent_alignment_check.md
+│   ├── arch_plan.md
+│   ├── contract_check.md
+│   ├── contract_check.json       ← v2.6: 結構化契約檢查
+│   ├── claude_plan.md
+│   ├── app.py / *.js / ...
+│   ├── README.md
+│   ├── requirements.txt
+│   ├── tests/test_basic.py
+│   ├── tests/test_regression*.py
+│   ├── gemini_review.md          ← 正常流程 / claude_review.md（B 計畫）
+│   ├── prd_cross_check.md        ← v2.6: PRD 合規交叉驗證
+│   ├── lint_report.md
+│   ├── codex_report.md
+│   ├── diff.md
+│   ├── regression_test_report.md
+│   ├── build_log.md
+│   ├── fix_instruction.md
+│   ├── need_scott_decision.md
+│   ├── final_report.md           ← 含 Final Verdict 四級（v2.6）
+│   ├── git_summary.md            ← v2.6: Phase 5 Git 結果
+│   ├── notion_log_ready.md       ← v2.6: Phase 6 Dev Log
+│   └── execution_log.json
 │
-└── raw/                        ← v2.2: 強制保留所有原始輸出（證據鏈）
+└── raw/                           ← 強制保留所有原始輸出（證據鏈）
     ├── phase0_codex_stdout.txt
     ├── phase1_codex_stdout.txt
-    ├── contract_check_raw.txt  ← v2.2: 契約檢查原始
+    ├── contract_check_raw.txt
     ├── phase2_gemini_stdout.txt
-    ├── lint_compile_raw.txt    ← v2.2: py_compile 原始
-    ├── lint_security_raw.txt   ← v2.2: grep 原始
+    ├── lint_compile_raw.txt
+    ├── lint_security_raw.txt
     ├── phase3_claude_stdout.txt
-    ├── regression_raw.txt      ← v2.2: 回歸測試原始（如有）
-    ├── compile_calculator_raw.txt ← v2.2: Phase 4 編譯原始
-    ├── compile_tests_raw.txt   ← v2.2: 測試編譯原始
-    ├── test_raw.txt            ← v2.2: pytest 完整原始輸出
-    ├── test_result.json        ← v2.2: pytest 結構化結果
-    ├── import_raw.txt          ← v2.2: import smoke test 原始
-    ├── security_grep_raw.txt   ← v2.2: 安全掃描原始
+    ├── regression_raw.txt
+    ├── compile_calculator_raw.txt
+    ├── compile_tests_raw.txt
+    ├── test_raw.txt
+    ├── test_result.json
+    ├── import_raw.txt
+    ├── security_grep_raw.txt
     ├── diagnose1_stdout.txt
     ├── fix1_codex_stdout.txt
-    └── phase5_claude_stdout.txt
+    ├── git_raw.txt                ← v2.6: git 操作原始輸出
+    └── phase7_claude_stdout.txt
 ```
 
 ## 最終報告格式（final_report.md）
@@ -326,23 +477,53 @@ Hermes: 通知 Scott 結果 + 路徑（不再自動產 ZIP）
 ```md
 # Final Report — {project_name}
 
+## Pipeline Mode: Normal / B-Plan / Degraded / Minimal
+
 ## Pipeline Result
 | Phase | Status | Output File |
 |-------|--------|-------------|
+| Pre-flight | ✅/❌ | cli_health + gemini_429 |
+| Build Package | ✅ | input/PRD.md + PRD.sha256 |
 | Phase 0 Architecture | ✅/❌ | arch_plan.md |
 | Phase 1 Implementation | ✅/❌ | codex_plan.md |
-| Phase 2 Review | ✅/⚠️/❌ | gemini_review.md |
+| Phase 1.5 Contract v2 | ✅/❌ | contract_check.md + .json |
+| Phase 2 Review | ✅/⚠️/❌ | gemini_review.md / claude_review.md（B 計畫） |
+| PRD Cross-Check | ✅/⚠️ | prd_cross_check.md |
 | Phase 2.5 Lint | ✅/⏭️ | lint_report.md |
-| Phase 3 Fix | ✅/❌ | claude_report.md |
+| Phase 3 Fix | ✅/⏭️/❌ | claude_report.md |
 | Phase 4 Build/Test | ✅/❌ | build_log.md |
+| Phase 5 Git | ✅/⏭️/🔒 | git_summary.md |
+| Phase 6 Dev Log | ✅/⏭️ | notion_log_ready.md |
 
 ## Final Verdict
-PASS / PASS_WITH_WARNINGS / FAIL
+**PASS** / **PASS_WITH_UNVERIFIED_UI** / **PASS_WITH_WARNINGS** / **FAIL**
 
 判定規則：
-- PASS = 所有 Phase 通過，Gemini Must Fix 全部處理
+- PASS = 所有 Phase 通過，Gemini Must Fix 全部處理，無 UI test skip
+- PASS_WITH_UNVERIFIED_UI = 通過但 UI test 因 headless skipped
 - PASS_WITH_WARNINGS = build 通過但有未處理 warning
 - FAIL = build 失敗或有 Critical 未修復
+
+## Complexity: small / medium / large
+## Token Usage
+| Phase | Executor | Tokens |
+|-------|----------|--------|
+| Phase 0 | Codex | ... |
+| Phase 1 | Codex | ... |
+| Phase 2 | Gemini | ... |
+| ... | ... | ... |
+| **Total** | | **...** |
+
+## Unverified Surface（如有）
+- 哪些測試 skipped
+- skipped 原因
+- 需要 Scott 在 Windows GUI 環境補測什麼
+
+## Known Limitations
+- list items...
+
+## Next Action
+- Scott 需要手動處理的事項（如有）
 ```
 
 ## 錯誤處理規則
@@ -357,8 +538,11 @@ PASS / PASS_WITH_WARNINGS / FAIL
 | Phase 1.5 Contract expected=0（v2.3）| ❌ FAIL Critical — arch_plan.md 沒有可解析的檔案清單，contract 未建立 |
 | Phase 1.5 Contract drift + casual | ⚠️ 記錄 accepted，繼續 |
 | 任何 3AI CLI 額度耗盡 | rate limit / 429 / capacity 錯誤 | 🛑 **立即停止管線**，通知 Scott 哪個 CLI + 錯誤內容 + 重置時間。等待 Scott 指示。嚴禁自動 fallback |
-| Pre-flight Check 未通過 | CLI 不回應 或 Gemini 429 > 3/10 | 🛑 **不啟動管線**，通知 Scott 哪個項目不通過，建議等待後重測 |
-| Phase 2 Gemini 超時（非額度問題） | ⚠️ 跳過，Codex 自行判斷 |
+| Pre-flight Check 未通過 | CLI 不回應 或 Gemini 429 > 3/10 | Claude+Codex 缺陣 → 🛑 停止。僅 Gemini 429 高 → ❓ **詢問 Scott**：選 A（B 計畫）或 B（Degraded 模式） |
+| Phase 2 Gemini 超時（非額度問題） | ⚠️ Degraded 模式：跳過 Gemini，Codex 自審 + Hermes 規則式檢查 |
+| PRD Cross-Check 發現風險 | reviewer 不確定語氣 / PRD MUST 被標 Low | ⚠️ 標記 risk_notes，強制進 Phase 3 或 need_scott_decision |
+| Phase 5 Git 權限不足 | push 失敗 / no remote | 🔒 BLOCKED_BY_PERMISSION，記錄 Scott 需處理事項，不影響 verdict |
+| Phase 6 Notion 不可用 | 未配置 / API 錯誤 | ⏭️ 跳過，產 notion_log_ready.md 作為備用 |
 | Phase 2.5 Lint 失敗 | ⚠️ 記錄，不中斷 |
 | Phase 3 Claude 超時 | ⏱️ 跳過修正，用 Codex 原始版進入 Build |
 | Phase 3 Regression test 失敗 | ⚠️ 記錄 bug 確認存在，不中斷 |
@@ -490,8 +674,24 @@ Phase 1 prompt 必須包含以下結構要求（避免 tkinter module-level impo
 ```
 
 ## 注意事項
-- **Pre-flight Check 是強制步驟**：每次 `~!!!` 觸發前必須執行，不通過就停止
-- Pre-flight 通過標準：三個 CLI 都回應 + Gemini 429 ≤ 3/10
+- **Pre-flight Check 是強制步驟**：每次 `~!!!` 觸發前必須執行
+- Pre-flight 通過標準：三個 CLI 都回應 + Gemini 429 ≤ 3/10 → Normal 流程
+- Pre-flight 僅 Gemini 429 不通過：**詢問 Scott 選擇**——A（B 計畫）或 B（Degraded 模式）
+- **B 計畫**：Gemini 不可用時，Phase 2 審查 + 診斷式修復分析全數由 Claude 執行
+- **Degraded 模式**：跳過 Gemini Review，Codex 自審 + Hermes 規則式檢查（最低保底）
+- **Minimal 模式**：Claude/Codex 都不可用時，只跑 Hermes rule-based checks
+- B 計畫/Degraded 前提：Claude + Codex 至少一個可用，否則強制 Minimal
+- **Build Package**：每次 build 自動複製 PRD 到 input/ + SHA256，確保可審計性
+- **經驗教訓注入**：Phase 0/1 prompt 必須附加相關 Lessons 摘錄
+- **Lesson 寫入 3 問 Gate**：會重現？有邊界？值得 token？三個 Yes 才寫入長期檔
+- **Lesson 通膨控制**：每 20 條觸發 pruning，保持每個分類檔短小可讀
+- **Contract Check v2**：不僅查檔案，還查類別、方法、狀態名稱、forbidden pattern
+- **PRD Cross-Check**：reviewer 不確定語氣或 PRD MUST 被標 Low → 強制升級
+- **Verdict Gate 嚴格化**：Low ≤ 2 + 不涉 PRD MUST + 不涉測試缺口才能 skip Phase 3
+- **PASS_WITH_UNVERIFIED_UI**：UI test skipped 必須明確標註，不可假裝 PASS
+- **Phase 5 Git**：自動 commit/push，權限不足標 BLOCKED_BY_PERMISSION
+- **Phase 6 Dev Log**：產 notion_log_ready.md，即使 Notion 不可用也有備用記錄
+- **complexity 控制**：small 專案 arch_plan ≤ 180 行，避免 token 浪費
 - 此技能消耗 3AI CLI 訂閱配額，不消耗 Hermes token
 - Hermes 嚴禁自行深度分析程式碼，所有分析交給 3AI CLI
 - CLI 直接讀寫硬碟，prompt 只含路徑不含程式碼

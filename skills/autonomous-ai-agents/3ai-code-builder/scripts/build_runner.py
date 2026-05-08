@@ -211,9 +211,18 @@ def run_phase4(output_dir: str, raw_dir: str) -> dict:
         try:
             shutil.rmtree(cache_path)
         except (PermissionError, OSError):
-            # Windows Python 建立的快取，WSL 刪不掉 → 嘗試 subprocess
+            # Windows Python 建立的快取，WSL 刪不掉 → 先嘗試 rm -rf
             import subprocess
             subprocess.run(["rm", "-rf", cache_path], capture_output=True)
+            if os.path.exists(cache_path):
+                # 仍存在（d--x--x--x 權限鎖死）→ 用 cmd.exe del /f /q /s 強制清除
+                # 這是 Windows pytest 建立快取的已知問題：快取目錄權限為 d--x--x--x
+                # WSL chmod + rm 皆無效，只有 cmd.exe del 能繞過
+                subprocess.run(
+                    ["/mnt/c/Windows/System32/cmd.exe", "/c",
+                     f"del /f /q /s {cache_path}\\*.* >nul 2>&1 && rd /s /q {cache_path}"],
+                    capture_output=True
+                )
 
     # === 4. import smoke test（動態模組名）===
     if main_module:

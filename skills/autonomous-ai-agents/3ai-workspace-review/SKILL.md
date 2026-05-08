@@ -15,10 +15,30 @@ description: 3AI 共享空間交叉審核工作流程 — 用 MD 指令調度 Cl
 
 ## 工作流程
 
-### Step 1: 準備
-1. 將專案 clone 到共享空間
-2. 撰寫 review.md（描述修復摘要 + 審核問題）
-3. 為每個 3AI 撰寫專用 prompt_*.txt
+### Step 1: 準備 Review 資料夾
+
+在 `C:\Users\chien\_3AI_WorkSpace\code_create\` 下建立時間戳資料夾：
+
+```
+code_create/review_YYYYMMDD_HHMMSS/
+├── source/       ← 主程式碼
+├── tests/        ← 測試檔案
+└── docs/         ← PRD、架構圖、release notes、LESSONS 紀錄
+```
+
+**複製清單（最低限度）：**
+- `source/`：修改後的主程式檔案
+- `tests/`：對應的測試檔案
+- `docs/PRD.md`：需求文件（如有）
+- `docs/arch_plan.md`：架構規劃（如有）
+- `docs/release_notes.md`：版本說明
+- `docs/LESSONS_*.md`：顧問團問題的修復紀錄（如有）
+
+**目的：** 讓顧問團拿到結構一致、可獨立驗證的 review package，不用從散亂的路徑找檔案。
+
+### Step 2: 撰寫 Prompt 並出發
+1. 在 review 資料夾內撰寫 review.md（描述修復摘要 + 審核問題）
+2. 為每個 3AI 撰寫專用 prompt_*.txt
 
 ### Step 2: 出發
 ```bash
