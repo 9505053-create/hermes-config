@@ -9,7 +9,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 2
+      "completed": 3
     },
     "state": "scheduled",
     "skills": [
@@ -27,7 +27,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 0
+      "completed": 1
     },
     "state": "scheduled",
     "skills": [
@@ -45,7 +45,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 0
+      "completed": 1
     },
     "state": "scheduled",
     "skills": [
@@ -63,7 +63,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 5
+      "completed": 6
     },
     "state": "scheduled",
     "skills": [

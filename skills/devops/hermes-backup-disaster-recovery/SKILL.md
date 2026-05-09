@@ -132,7 +132,58 @@ cat "$BACKUP/restore_sop/HERMES_RESTORE_SOP.md" | python3 ~/.hermes/scripts/send
 ## Restore SOP
 Restore SOP should be maintained at: `$BACKUP/restore_sop/HERMES_RESTORE_SOP.md`
 Refer to the latest version in the most recent backup folder.
-Key restore steps: diagnose → pre-restore backup → restore config → restore memory/skills → handle sensitive files → verify.
+
+### When to Restore
+- Config values were changed/cleared unexpectedly (e.g. model switch wiped settings)
+- Gateway not behaving correctly after config edits
+- User says "還原"、"恢復"、"restore"、"用昨天的備份"
+
+### Step-by-Step Restore Procedure
+
+**1. Find the latest known-good backup:**
+```bash
+BACKUP_BASE="/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup"
+ls -la "$BACKUP_BASE"
+```
+
+**2. Diff current vs backup to identify corruption:**
+```bash
+diff ~/.hermes/config.yaml "$BACKUP_BASE/2026-05-08/config/config.yaml"
+```
+
+**3. Backup current (possibly broken) state BEFORE restoring — tag with .ERROR if corrupted:**
+```bash
+timestamp=$(date +%Y%m%d_%H%M%S)
+cp ~/.hermes/config.yaml ~/.hermes/config.yaml.bak.${timestamp}.ERROR
+```
+
+**4. Restore from backup:**
+```bash
+cp "$BACKUP_BASE/YYYY-MM-DD/config/config.yaml" ~/.hermes/config.yaml
+```
+
+**5. Verify key values match expectations:**
+```bash
+# Check critical fields with Python
+python3 -c "
+import yaml
+with open('$HOME/.hermes/config.yaml') as f:
+    c = yaml.safe_load(f)
+print('default model:', c.get('model',{}).get('default','MISSING'))
+print('provider:', c.get('model',{}).get('provider','MISSING'))
+"
+```
+
+**6. Restart gateway to apply:**
+```bash
+sudo /home/chien/.local/bin/hermes gateway restart
+```
+
+**7. Report to Scott** — what was wrong, what's restored, where the broken backup is saved.
+
+### Naming Convention for Broken Backups
+- Corrupted config: `config.yaml.bak.{timestamp}.ERROR`
+- This makes it easy to identify files that had unknown/bad changes later
 
 ## Three Red Lines (must be in restored AGENTS.md)
 1. No credit card usage

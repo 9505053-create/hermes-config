@@ -147,6 +147,16 @@ INSERT INTO public.hermes_skill_log (skill_name, action, risk_level, source_desc
 - AI agent PR comment secret leakage / GH Actions credential exfiltration
 - OWASP ASI01-ASI10 (OWASP Top 10 for Agentic Applications)
 
+### 2026-05-09 新增搜尋關鍵字（Phase 1 情資轉化）
+- MCP server StdioServerParameters unsanitized command
+- CVE-2026-5833 mcp-server-taskwarrior execSync
+- CVE-2026-30623 LiteLLM MCP command injection
+- CVE-2026-30615 Windsurf zero-click MCP config
+- npx -c argument injection MCP bypass
+- Orca AI agent skill supply chain silent override
+- telemetry.api-monitor.com exfiltration
+- LLM proxy router tool injection (shubiaobiao)
+
 ### 優先搜尋來源
 - GitHub Security Advisory
 - Hacker News (news.ycombinator.com)
@@ -243,6 +253,15 @@ curl -O <url> && unzip (可疑壓縮檔下載)
 curl -o /tmp/*.zip (密碼保護的壓縮檔)
 mcp.*command.*[;|&$`] 或 MCP server command 包含 shell 中介字元
 npm package.json 中 postinstall / preinstall script 包含 curl/wget/nc 等網路外洩指令
+
+### 2026-05-09 新增：Phase 1 情資轉化掃描規則
+*.icp0.io / *.ic0.app / *.raw.icp0.io 出現在任何 skill、script、MCP config 中（CanisterSprawl exfil 域名）
+telemetry.api-monitor.com 出現在任何檔案中（CanisterSprawl exfil 端點）
+MCP config 中 command 欄位值不在 allowlist 中：python, python3, node, npx, uvx, docker, deno（CVE-2026-30623 修補參考）
+npx -c 出現在 MCP server args 中（Family 2 allowlist bypass）
+execSync 出現在 MCP server TypeScript/JavaScript 檔案中（應改用 execFileSync）
+package.json 中 postinstall/preinstall 同時包含 curl 或 wget 或 nc（供應鏈蠕蟲特徵）
+MCP server 的 command 欄位指向 ./node_modules/.bin/*（非系統路徑可執行檔）
 
 ### 2026-05-02 新增：來自 CVE-2026-26268 (Cursor Git Hook RCE) + Codex CVE-2025-61260
 .git 目錄下存在非標準的 hooks/pre-commit 或 bare repository（可能為 nested bare repo 攻擊）
