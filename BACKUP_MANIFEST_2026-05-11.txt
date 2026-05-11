@@ -1,0 +1,200 @@
+╔══════════════════════════════════════════════════════╗
+║     HERMES 升級前備份 — BACKUP MANIFEST             ║
+║     版本: v0.11.0 → 目標: 最新版                     ║
+║     日期: 2026-05-11 11:19:24                  ║
+╚══════════════════════════════════════════════════════╝
+
+=== CONFIG FILES ===
+total 60
+drwxrwxrwx 1 chien chien  4096 May 11 11:19 .
+drwxrwxrwx 1 chien chien  4096 May 11 11:19 ..
+-rwxrwxrwx 1 chien chien 18314 May 11 11:19 .env.SANITIZED
+-rwxrwxrwx 1 chien chien  6598 May 11 11:19 AGENTS.md
+-rwxrwxrwx 1 chien chien  2942 May 11 11:19 SECURITY_TRUST_BOUNDARY.md
+-rwxrwxrwx 1 chien chien  1335 May 11 11:19 SOUL.md
+-rwxrwxrwx 1 chien chien   521 May 11 11:19 channel_directory.json
+-rwxrwxrwx 1 chien chien 10904 May 11 11:19 config.yaml
+-rwxrwxrwx 1 chien chien  9956 May 11 11:19 config.yaml.bak.20260509_140109.ERROR
+-rwxrwxrwx 1 chien chien   451 May 11 11:19 gateway_state.json
+
+=== MEMORY FILES (36 files) ===
+total 220
+drwxrwxrwx 1 chien chien  4096 May 11 11:19 .
+drwxrwxrwx 1 chien chien  4096 May 11 11:19 ..
+-rwxrwxrwx 1 chien chien  1583 May 11 11:19 2026-05-04-lessons.md
+-rwxrwxrwx 1 chien chien  1600 May 11 11:19 2026-05-05_n8n_discipline_lesson.md
+-rwxrwxrwx 1 chien chien  3891 May 11 11:19 2026-05-05_n8n_workflow_repair_lessons.md
+-rwxrwxrwx 1 chien chien  5927 May 11 11:19 2026-05-07_lessons.md
+-rwxrwxrwx 1 chien chien  2807 May 11 11:19 3AI_Advisor_Feedback_2026-05-04.md
+-rwxrwxrwx 1 chien chien  2686 May 11 11:19 3AI_Advisor_Feedback_R2_2026-05-04.md
+-rwxrwxrwx 1 chien chien 12919 May 11 11:19 3AI_Debate_2026-05-04_Lobster_vs_Hermes.md
+-rwxrwxrwx 1 chien chien  1261 May 11 11:19 Scott_Role_Directive_2026-05-04.md
+-rwxrwxrwx 1 chien chien  1481 May 11 11:19 Snyk_Security_Review_2026-05-04.md
+-rwxrwxrwx 1 chien chien  1261 May 11 11:19 Token_Management_Directive_2026-05-04.md
+-rwxrwxrwx 1 chien chien  1451 May 11 11:19 Token_Optimization_Rules_2026-05-04.md
+-rwxrwxrwx 1 chien chien  9500 May 11 11:19 advisor_feedback_claude_2026-05-04.md
+-rwxrwxrwx 1 chien chien  7941 May 11 11:19 advisor_feedback_claude_r2_2026-05-04.md
+-rwxrwxrwx 1 chien chien  5356 May 11 11:19 advisor_feedback_claude_snyk_2026-05-04.md
+-rwxrwxrwx 1 chien chien  4736 May 11 11:19 advisor_feedback_gemini_2026-05-04.md
+-rwxrwxrwx 1 chien chien 11477 May 11 11:19 advisor_feedback_gemini_r2_2026-05-04.md
+-rwxrwxrwx 1 chien chien  4763 May 11 11:19 advisor_feedback_gemini_snyk_2026-05-04.md
+-rwxrwxrwx 1 chien chien 23107 May 11 11:19 advisor_feedback_gpt_2026-05-04.md
+-rwxrwxrwx 1 chien chien 11123 May 11 11:19 advisor_feedback_gpt_r2_2026-05-04.md
+-rwxrwxrwx 1 chien chien 11804 May 11 11:19 advisor_feedback_gpt_snyk_2026-05-04.md
+-rwxrwxrwx 1 chien chien  1273 May 11 11:19 archive_20260505_120158.md
+-rwxrwxrwx 1 chien chien   348 May 11 11:19 archive_20260505_120451.md
+-rwxrwxrwx 1 chien chien   610 May 11 11:19 archive_20260505_121000.md
+-rwxrwxrwx 1 chien chien  1906 May 11 11:19 archive_20260505_162900.md
+-rwxrwxrwx 1 chien chien  1300 May 11 11:19 archive_20260505_174500.md
+-rwxrwxrwx 1 chien chien  1621 May 11 11:19 archive_20260505_212247.md
+-rwxrwxrwx 1 chien chien  1639 May 11 11:19 archive_20260506_065316.md
+-rwxrwxrwx 1 chien chien  1816 May 11 11:19 archive_20260506_122115.md
+-rwxrwxrwx 1 chien chien  2496 May 11 11:19 archive_20260507_111500.md
+-rwxrwxrwx 1 chien chien  1271 May 11 11:19 archive_20260507_181500.md
+-rwxrwxrwx 1 chien chien  1541 May 11 11:19 archive_20260508_032450.md
+-rwxrwxrwx 1 chien chien   955 May 11 11:19 archive_20260509_100634.md
+-rwxrwxrwx 1 chien chien   856 May 11 11:19 github_credentials.md
+-rwxrwxrwx 1 chien chien   540 May 11 11:19 lessons.md
+-rwxrwxrwx 1 chien chien  2618 May 11 11:19 session_handoff_2026-05-04.md
+-rwxrwxrwx 1 chien chien  2421 May 11 11:19 skill_generation_tracker.md
+
+=== MEMORIES (long-term) ===
+total 36
+drwxrwxrwx 1 chien chien 4096 May 11 11:19 .
+drwxrwxrwx 1 chien chien 4096 May 11 11:19 ..
+-rwxrwxrwx 1 chien chien 3130 May 11 11:19 3ai-workspace.md
+-rwxrwxrwx 1 chien chien 5860 May 11 11:19 MEMORY.md
+-rwxrwxrwx 1 chien chien 4768 May 11 11:19 RECOVERED_WORK_INDEX.md
+-rwxrwxrwx 1 chien chien 2962 May 11 11:19 RECOVERY_LOG_20260501.md
+-rwxrwxrwx 1 chien chien 6099 May 11 11:19 SUPABASE_EXTERNAL_BRAIN_INDEX.md
+-rwxrwxrwx 1 chien chien 2887 May 11 11:19 USER.md
+
+=== HANDOFFS ===
+total 8
+drwxrwxrwx 1 chien chien 4096 May 11 11:19 .
+drwxrwxrwx 1 chien chien 4096 May 11 11:19 ..
+-rwxrwxrwx 1 chien chien 5440 May 11 11:19 2026-05-03-3ai-work-mode-handoff.md
+
+=== SKILLS (98 skills) ===
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/3ai-commander
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/3ai-pipeline
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/apple/apple-notes
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/apple/apple-reminders
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/apple/findmy
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/apple/imessage
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/3ai-code-builder
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/3ai-debate-workshop
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/3ai-debate-workshop-v2
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/3ai-workspace-review
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/claude-code
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/codex
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/gemini-cli
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/hermes-agent
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/opencode
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/autonomous-ai-agents/workspace-structure
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/code-review-implementation
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/code-review-pipeline
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/architecture-diagram
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/ascii-art
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/ascii-video
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/baoyu-comic
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/baoyu-infographic
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/creative-ideation
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/design-md
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/excalidraw
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/manim-video
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/p5js
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/pixel-art
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/popular-web-designs
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/creative/songwriting-and-ai-music
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/data-science/jupyter-live-kernel
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/devops/hermes-backup-disaster-recovery
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/devops/n8n-automation
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/devops/pipeline-dry-run
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/devops/webhook-subscriptions
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/dogfood
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/email/hermes-email
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/email/himalaya
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/gaming/minecraft-modpack-server
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/gaming/pokemon-player
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/github/codebase-inspection
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/github/github-auth
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/github/github-code-review
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/github/github-issues
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/github/github-pr-workflow
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/github/github-repo-management
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/google-drive-crud
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/hermes-integrations
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mcp/native-mcp
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/media/gif-search
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/media/heartmula
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/media/songsee
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/media/spotify
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/media/youtube-content
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/evaluation/lm-evaluation-harness
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/evaluation/weights-and-biases
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/huggingface-hub
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/inference/llama-cpp
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/inference/obliteratus
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/inference/outlines
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/inference/vllm
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/models/audiocraft
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/models/segment-anything
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/research/dspy
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/training/axolotl
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/training/trl-fine-tuning
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/mlops/training/unsloth
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/note-taking/filesystem-context-recovery
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/note-taking/obsidian
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/note-taking/supabase-memory-recovery
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/productivity/google-workspace
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/productivity/linear
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/productivity/maps
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/productivity/nano-pdf
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/productivity/notion
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/productivity/ocr-and-documents
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/productivity/powerpoint
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/red-teaming/godmode
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/research/arxiv
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/research/blogwatcher
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/research/llm-wiki
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/research/polymarket
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/research/research-paper-writing
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/security/config-credential-sanitization
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/security/weekly-security-audit
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/smart-home/openhue
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/social-media/xurl
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/software-development/dont-reinvent-the-wheel
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/software-development/plan
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/software-development/post-debug-archive
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/software-development/requesting-code-review
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/software-development/subagent-driven-development
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/software-development/systematic-debugging
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/software-development/test-driven-development
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/software-development/writing-plans
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/token-memory-manager
+/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/2026-05-11_HERMES升級前備份_v0.11.0/skills/window-compress
+
+=== SCRIPTS ===
+total 24
+drwxrwxrwx 1 chien chien 4096 May 11 11:19 .
+drwxrwxrwx 1 chien chien 4096 May 11 11:19 ..
+-rwxrwxrwx 1 chien chien 3208 May 11 11:19 3ai-consult.py
+-rwxrwxrwx 1 chien chien 7440 May 11 11:19 cli_availability_check.py
+-rwxrwxrwx 1 chien chien 7146 May 11 11:19 gemini_availability_test.py
+-rwxrwxrwx 1 chien chien 2406 May 11 11:19 send-mail.py
+
+=== CRON JOBS ===
+total 16
+drwxrwxrwx 1 chien chien  4096 May 11 11:19 .
+drwxrwxrwx 1 chien chien  4096 May 11 11:19 ..
+-rwxrwxrwx 1 chien chien 15289 May 11 11:19 jobs.json
+
+=== CHECKSUMS (config files) ===
+a0f3ea499f6e7d2a99728917db4a8400a90150c6360cfbaedc2b3e721cd26762  AGENTS.md
+36747a4774008f0a0705ccd8564523d338dd3d5af325f6c2b56fff1f462c345c  SECURITY_TRUST_BOUNDARY.md
+67d1850ebf484e35b20aa3284b6a11dfbdfc29bfc53b79d873b14e53e8e47104  SOUL.md
+f74a78465e297131e7b1831b724dbdb55844b42fd57d240f59998be6890bd164  channel_directory.json
+9a95d3e72543f61a82ed1a8f7fdafb05284d89d9347fcbf381abd3ee527811df  config.yaml
+d6ce16a71cc8913de53ea9d7d0ce742377e8364e577dad31f48c1e9c41dbebb4  config.yaml.bak.20260509_140109.ERROR
+c9287c030a96af5b619bf66814b8a0f7093649c6719bd836f34a36ae33a0b714  gateway_state.json
