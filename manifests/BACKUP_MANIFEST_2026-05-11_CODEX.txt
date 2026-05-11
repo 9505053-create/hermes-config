@@ -1,0 +1,132 @@
+╔════════════════════════════════════════════════════════════════════╗
+║  重要備份：升級本 v0.13.0 (2026.5.7) + CODEX 額度使用備份          ║
+║  Created: 2026-05-11 14:28:04                             ║
+╚════════════════════════════════════════════════════════════════════╝
+
+Hermes Version:
+Hermes Agent v0.13.0 (2026.5.7)
+Project: /home/chien/.hermes/hermes-agent
+Python: 3.11.15
+OpenAI SDK: 2.31.0
+Up to date
+
+Primary / Fallback Model:
+{
+  "primary": {
+    "default": "gpt-5.5",
+    "provider": "openai-codex"
+  },
+  "fallback": {
+    "provider": "openrouter",
+    "model": "xiaomi/mimo-v2-pro"
+  }
+}
+
+Auth Pool Summary:
+openai-codex (1 credentials):
+  #1  CODEX_OAUTH          oauth   file:~/.codex/auth.json ←
+
+openrouter (1 credentials):
+  #1  OPENROUTER_API_KEY   api_key env:OPENROUTER_API_KEY ←
+
+Counts:
+Config files: 9
+Memory files: 36
+Memories files: 6
+Skills: 115
+Scripts: 5
+Cron files: 1
+
+Sensitive Data Policy:
+- NO raw API keys/tokens in this backup archive.
+- auth.SANITIZED.json and CODEX_AUTH_SUMMARY.NO_TOKENS.json are included.
+- Restore Codex OAuth by running restore_sop/restore_codex_oauth_from_windows_codex.py, which reads local Windows Codex auth.json at restore time.
+
+Key files:
+BACKUP_MANIFEST.txt
+codex/CODEX_AUTH_SUMMARY.NO_TOKENS.json
+config/.env.SANITIZED
+config/AGENTS.md
+config/SECURITY_TRUST_BOUNDARY.md
+config/SOUL.md
+config/auth.SANITIZED.json
+config/channel_directory.json
+config/config.yaml
+config/gateway_state.json
+config/hermes-agent.env.SANITIZED
+cron/jobs.json
+handoffs/2026-05-03-3ai-work-mode-handoff.md
+memories/3ai-workspace.md
+memories/MEMORY.md
+memories/RECOVERED_WORK_INDEX.md
+memories/RECOVERY_LOG_20260501.md
+memories/SUPABASE_EXTERNAL_BRAIN_INDEX.md
+memories/USER.md
+memory/2026-05-04-lessons.md
+memory/2026-05-05_n8n_discipline_lesson.md
+memory/2026-05-05_n8n_workflow_repair_lessons.md
+memory/2026-05-07_lessons.md
+memory/3AI_Advisor_Feedback_2026-05-04.md
+memory/3AI_Advisor_Feedback_R2_2026-05-04.md
+memory/3AI_Debate_2026-05-04_Lobster_vs_Hermes.md
+memory/Scott_Role_Directive_2026-05-04.md
+memory/Snyk_Security_Review_2026-05-04.md
+memory/Token_Management_Directive_2026-05-04.md
+memory/Token_Optimization_Rules_2026-05-04.md
+memory/advisor_feedback_claude_2026-05-04.md
+memory/advisor_feedback_claude_r2_2026-05-04.md
+memory/advisor_feedback_claude_snyk_2026-05-04.md
+memory/advisor_feedback_gemini_2026-05-04.md
+memory/advisor_feedback_gemini_r2_2026-05-04.md
+memory/advisor_feedback_gemini_snyk_2026-05-04.md
+memory/advisor_feedback_gpt_2026-05-04.md
+memory/advisor_feedback_gpt_r2_2026-05-04.md
+memory/advisor_feedback_gpt_snyk_2026-05-04.md
+memory/archive_20260505_120158.md
+memory/archive_20260505_120451.md
+memory/archive_20260505_121000.md
+memory/archive_20260505_162900.md
+memory/archive_20260505_174500.md
+memory/archive_20260505_212247.md
+memory/archive_20260506_065316.md
+memory/archive_20260506_122115.md
+memory/archive_20260507_111500.md
+memory/archive_20260507_181500.md
+memory/archive_20260508_032450.md
+memory/archive_20260509_100634.md
+memory/github_credentials.md
+memory/lessons.md
+memory/session_handoff_2026-05-04.md
+memory/skill_generation_tracker.md
+restore_sop/HERMES_RESTORE_SOP_v0.13.0_CODEX.md
+restore_sop/restore_codex_oauth_from_windows_codex.py
+scripts/3ai-consult.py
+scripts/cli_availability_check.py
+scripts/gemini_availability_test.py
+scripts/hermes-backup-sync.sh
+scripts/send-mail.py
+skills/3ai-commander/SKILL.md
+skills/3ai-pipeline/SKILL.md
+skills/code-review-implementation/SKILL.md
+skills/code-review-pipeline/SKILL.md
+skills/dogfood/SKILL.md
+skills/google-drive-crud/SKILL.md
+skills/hermes-integrations/SKILL.md
+skills/token-memory-manager/SKILL.md
+skills/window-compress/SKILL.md
+skills/yuanbao/SKILL.md
+status/MODEL_STATUS.json
+
+Checksums (config/status/codex/SOP):
+a0f3ea499f6e7d2a99728917db4a8400a90150c6360cfbaedc2b3e721cd26762  config/AGENTS.md
+36747a4774008f0a0705ccd8564523d338dd3d5af325f6c2b56fff1f462c345c  config/SECURITY_TRUST_BOUNDARY.md
+67d1850ebf484e35b20aa3284b6a11dfbdfc29bfc53b79d873b14e53e8e47104  config/SOUL.md
+95044ee0bcc3f51e2a194b65775f3c7faf4516782c1839315c8a4374e27ba6ce  config/auth.SANITIZED.json
+3e81ba89ae6edaff9b30d68f50f6df7eaa26bf41747cf7c2027a8f9a8c0752db  config/channel_directory.json
+3dba166c75bfb99b4861e7bac73b4087cf45e865d46fe7a571d052874e0e6d29  config/config.yaml
+47d5043977992c8fd9b468ee0088e6ce7b5aa3f92902a4e86191bf290b652367  config/gateway_state.json
+98a34ad5c1815c203b69e34ac761f25b217bf11de15bb5e440641506365ca6da  config/hermes-agent.env.SANITIZED
+ba7213baf81b74b6fac21c18f24f00b19ad13e4ae3669ba9df0c97ac2eec4b44  status/MODEL_STATUS.json
+9238a7f651c260f2ddb0597d8b8cb2bb2e4a25f83262bd73d37aa2fb630e1df3  codex/CODEX_AUTH_SUMMARY.NO_TOKENS.json
+56499d0ae8ff9df4ecb9f4b5de7712fca34e66f97ccbc01c393b0f375b508524  restore_sop/HERMES_RESTORE_SOP_v0.13.0_CODEX.md
+aeea9042b7c72638699b7ae59b574b385571dfb4e344f58768b802727d5aaccf  restore_sop/restore_codex_oauth_from_windows_codex.py

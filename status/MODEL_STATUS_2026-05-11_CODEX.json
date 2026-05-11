@@ -1,0 +1,12 @@
+{
+  "hermes_version": "Hermes Agent v0.13.0 (2026.5.7)\nProject: /home/chien/.hermes/hermes-agent\nPython: 3.11.15\nOpenAI SDK: 2.31.0\nUp to date",
+  "primary_model": {
+    "default": "gpt-5.5",
+    "provider": "openai-codex"
+  },
+  "fallback_model": {
+    "provider": "openrouter",
+    "model": "xiaomi/mimo-v2-pro"
+  },
+  "codex_auth_pool_present": true
+}
