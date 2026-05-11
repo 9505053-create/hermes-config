@@ -60,6 +60,17 @@ All `~/.hermes/scripts/*.py` — email sender, utility scripts.
 - `~/.hermes/google_client_secret.json` — Google OAuth client
 - Any file matching `*token*`, `*secret*`, `*key*`, `*credential*`, `*.pem`
 
+### Codex / ChatGPT Subscription Model State (when enabled)
+When Hermes is configured to use Scott's ChatGPT/Codex subscription quota as the primary brain, also back up a safe Codex recovery bundle. See `references/codex-oauth-disaster-recovery.md`.
+
+Include:
+- `config/config.yaml` showing `model.provider: openai-codex`, `model.default: gpt-5.5`, and OpenRouter `xiaomi/mimo-v2-pro` fallback
+- `config/auth.SANITIZED.json` (tokens redacted)
+- `codex/CODEX_AUTH_SUMMARY.NO_TOKENS.json` (auth mode/account/model summary only)
+- `restore_sop/restore_codex_oauth_from_windows_codex.py` (reads local Windows Codex auth at restore time; contains no tokens)
+
+Never upload raw `/mnt/c/Users/chien/.codex/auth.json`, `~/.codex/auth.json`, or `~/.hermes/auth.json` to GitHub/Drive/Supabase/email.
+
 ## Workflow
 
 ### Step 1: Create Backup Directory
@@ -303,6 +314,8 @@ After a major upgrade (like `hermes update`), verify these before declaring succ
 - [ ] Skills count matches expected (check `find ~/.hermes/skills/ -name SKILL.md | wc -l`)
 - [ ] Cron jobs intact (`hermes cron list` or check `~/.hermes/cron/jobs.json`)
 - [ ] `config.yaml` model/provider settings NOT overwritten by upgrade
+- [ ] If Codex GPT-5.5 is primary: `hermes auth list` shows `openai-codex` OAuth credential and `hermes -z "只回覆：CODEX_OK" --provider openai-codex -m gpt-5.5` returns `CODEX_OK`
+- [ ] `fallback_model` still points to OpenRouter `xiaomi/mimo-v2-pro` when Codex is primary
 - [ ] Three Red Lines still present in AGENTS.md
 - [ ] `~/.hermes/.env` still has all API keys (upgrade should never touch this)
 - [ ] Memory files still present (`ls ~/.hermes/memory/*.md | wc -l`)

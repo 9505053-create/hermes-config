@@ -19,6 +19,8 @@ import os
 import ast
 import glob
 import time
+import shlex
+import re
 
 
 def _run(cmd: str, cwd: str, timeout: int = 120) -> dict:
@@ -47,19 +49,169 @@ def _run(cmd: str, cwd: str, timeout: int = 120) -> dict:
 
 
 def _discover_main_module(output_dir: str) -> str:
-    """動態發現主模組：找 output/ 根目錄下的主要 .py 檔案"""
+    """動態發現主模組：找 output/ 或 source/ 下的主要 .py 檔案。
+
+    v2.7: PR 修改模式常見乾淨交付結構是 source/calculator.py，
+    若只掃 output/ 根目錄會漏掉真正入口，導致 README/啟動 smoke test 沒跑到。
+    """
     candidates = []
     skip = {"__init__", "setup", "conftest"}
-    for f in os.listdir(output_dir):
-        if f.endswith(".py") and not f.startswith("test_"):
+    search_dirs = [output_dir, os.path.join(output_dir, "source"), os.path.join(output_dir, "src")]
+    for base in search_dirs:
+        if not os.path.isdir(base):
+            continue
+        for f in os.listdir(base):
+            if not (f.endswith(".py") and not f.startswith("test_")):
+                continue
             name = f[:-3]
             if name not in skip:
-                candidates.append(f)
-    # 優先順序：calculator.py > app.py > main.py > 其他
-    for pref in ["calculator.py", "app.py", "main.py"]:
+                candidates.append(os.path.relpath(os.path.join(base, f), output_dir))
+    # 優先順序：calculator.py > app.py > main.py；root 與 source/src 皆納入
+    for pref in ["calculator.py", "app.py", "main.py", "source/calculator.py", "source/app.py", "source/main.py", "src/app.py", "src/main.py"]:
         if pref in candidates:
             return pref
     return candidates[0] if candidates else None
+
+
+def _module_name_from_path(py_path: str) -> str:
+    """source/calculator.py -> source.calculator; calculator.py -> calculator"""
+    return py_path.replace(os.sep, ".").replace("/", ".").removesuffix(".py")
+
+
+def _entrypoint_smoke_status(result: dict) -> str:
+    """Classify direct entrypoint execution.
+
+    GUI apps in WSL/headless may fail with DISPLAY/TclError or keep running until timeout;
+    those prove import/entrypoint reached GUI layer and are not module-path crashes.
+    ModuleNotFoundError/ImportError remain hard failures. If the app implements --smoke and
+    prints SMOKE_OK, that is the strongest PASS signal.
+    """
+    combined = (result.get("stderr") or "") + "\n" + (result.get("stdout") or "")
+    if "SMOKE_OK" in combined:
+        return "PASS_SMOKE"
+    if result.get("timeout"):
+        return "PASS_LAUNCHED_TIMEOUT"
+    if result.get("returncode") == 0:
+        return "PASS"
+    if "ModuleNotFoundError" in combined or "ImportError" in combined:
+        return "FAIL_IMPORT"
+    if "no display name" in combined or "$DISPLAY" in combined or "TclError" in combined:
+        return "PASS_HEADLESS_UI_BLOCKED"
+    return "FAIL"
+
+
+def _supports_smoke_flag(output_dir: str, main_module: str | None) -> bool:
+    """Detect explicit GUI smoke-test support without executing the app."""
+    if not main_module:
+        return False
+    try:
+        text = open(os.path.join(output_dir, main_module), "r", encoding="utf-8", errors="replace").read()
+    except OSError:
+        return False
+    return "--smoke" in text or "SMOKE_OK" in text
+
+
+def _path_pollution_check(output_dir: str) -> dict:
+    """Detect sys.path.insert/append hacks.
+
+    v2.7.1: Not every sys.path use is automatically illegal. A project may allow
+    a carefully documented test-helper path with an inline pragma:
+    `# hermes: allow-sys-path <reason>`. Anything without that explicit waiver
+    remains a blocking finding because it can mask production import bugs.
+    """
+    findings = []
+    allowed = []
+    pattern = re.compile(r"sys\.path\.(?:insert|append)\s*\(")
+    for root, dirs, files in os.walk(output_dir):
+        dirs[:] = [d for d in dirs if d not in {".pytest_cache", "__pycache__", ".git", "venv", ".venv"}]
+        for f in files:
+            if not f.endswith(".py"):
+                continue
+            path = os.path.join(root, f)
+            rel = os.path.relpath(path, output_dir)
+            try:
+                lines = open(path, "r", encoding="utf-8", errors="replace").read().splitlines()
+            except OSError:
+                continue
+            for lineno, line in enumerate(lines, 1):
+                if pattern.search(line):
+                    item = f"{rel}:{lineno}"
+                    if "hermes: allow-sys-path" in line:
+                        allowed.append(item)
+                    else:
+                        findings.append(item)
+    return {"clean": not findings, "findings": findings, "allowed": allowed}
+
+
+def _package_hygiene_check(output_dir: str) -> dict:
+    """Ensure delivery tree does not contain pytest/python cache artifacts."""
+    findings = []
+    for root, dirs, files in os.walk(output_dir):
+        for d in dirs:
+            if d in {".pytest_cache", "__pycache__"}:
+                findings.append(os.path.relpath(os.path.join(root, d), output_dir) + "/")
+        for f in files:
+            if f.endswith(".pyc"):
+                findings.append(os.path.relpath(os.path.join(root, f), output_dir))
+    return {"clean": not findings, "findings": sorted(findings)}
+
+
+def _documentation_check(output_dir: str) -> dict:
+    """Rule-based delivery documentation checks for PR-style tasks.
+
+    These are intentionally simple machine gates; PRD-specific assertions still
+    belong in prd_cross_check.md. The goal is to catch the PR-02 class of misses:
+    root README absent, completion report absent, README lacking limitations.
+    """
+    findings = []
+    warnings = []
+
+    readme = os.path.join(output_dir, "README.md")
+    if not os.path.isfile(readme):
+        findings.append("README.md missing at project root")
+    else:
+        text = open(readme, "r", encoding="utf-8", errors="replace").read()
+        if not re.search(r"已知限制|Known Limitations|Limitations", text, re.I):
+            findings.append("README.md missing Known Limitations / 已知限制 section")
+        if "python calculator.py" in text and not os.path.isfile(os.path.join(output_dir, "calculator.py")):
+            findings.append("README.md references `python calculator.py` but root calculator.py is absent")
+
+    docs_dir = os.path.join(output_dir, "docs")
+    if os.path.isdir(docs_dir):
+        completion_reports = glob.glob(os.path.join(docs_dir, "pr_*_completion_report.md"))
+        if not completion_reports:
+            findings.append("docs/pr_##_completion_report.md missing")
+        release_notes = os.path.join(docs_dir, "release_notes.md")
+        if os.path.isfile(release_notes):
+            notes = open(release_notes, "r", encoding="utf-8", errors="replace").read()
+            if re.search(r"MiniCalc\s+v1\.0\s+Release Notes", notes):
+                findings.append("docs/release_notes.md still says MiniCalc v1.0 Release Notes")
+    else:
+        warnings.append("docs/ directory absent; skip completion report/release notes checks")
+
+    return {"clean": not findings, "findings": findings, "warnings": warnings}
+
+
+def _cleanup_python_caches(output_dir: str) -> None:
+    """Remove pytest/python cache artifacts, including those created by this runner."""
+    import shutil
+    cache_paths = []
+    for cache_dir_name in [".pytest_cache", "__pycache__"]:
+        for root, dirs, files in os.walk(output_dir):
+            if cache_dir_name in dirs:
+                cache_paths.append(os.path.join(root, cache_dir_name))
+    cache_paths.sort(key=len, reverse=True)
+    for cache_path in cache_paths:
+        try:
+            shutil.rmtree(cache_path)
+        except (PermissionError, OSError):
+            subprocess.run(["rm", "-rf", cache_path], capture_output=True)
+            if os.path.exists(cache_path):
+                subprocess.run(
+                    ["/mnt/c/Windows/System32/cmd.exe", "/c",
+                     f"del /f /q /s {cache_path}\\*.* >nul 2>&1 && rd /s /q {cache_path}"],
+                    capture_output=True
+                )
 
 
 def _discover_test_files(output_dir: str) -> list[str]:
@@ -152,7 +304,7 @@ def run_phase4(output_dir: str, raw_dir: str) -> dict:
 
     # === 1. py_compile — 主模組 ===
     if main_module:
-        r = _run(f"python3 -m py_compile {main_module}", output_dir)
+        r = _run(f"python3 -m py_compile {shlex.quote(main_module)}", output_dir)
     else:
         r = {"returncode": 1, "stdout": "", "stderr": "No main module found", "duration_seconds": 0, "timeout": False}
     results["compile_main"] = r
@@ -198,35 +350,11 @@ def run_phase4(output_dir: str, raw_dir: str) -> dict:
         f.write(f"STDOUT:\n{r['stdout']}STDERR:\n{r['stderr']}\n")
 
     # === 3.5 立即清理 pytest 產生的快取（避免 Windows 權限鎖死）===
-    # 先收集所有快取路徑，再從深到淺刪除（避免 walk 時目錄消失）
-    import shutil
-    cache_paths = []
-    for cache_dir_name in [".pytest_cache", "__pycache__"]:
-        for root, dirs, files in os.walk(output_dir):
-            if cache_dir_name in dirs:
-                cache_paths.append(os.path.join(root, cache_dir_name))
-    # 深度優先：路徑長的先刪
-    cache_paths.sort(key=len, reverse=True)
-    for cache_path in cache_paths:
-        try:
-            shutil.rmtree(cache_path)
-        except (PermissionError, OSError):
-            # Windows Python 建立的快取，WSL 刪不掉 → 先嘗試 rm -rf
-            import subprocess
-            subprocess.run(["rm", "-rf", cache_path], capture_output=True)
-            if os.path.exists(cache_path):
-                # 仍存在（d--x--x--x 權限鎖死）→ 用 cmd.exe del /f /q /s 強制清除
-                # 這是 Windows pytest 建立快取的已知問題：快取目錄權限為 d--x--x--x
-                # WSL chmod + rm 皆無效，只有 cmd.exe del 能繞過
-                subprocess.run(
-                    ["/mnt/c/Windows/System32/cmd.exe", "/c",
-                     f"del /f /q /s {cache_path}\\*.* >nul 2>&1 && rd /s /q {cache_path}"],
-                    capture_output=True
-                )
+    _cleanup_python_caches(output_dir)
 
     # === 4. import smoke test（動態模組名）===
     if main_module:
-        module_name = main_module.replace(".py", "")
+        module_name = _module_name_from_path(main_module)
         # 嘗試常見的 Engine class 名稱
         import_cmd = (
             f'python3 -c "import {module_name}; '
@@ -242,6 +370,26 @@ def run_phase4(output_dir: str, raw_dir: str) -> dict:
     results["import_test"] = r
     with open(os.path.join(raw_dir, "import_raw.txt"), "w") as f:
         f.write(f"CMD: import {main_module or 'NOT_FOUND'}\n")
+        f.write(f"RETURN CODE: {r['returncode']}\n")
+        f.write(f"STDOUT:\n{r['stdout']}STDERR:\n{r['stderr']}\n")
+
+    # === 4.5 Direct entrypoint smoke test（v2.7 PR 交付驗收）===
+    # pytest/import 成功不代表使用者照 README 執行可啟動；直接跑入口檔可抓出
+    # `from source.x import ...` 這類 path bug。GUI app 在 headless WSL 可能 timeout
+    # 或 TclError/no DISPLAY，這列為 PASS_HEADLESS_UI_BLOCKED，不當作 import crash。
+    if main_module:
+        if _supports_smoke_flag(output_dir, main_module):
+            entry_cmd = f"python3 {shlex.quote(main_module)} --smoke"
+        else:
+            entry_cmd = f"timeout 5 python3 {shlex.quote(main_module)}"
+    else:
+        entry_cmd = 'python3 -c "print(\\\"SKIP: no module\\\")"'
+    r = _run(entry_cmd, output_dir, timeout=8)
+    entry_status = _entrypoint_smoke_status(r)
+    results["entrypoint_smoke"] = {**r, "status": entry_status}
+    with open(os.path.join(raw_dir, "entrypoint_smoke_raw.txt"), "w") as f:
+        f.write(f"CMD: {entry_cmd}\n")
+        f.write(f"STATUS: {entry_status}\n")
         f.write(f"RETURN CODE: {r['returncode']}\n")
         f.write(f"STDOUT:\n{r['stdout']}STDERR:\n{r['stderr']}\n")
 
@@ -275,6 +423,49 @@ def run_phase4(output_dir: str, raw_dir: str) -> dict:
         else:
             f.write("No dangerous calls found.\n")
 
+    # === 5.5 Path pollution check（v2.7）===
+    path_result = _path_pollution_check(output_dir)
+    results["path_pollution"] = path_result
+    with open(os.path.join(raw_dir, "path_pollution_raw.txt"), "w") as f:
+        f.write("CMD: scan for sys.path.insert/sys.path.append\n")
+        f.write(f"CLEAN: {path_result['clean']}\n")
+        if path_result["findings"]:
+            f.write("FINDINGS:\n")
+            for finding in path_result["findings"]:
+                f.write(f"  - {finding}\n")
+        if path_result.get("allowed"):
+            f.write("ALLOWED_WITH_PRAGMA:\n")
+            for finding in path_result["allowed"]:
+                f.write(f"  - {finding}\n")
+
+    # === 5.6 Documentation delivery check（v2.7.1）===
+    doc_result = _documentation_check(output_dir)
+    results["documentation"] = doc_result
+    with open(os.path.join(raw_dir, "documentation_raw.txt"), "w") as f:
+        f.write("CMD: check README.md, docs/pr_##_completion_report.md, release notes, known limitations\n")
+        f.write(f"CLEAN: {doc_result['clean']}\n")
+        if doc_result["findings"]:
+            f.write("FINDINGS:\n")
+            for finding in doc_result["findings"]:
+                f.write(f"  - {finding}\n")
+        if doc_result["warnings"]:
+            f.write("WARNINGS:\n")
+            for warning in doc_result["warnings"]:
+                f.write(f"  - {warning}\n")
+
+    # === 5.7 Package hygiene check（v2.7）===
+    # py_compile/import/entrypoint smoke 本身也可能產生 __pycache__；最終交付前再清一次。
+    _cleanup_python_caches(output_dir)
+    hygiene_result = _package_hygiene_check(output_dir)
+    results["package_hygiene"] = hygiene_result
+    with open(os.path.join(raw_dir, "package_hygiene_raw.txt"), "w") as f:
+        f.write("CMD: scan for .pytest_cache/, __pycache__/, *.pyc\n")
+        f.write(f"CLEAN: {hygiene_result['clean']}\n")
+        if hygiene_result["findings"]:
+            f.write("FINDINGS:\n")
+            for finding in hygiene_result["findings"]:
+                f.write(f"  - {finding}\n")
+
     # === 解析 pytest 結果 ===
     pytest_stdout = results["pytest"]["stdout"]
     passed = pytest_stdout.count(" PASSED")
@@ -301,6 +492,10 @@ def run_phase4(output_dir: str, raw_dir: str) -> dict:
         and all_tests_compile
         and results["pytest"]["returncode"] == 0
         and results["import_test"]["returncode"] == 0
+        and results["entrypoint_smoke"]["status"] in {"PASS", "PASS_SMOKE", "PASS_LAUNCHED_TIMEOUT", "PASS_HEADLESS_UI_BLOCKED"}
+        and path_result["clean"]
+        and doc_result["clean"]
+        and hygiene_result["clean"]
     )
 
     return {
@@ -328,11 +523,32 @@ def run_phase4(output_dir: str, raw_dir: str) -> dict:
             "status": "PASS" if results["import_test"]["returncode"] == 0 else "FAIL",
             "raw_log": "import_raw.txt",
         },
+        "entrypoint_smoke": {
+            "status": results["entrypoint_smoke"]["status"],
+            "raw_log": "entrypoint_smoke_raw.txt",
+        },
         "security_grep": {
             "status": "CLEAN" if sec_result["clean"] else "FOUND",
             "method": "ast",
             "findings": sec_result["findings"],
             "raw_log": "security_grep_raw.txt",
+        },
+        "path_pollution": {
+            "status": "CLEAN" if path_result["clean"] else "FOUND",
+            "findings": path_result["findings"],
+            "allowed": path_result.get("allowed", []),
+            "raw_log": "path_pollution_raw.txt",
+        },
+        "documentation": {
+            "status": "CLEAN" if doc_result["clean"] else "FOUND",
+            "findings": doc_result["findings"],
+            "warnings": doc_result["warnings"],
+            "raw_log": "documentation_raw.txt",
+        },
+        "package_hygiene": {
+            "status": "CLEAN" if hygiene_result["clean"] else "FOUND",
+            "findings": hygiene_result["findings"],
+            "raw_log": "package_hygiene_raw.txt",
         },
         "raw_dir": raw_dir,
     }

@@ -233,7 +233,54 @@ Body: chat_id, text, parse_mode=Markdown
 ```
 Chat ID: 7292751008 (Scott)
 
-## News Digest / RSS Workflows
+### News Digest / RSS Workflows
+
+### Manual validation without firing the schedule/email node
+When `POST /execute` is unavailable and `docker exec n8n n8n execute` collides with the running server port, validate a workflow's Code-node logic by extracting the node's `jsCode`, wrapping it in a standalone Node script, and running it inside the `n8n` container. This is especially useful for `Daily News Digest 1700`: it verifies weather/news HTML generation without altering the active workflow or relying on n8n's manual execution UI.
+
+```bash
+python3 - <<'PY'
+import os,json,urllib.request
+from pathlib import Path
+for line in Path('/home/chien/.hermes/.env').read_text(errors='ignore').splitlines():
+    if '=' in line and not line.strip().startswith('#'):
+        k,v=line.split('=',1); os.environ.setdefault(k.strip(), v.strip())
+KEY=os.environ['N8N_API_KEY']; BASE='http://localhost:5678/api/v1'; WID='WORKFLOW_ID'
+req=urllib.request.Request(BASE+'/workflows/'+WID, headers={'X-N8N-API-KEY':KEY})
+with urllib.request.urlopen(req, timeout=20) as r: wf=json.loads(r.read().decode())
+fmt=next(n for n in wf['nodes'] if n['name']=='Format Email')
+js=fmt['parameters']['jsCode']
+wrapper=f"""
+(async function(){{
+{js}
+}})().then(r=>{{
+ const fs = require('fs');
+ fs.writeFileSync('/tmp/n8n_validation_payload.json', JSON.stringify(r[0].json));
+ const out=r[0].json;
+ const text=out.htmlBody.replace(/<[^>]+>/g,' ').replace(/\\s+/g,' ');
+ const m=text.match(/資料筆數：國內 (\\d+) \/ 國際 (\\d+) \/ AI (\\d+) \/ RF (\\d+)/);
+ console.log(JSON.stringify({{subject:out.subject, counts:m?m[0]:null, weatherFail:(text.match(/資料取得失敗/g)||[]).length, rainQ:(text.match(/降雨機率：\\?/g)||[]).length, htmlLength:out.htmlBody.length}}, null, 2));
+}}).catch(e=>{{ console.error(e && e.stack || e); process.exit(1); }});
+"""
+Path('/tmp/n8n_validation.js').write_text(wrapper,encoding='utf-8')
+PY
+docker cp /tmp/n8n_validation.js n8n:/tmp/n8n_validation.js
+docker exec n8n node /tmp/n8n_validation.js
+```
+
+To send the generated validation HTML through Hermes SMTP instead of the n8n Email node:
+```bash
+docker cp n8n:/tmp/n8n_validation_payload.json /tmp/n8n_validation_payload.json
+python3 - <<'PY'
+import json, subprocess
+from pathlib import Path
+payload=json.loads(Path('/tmp/n8n_validation_payload.json').read_text(encoding='utf-8'))
+subject='Hermes發送 - 驗證：' + payload['subject']
+r=subprocess.run(['python3','/home/chien/.hermes/scripts/send-mail.py','--html','-s',subject,'-t','chiensct@hotmail.com','-f','Hermes Agent'], input=payload['htmlBody'], text=True, capture_output=True, timeout=60)
+print(r.stdout or r.stderr)
+raise SystemExit(r.returncode)
+PY
+```
 
 ### News Integrity Principle ⛔ 鐵律
 **嚴禁編造新聞**：絕對不可虛構、捏造或臆測任何新聞標題或內容。
@@ -273,12 +320,33 @@ curl -s "https://wttr.in/Bade+District,Taiwan?format=j1"
 回傳 JSON，取 `weather[0].maxtempC`、`mintempC`、`hourly[4].weatherDesc[0].value`、`hourly[4].chanceofrain`。
 中文地名需 URL encode，英文地名直接用。先用 Google Translate 翻譯天氣描述（英文→繁中）。
 
-### Google News RSS（法規/認證/無線新聞）
-```bash
-# 無線/電信/認證相關
-curl -s "https://news.google.com/rss/search?q=WiFi+OR+5G+OR+無線認證+OR+NCC+OR+Wi-Fi+7+OR+Bluetooth&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
+### RF/法規/認證快訊（Scott 偏好）
+Daily News Digest 的 RF 欄不能把 `WLAN/WWAN/BT` 當新聞搜尋主軸；這些只是 Scott 工作相關的**產品範圍**。真正主軸必須是 FCC / CE(OJ, RED) / NCC 的法規、認證、抽測、禁令、標準更新。
+
+來源與排序原則：
+1. **FCC 官方 RSS 優先**：`https://api2.fcc.gov/api/exp/v1.0.0/edocspublic/rss`
+2. **Google News 精準查詢只作輔助**，分成 FCC / CE-OJ-RED / NCC 三條，不用單純 `WiFi OR Bluetooth`。
+3. **雙條件過濾**：必須同時命中「法規/認證詞」與「產品範圍詞」。
+4. 找不到真正訊號時寧可顯示「📌 本日無更新訊息」，不要用普通 Wi-Fi/BT/5G 產品新聞補位。
+5. 排除假陽性：`NRA Official Journal`、槍械、耳機評測、海底電纜 SCL、食品/教育/ISO 認證等。
+
+核心查詢範例：
+```javascript
+fccOfficial: fetchText('https://api2.fcc.gov/api/exp/v1.0.0/edocspublic/rss'),
+regFcc: fetchText('https://news.google.com/rss/search?q=(FCC+OR+%22equipment+authorization%22+OR+KDB+OR+TCB+OR+OET)+(%22Wi-Fi%22+OR+WLAN+OR+WWAN+OR+Bluetooth+OR+%225G%22+OR+%226+GHz%22+OR+%22radio+equipment%22)&hl=en-US&gl=US&ceid=US:en'),
+regCe: fetchText('https://news.google.com/rss/search?q=(%22European+Union%22+OR+EUR-Lex+OR+%22harmonised+standards%22+OR+%22RED+Directive%22+OR+%222014%2F53%2FEU%22+OR+ETSI)+(%22Wi-Fi%22+OR+WLAN+OR+Bluetooth+OR+WWAN+OR+%225G%22+OR+%22radio+equipment%22)&hl=en-US&gl=US&ceid=US:en'),
+regNcc: fetchText('https://news.google.com/rss/search?q=(NCC+OR+國家通訊傳播委員會+OR+型式認證+OR+審驗+OR+抽測+OR+電信管制射頻器材)+(無線+OR+WLAN+OR+Wi-Fi+OR+Bluetooth+OR+WWAN+OR+5G+OR+藍牙)&hl=zh-TW&gl=TW&ceid=TW:zh-Hant'),
 ```
-Google News RSS 的 `<link>` 包含 CDATA，解析需處理。用黑名單過濾（排除鼠患、教育認證等無關項目），不要用白名單（太嚴會抓不到新聞）。
+
+過濾規則範例：
+```javascript
+const regTerms = /(FCC|NCC|CE\b|RED Directive|2014\/53\/EU|EUR-Lex|harmoni[sz]ed standards?|ETSI|equipment authorization|KDB|TCB|OET|certification|compliance|enforcement|rulemaking|ban|prohibit|公告|法規|規範|標準|認證|型式認證|審驗|抽測|檢驗|電信管制射頻器材)/i;
+const productTerms = /(WLAN|Wi-?Fi|802\.11|Bluetooth|\bBT\b|BLE|WWAN|LTE|5G|cellular|U-NII|6\s?GHz|radio equipment|wireless device|module|模組|無線|射頻|藍牙|行動寬頻)/i;
+const regBlock = /(NRA|rifle|firearm|gun|ear buds?|耳機|Submarine Cable|Cable Landing|\bSCL\b|食品安全|教育.*認證|ISO.*認證)/i;
+// 必須 hasReg && hasProduct；FCC 官方也不可只因來源含 FCC 就通過。
+```
+
+Google News RSS 的 `<link>` 包含 CDATA，解析需處理。
 
 ### Google Translate (free, no API key)
 用於 RSS 英文標題自動翻譯繁中：
@@ -300,12 +368,33 @@ function isEnglish(text) {
 ### RSS News Filtering Pattern
 在 Code node 中用正則篩選新聞主題：
 ```javascript
-// 篩選關鍵字（政治/經濟/國防）
+// 一般主題篩選：只排除明確不相關內容，避免 RSS 短暫沒有資料時整區消失
 const allow = /總統|立法院|經濟|國防|外交|央行|關稅|通膨|AI|半導體/i;
-// 排除關鍵字（娛樂/體育/健康）
 const block = /星座|運勢|美食|NBA|MLB|日職|健康網|寵物/i;
 const filtered = items.filter(n => allow.test(n.title) && !block.test(n.title));
 ```
+
+### 國內重大新聞排序（Scott 偏好）
+Daily News Digest 的「國內重大新聞」不要讓娛樂、演藝圈、健康、體育、明星等雞毛蒜皮內容佔版面。做法不是全部刪掉，而是三層排序：
+1. `important`：政治、選舉、經濟、立法院、財經、股市、社會、司法、國防、外交、兩岸、能源、產業等。
+2. `general`：不在低優先類別中的一般新聞。
+3. `fallback`：娛樂/健康/體育/明星/美食/星座等，只有當前兩池不足 10 則時才補位。
+
+LTN 需同時看標題與連結分類；娛樂/體育/健康常在子網域，不能只看 `/news/entertainment/`：
+```javascript
+const twLowPriority = /(娛樂|影劇|演藝圈|藝人|明星|網紅|YouTuber|健康網|養生|NBA|MLB|體育|高球|美食|星座)/i;
+function isTwLowPriority(n) {
+  const s = String((n.title || '') + ' ' + (n.link || ''));
+  return twLowPriority.test(s)
+    || /\/news\/(entertainment|sports|health|consumer|fashion|food|playing)\//i.test(s)
+    || /https?:\/\/(ent|sports|health|food|playing|istyle)\.ltn\.com\.tw/i.test(s);
+}
+const twMajor = twAll.filter(n => twImportant.test(n.title) && !isTwLowPriority(n));
+const twGeneral = twAll.filter(n => !twImportant.test(n.title) && !isTwLowPriority(n));
+const twFallback = twAll.filter(n => isTwLowPriority(n));
+const twNews = uniqueByTitle([...twMajor, ...twGeneral, ...twFallback]).slice(0, 10);
+```
+CNA 舊 FeedBurner `https://feeds.feedburner.com/rsscna/ipl` 在 n8n 容器內已驗證會 404；不要加入此來源，除非先重新驗證新版 CNA RSS URL。
 
 ### Google News RSS 特殊格式
 Google News 的 `<link>` 包含 CDATA，解析需處理：

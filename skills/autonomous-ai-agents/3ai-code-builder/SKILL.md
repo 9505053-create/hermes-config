@@ -218,6 +218,28 @@ target_python: "3.8+"
 | Fallback 模式 | Normal / B-Plan | **Normal / Degraded / Minimal** 三級，final_report 必須標註 mode |
 | Final Verdict | PASS / FAIL | **PASS / PASS_WITH_UNVERIFIED_UI / PASS_WITH_WARNINGS / FAIL** |
 
+## v2.7 改動摘要 (2026-05-11, 基於 MiniCalc PR-02 顧問團複審)
+
+| 項目 | v2.6 缺口 | v2.7 強制修正 |
+|------|-----------|---------------|
+| 新增功能 PR 驗收 | pytest PASS 就可能放行 | **README/入口命令 smoke test 必跑**：直接執行主入口，例如 `python source/calculator.py`；ModuleNotFoundError/ImportError = FAIL |
+| 乾淨交付結構 | 只掃 output/ 根目錄主程式 | build_runner 動態搜尋 `output/`、`source/`、`src/` 下的 `calculator.py/app.py/main.py` |
+| Python 路徑污染 | 測試用 `sys.path.insert` 掩蓋真實 import bug | **精準禁止 sys.path.insert/append**：未註明 `# hermes: allow-sys-path <reason>` 的用法即 FAIL；合法 test helper/fixture 例外必須內聯註明理由，且不得修補 production import bug |
+| 文件位置/指令 | README 可放錯位置或指令未驗證 | **root README.md 強制**；README 所有啟動/測試指令必須實跑並在 raw log 留證 |
+| PR 完成報告 | release notes 取代 completion report | **docs/pr_##_completion_report.md 強制**：修改/新增檔、測試 stdout、已知限制、清理確認 |
+| 文件機器 Gate | 文件錯誤靠人工 review 才發現 | build_runner v2.7.1 新增 `documentation_raw.txt`：檢查 root README、Known Limitations/已知限制、completion report、release notes v1.0 殘留、README 錯誤入口指令 |
+| 暫存清理 | pytest 後清，但 py_compile/import 又產 cache | build_runner 在最終 package_hygiene 前再次清理 `.pytest_cache/`、`__pycache__/`、`*.pyc` |
+| UI 未驗證 | headless UI skipped 容易被當 PASS | 優先支援 `python source/app.py --smoke` 並要求輸出 `SMOKE_OK`；沒有 `--smoke` 時才退回 direct entrypoint timeout/DISPLAY/TclError 分級 |
+| PRD 版號/文件合規 | release notes 版號可能錯 | PRD 指定版本、README/Release Notes 標題、UI 顯示版本（若有）要納入 PRD Cross-Check 硬規格 |
+
+## v2.7.1 補強規則 (2026-05-11, 基於 Claude/Gemini/ChatGPT 複核)
+
+1. **PR 完成宣告 Gate**：在宣稱任何新增功能 PR 完成前，必須執行 build_runner v2.7.1 並保留完整 stdout；`overall_status != PASS` 時不得宣告完成，必須列出每個 FAIL 項目的修正措施。
+2. **sys.path 例外條款**：禁止在 tests 中用 `sys.path.insert/append` 掩蓋 production import 設計錯誤。若是 monorepo/test helper/fixture 的必要路徑設定，必須在同一行加 `# hermes: allow-sys-path <reason>`，並在 final_report 說明不影響 production import。
+3. **GUI Smoke 分層**：GUI/Tkinter 專案應新增 `--smoke` 模式，執行 `python source/calculator.py --smoke` 時初始化 import/入口路徑後輸出 `SMOKE_OK` 並退出，不進入長時間 `mainloop()`。build_runner 會優先使用 `--smoke`；缺少 smoke 模式時才用 timeout/DISPLAY/TclError 作為 headless 分級。
+4. **PRD Assertion 化**：PRD 中的硬規格要轉成可機器檢查的 assertions，例如 root `README.md` 必須存在、`docs/pr_02_completion_report.md` 必須存在、`docs/release_notes.md` 必須含 `MiniCalc v1.2`、README 必須含「已知限制」。
+5. **PR-02.1 驗收標準**：PR-02.1 hotfix 完成後必須附上 v2.7.1 `overall_status: PASS` 的完整 log；若仍由 Scott 或顧問團先發現 FAIL，視為流程仍未成熟。
+
 ## 流程架構 v2.6
 
 ```
@@ -324,11 +346,15 @@ Phase 3: 獨立審查+修正（Claude）
   ▼
 Phase 4: Build + Test（v2.2 強化證據鏈）
   subprocess capture 所有操作：
-  1. py_compile calculator.py → compile_calculator_raw.txt
-  2. py_compile tests/ → compile_tests_raw.txt
-  3. pytest -v → test_raw.txt + test_result.json
-  4. import smoke test → import_raw.txt
-  5. security grep → security_grep_raw.txt
+  4. py_compile main entry → compile_calculator_raw.txt（動態搜尋 root/source/src）
+  5. py_compile tests/ → compile_tests_raw.txt
+  6. pytest -v → test_raw.txt + test_result.json
+  7. import smoke test → import_raw.txt
+  8. **direct entrypoint smoke test** → entrypoint_smoke_raw.txt（優先跑 `python source/calculator.py --smoke`，看到 `SMOKE_OK` = PASS_SMOKE；否則跑 `python source/calculator.py`；ModuleNotFoundError/ImportError = FAIL；DISPLAY/TclError/timeout = UI 未驗證但入口已到達）
+  9. security AST check → security_grep_raw.txt
+  10. **path pollution check** → path_pollution_raw.txt（未註明 `# hermes: allow-sys-path <reason>` 的 `sys.path.insert/append` = FAIL；合法 test helper 例外必須說明理由）
+  11. **documentation delivery check** → documentation_raw.txt（root README、Known Limitations、completion report、release notes 版號、README 錯誤入口指令）
+  12. **package hygiene check** → package_hygiene_raw.txt（最終不得含 `.pytest_cache/`、`__pycache__/`、`*.pyc`）
   LLM 讀 raw → 摘要寫 build_log.md
   │
   ├── PASS → Phase 5
@@ -682,6 +708,12 @@ Phase 1 prompt 必須包含以下結構要求（避免 tkinter module-level impo
 - **Minimal 模式**：Claude/Codex 都不可用時，只跑 Hermes rule-based checks
 - B 計畫/Degraded 前提：Claude + Codex 至少一個可用，否則強制 Minimal
 - **Build Package**：每次 build 自動複製 PRD 到 input/ + SHA256，確保可審計性
+- **新增功能 PR 模式（v2.7.1）**：不能只跑 pytest；必須跑 README/入口 smoke test、documentation check、path pollution check、package hygiene check，且 root README + docs/pr_##_completion_report.md 必須存在；完成前必須貼 build_runner 完整 stdout，`overall_status != PASS` 不得宣告完成
+- **禁止 sys.path 污染（v2.7.1）**：禁止在 tests 用 `sys.path.insert/append` 掩蓋 production import bug；合法 monorepo/test helper/fixture 例外必須同一行加 `# hermes: allow-sys-path <reason>` 並在 final_report 說明，不可默默放行
+- **README 指令驗證（v2.7）**：README 內所有啟動/測試命令必須實際執行並把 stdout/stderr 放入 raw log；README 指令錯即 FAIL
+- **直接入口驗收（v2.7.1）**：GUI app 應支援 `--smoke`，成功輸出 `SMOKE_OK`；build_runner 優先跑 `python source/app.py --smoke`。若無 smoke 模式才退回 direct entrypoint，DISPLAY/TclError/timeout 可標 UI 未驗證；ModuleNotFoundError/ImportError 一律 FAIL
+- **Documentation Gate（v2.7.1）**：build_runner 產 `documentation_raw.txt`，檢查 root README、Known Limitations/已知限制、docs/pr_##_completion_report.md、release notes v1.0 殘留、README 錯誤入口指令；發現即 FAIL
+- **PR 完成報告（v2.7）**：新增功能 PR 必須產 `docs/pr_##_completion_report.md`，含修改/新增檔、測試命令、pytest stdout、新增測試摘要、已知限制、打包前清理確認
 - **經驗教訓注入**：Phase 0/1 prompt 必須附加相關 Lessons 摘錄
 - **Lesson 寫入 3 問 Gate**：會重現？有邊界？值得 token？三個 Yes 才寫入長期檔
 - **Lesson 通膨控制**：每 20 條觸發 pruning，保持每個分類檔短小可讀

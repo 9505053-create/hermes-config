@@ -349,7 +349,7 @@ Full config reference: https://hermes-agent.nousresearch.com/docs/user-guide/con
 | OpenRouter | API key | `OPENROUTER_API_KEY` |
 | Anthropic | API key | `ANTHROPIC_API_KEY` |
 | Nous Portal | OAuth | `hermes auth` |
-| OpenAI Codex | OAuth | `hermes auth` |
+| OpenAI Codex | OAuth | `hermes auth`; for Scott's Windows ChatGPT/Codex subscription bridge, see `references/openai-codex-gpt55-via-windows-auth.md` |
 | GitHub Copilot | Token | `COPILOT_GITHUB_TOKEN` |
 | Google Gemini | API key | `GOOGLE_API_KEY` or `GEMINI_API_KEY` |
 | DeepSeek | API key | `DEEPSEEK_API_KEY` |
@@ -535,7 +535,8 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 1. `hermes doctor` — check config and dependencies
 2. `hermes login` — re-authenticate OAuth providers
 3. Check `.env` has the right API key
-4. **Copilot 403**: `gh auth login` tokens do NOT work for Copilot API. You must use the Copilot-specific OAuth device code flow via `hermes model` → GitHub Copilot.
+4. **OpenAI Codex via ChatGPT subscription**: if Scott wants GPT-5.5 through Codex quota, configure `model.provider: openai-codex`, `model.default: gpt-5.5`, and keep `fallback_model` on OpenRouter `xiaomi/mimo-v2-pro`. Windows Codex login is not always enough in WSL: bridge `/mnt/c/Users/chien/.codex` to `~/.codex` and ensure `~/.hermes/auth.json` has an `openai-codex` OAuth credential pool entry. See `references/openai-codex-gpt55-via-windows-auth.md`.
+5. **Copilot 403**: `gh auth login` tokens do NOT work for Copilot API. You must use the Copilot-specific OAuth device code flow via `hermes model` → GitHub Copilot.
 
 ### Changes not taking effect
 - **Tools/skills:** `/reset` starts a new session with updated toolset
