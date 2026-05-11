@@ -576,6 +576,28 @@ sudo hermes gateway restart --system
 - **Free model rate-limit cascade**: A free-tier model (e.g. `google/gemma-*-it:free` on OpenRouter) hits HTTP 429, Hermes retries 3×, all fail, gateway exits with `exit-code`. Fix: set a fallback provider (`hermes fallback add`) or use a non-free model. The journalctl log will show `RateLimitError` → `Max retries exhausted` → `Failed with result 'exit-code'`.
 - **Service definition outdated**: `hermes gateway status` warns with "Run: sudo hermes gateway restart --system". This auto-refreshes the systemd unit file.
 
+### Upgrading
+
+```bash
+hermes update              # Pull latest + reinstall deps
+hermes update --check      # Check if update available (no install)
+```
+
+**⚠️ `hermes update` kills the running agent** — gateway restarts mid-execution. The agent WILL go offline. Scott must verify recovery manually.
+
+**Merge conflict resolution**: `hermes update` stashes local changes, pulls upstream, then re-applies. When conflicts occur:
+- Always keep BOTH sides (upstream has new features, stash has Scott's customizations)
+- Expected conflict files: `toolsets.py` (new tools vs 3AI tools), `tools/memory_tool.py`
+- After resolving: `python3 -m py_compile <file>` for each
+- Then `git add -A && git commit` to preserve local customizations
+
+**Post-upgrade verification**:
+```bash
+hermes --version           # Confirm new version
+hermes gateway status      # Confirm running
+hermes tools list          # Confirm tools intact
+```
+
 ### Platform-specific issues
 - **Discord bot silent**: Must enable **Message Content Intent** in Bot → Privileged Gateway Intents.
 - **Slack bot only works in DMs**: Must subscribe to `message.channels` event. Without it, the bot ignores public channels.

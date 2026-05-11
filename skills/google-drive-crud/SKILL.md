@@ -189,5 +189,30 @@ resp = json.loads(urllib.request.urlopen(req).read())
 - Multipart upload boundary must match Content-Type header exactly
 - Parent folder ID must be in a list: `["FOLDER_ID"]` not `"FOLDER_ID"`
 
+### ⚠️ Scope: `drive.readonly` ≠ `drive`
+The `google-workspace` setup script defaults to `drive.readonly` scope. This allows listing/reading but **blocks create, update, delete, upload** (403 Forbidden / "Insufficient Permission").
+
+**Symptoms**: Token valid, `--check` passes, list/search works, but folder create or file upload returns 403.
+
+**Diagnosis**:
+```python
+# Check granted scopes
+url = "https://www.googleapis.com/oauth2/v1/tokeninfo"
+req = urllib.request.Request(f"{url}?access_token={access_token}")
+resp = json.loads(urllib.request.urlopen(req).read())
+print(resp.get("scope"))  # If contains "drive.readonly" but not "drive" → problem
+```
+
+**Fix**: Re-authorize with `drive` scope. Edit `setup.py` line 50, run `--auth-url`, get new code, run `--auth-code`.
+
+### ⚠️ Token Refresh 400 vs 401
+- **401 Unauthorized**: Access token expired, refresh needed (normal)
+- **400 Bad Request on refresh**: Refresh token itself expired/revoked → full re-authorization needed via `setup.py --auth-url`
+
+When refresh fails with 400, don't retry — go straight to re-authorization flow.
+
+### ⚠️ Two .env Files
+`~/.hermes/.env` AND `~/.hermes/hermes-agent/.env` both get loaded. When fixing env vars (e.g. OPENAI_BASE_URL), check and update BOTH.
+
 ## Verified
 - 2026-05-04: Create MD file ✅, delete file ✅, create folder ✅, delete folder ✅
