@@ -2,7 +2,8 @@
 name: 3ai-pipeline
 description: "3AI 純搬運管線 — 用 ~! 觸發，Hermes 零思考，Gemini→Claude→Codex 依次淬鍊問題"
 category: autonomous-ai-agents
-trigger: "~!"  (alias: !~)
+trigger: "~!"
+aliases: ["!~"]
 ---
 
 # 3AI Pipeline — 純搬運模式

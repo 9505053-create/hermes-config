@@ -173,17 +173,48 @@ md5sum "$BACKUP_DIR"/*.md
 
 ---
 
+## User-Requested Todo / Backlog Writes
+
+Use this subsection when Scott explicitly asks to write a durable todo/backlog item to local disk and Supabase. This is different from recovery/merge: the user has requested a specific new record, so INSERT/UPDATE is allowed after a quick schema check and with conservative idempotency.
+
+Workflow:
+
+1. Add or update the active session todo with the built-in todo tool so the current session state reflects the task.
+2. Confirm Supabase is available:
+   ```bash
+   docker ps -a --format '{{.Names}} | {{.Status}} | {{.Image}}' | grep -iE 'supabase|postgres'
+   ```
+3. Inspect target schemas before writing:
+   ```bash
+   docker exec -u postgres supabase-db psql -d postgres -X -A -F '|' -c "SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_schema='public' AND table_name IN ('hermes_todos','hermes_knowledge') ORDER BY table_name, ordinal_position;"
+   ```
+4. Write the local disk log first, usually by appending to the relevant file under `/home/chien/.hermes/memories/`. Include the exact task, status, priority, candidate list, and Supabase target tables.
+5. Write Supabase in a transaction. If the table lacks a UNIQUE constraint on the natural key, do not use `ON CONFLICT`; use `UPDATE ... WHERE ...` followed by `INSERT ... SELECT ... WHERE NOT EXISTS (...)`.
+6. Verify by reading back both the local file and the Supabase rows.
+7. Mark the session todo complete.
+
+Pitfalls:
+
+- `hermes_todos.task` and `hermes_knowledge.title` may not have UNIQUE constraints. Check constraints before choosing an upsert strategy.
+- Timestamps from PostgreSQL may display in UTC even when local `date` displays CST; this is normal, but report clearly.
+- Keep Supabase writes concise; store detailed operational history in local markdown and a compact durable summary in `hermes_knowledge`.
+
+See `references/todo-backlog-supabase-write-20260512.md` for the 2026-05-12 example pattern.
+
 ## Verification Checklist
 
-After merge:
-- [ ] Backup directory exists with 4 md5-verified files
-- [ ] SUPABASE_EXTERNAL_BRAIN_INDEX.md created with table inventory
-- [ ] RECOVERED_WORK_INDEX.md has cross-reference appended (not overwritten)
-- [ ] MEMORY.md unchanged
-- [ ] USER_PROFILE.md unchanged
+After merge or user-requested write:
+- [ ] Backup directory exists with 4 md5-verified files when modifying core memory files
+- [ ] Local markdown log was read back after write
+- [ ] Supabase schema/constraints were checked before INSERT/UPDATE
+- [ ] Supabase rows were read back after write
+- [ ] SUPABASE_EXTERNAL_BRAIN_INDEX.md created with table inventory when doing recovery
+- [ ] RECOVERED_WORK_INDEX.md has cross-reference appended (not overwritten) when doing recovery
+- [ ] MEMORY.md unchanged unless explicitly approved
+- [ ] USER_PROFILE.md unchanged unless explicitly approved
 - [ ] No secrets exposed in any output
-- [ ] Staging directory exists with all exports
-- [ ] User has reviewed and approved MERGE_PLAN.md
+- [ ] Staging directory exists with all exports when doing recovery
+- [ ] User has reviewed and approved MERGE_PLAN.md before recovery merge
 
 ---
 

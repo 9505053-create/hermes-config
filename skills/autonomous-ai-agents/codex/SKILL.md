@@ -30,8 +30,11 @@ If Codex is installed on Windows, call it from WSL via cmd.exe:
 /mnt/c/Windows/System32/cmd.exe /c "where codex"
 # Usually: C:\Users\<username>\AppData\Roaming\npm\codex.cmd
 
-# Call from WSL
+# Call from WSL for read-only/stdout tasks
 /mnt/c/Windows/System32/cmd.exe /c "cd /d C:\Users\<username> && C:\Users\<username>\AppData\Roaming\npm\codex.cmd exec --skip-git-repo-check 'your prompt'"
+
+# Call from WSL for filesystem writes inside the Windows workspace
+/mnt/c/Windows/System32/cmd.exe /c "cd /d C:\Users\<username>\_3AI_WorkSpace && type prompt.txt | C:\Users\<username>\AppData\Roaming\npm\codex.cmd exec --skip-git-repo-check --sandbox workspace-write"
 ```
 
 **Key flags for WSL invocation:**
@@ -42,7 +45,8 @@ If Codex is installed on Windows, call it from WSL via cmd.exe:
 
 **ChatGPT Account (OAuth login):**
 - ✅ Works with Codex CLI
-- ❌ Does NOT support: `gpt-4o`, `gpt-4o-mini`, `gpt-5.5` and other ChatGPT-exclusive models
+- ✅ May use the model configured by the local Codex installation/account (for Scott's Windows setup, Codex v0.128.0 reported `model: gpt-5.5`, `provider: openai` during CLI execution)
+- ⚠️ Model availability is account/version/config dependent; verify with a minimal `codex.cmd exec --skip-git-repo-check` run rather than assuming a fixed model list
 - ✅ Uses default model from config
 
 **OpenAI API Key:**

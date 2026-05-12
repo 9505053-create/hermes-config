@@ -60,6 +60,7 @@ metadata:
 - Description: ≤ 1024 chars (enforced).
 - Full SKILL.md: ≤ 100,000 chars (enforced as `MAX_SKILL_CONTENT_CHARS`, ~36k tokens).
 - Peer skills in `software-development/` sit at **8-14k chars**. Aim for that range. If you're pushing past 20k, split into `references/*.md` and reference them from SKILL.md.
+- **Repair pattern for oversized existing skills:** do not delete long content. Create `references/full-pipeline.md` (or a more specific reference name) containing the original full skill, then replace `SKILL.md` with a concise class-level index that points to the reference. Re-run the skill audit/validator after the split.
 
 ## Peer-Matched Structure
 

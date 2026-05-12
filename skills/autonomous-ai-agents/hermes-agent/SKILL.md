@@ -538,6 +538,22 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 4. **OpenAI Codex via ChatGPT subscription**: if Scott wants GPT-5.5 through Codex quota, configure `model.provider: openai-codex`, `model.default: gpt-5.5`, and keep `fallback_model` on OpenRouter `xiaomi/mimo-v2-pro`. Windows Codex login is not always enough in WSL: bridge `/mnt/c/Users/chien/.codex` to `~/.codex` and ensure `~/.hermes/auth.json` has an `openai-codex` OAuth credential pool entry. See `references/openai-codex-gpt55-via-windows-auth.md`.
 5. **Copilot 403**: `gh auth login` tokens do NOT work for Copilot API. You must use the Copilot-specific OAuth device code flow via `hermes model` → GitHub Copilot.
 
+### Scott's Provider Fallback Hierarchy ⛔
+
+Scott 的 API 預算有明確優先級，**嚴禁違反**：
+
+| 優先級 | Provider | 使用條件 |
+|--------|----------|----------|
+| 1 (預設) | `openai-codex` (GPT-5.5 訂閱) | 所有日常任務優先使用，直到額度耗盡 |
+| 2 (備用) | OpenRouter (`OPENROUTER_API_KEY`) | **僅限**：① GPT-5.5 額度/冷卻期間 ② 緊急任務無法等待 |
+| 3 (3AI CLI) | Claude / Gemini / Codex CLI | 3AI 管線專用，不與 Hermes 共用額度 |
+
+**執行原則：**
+- 日常任務 GPT-5.5 額度不足時 → **先暫停，等冷卻**，不要自動切換 OpenRouter
+- OpenRouter API Key 是 Scott 自費，僅在真正緊急或 GPT-5.5 完全不可用時調用
+- 「今天沒急迫到要花 API Key」→ 等中午冷卻，用 GPT-5.5 繼續
+- 任何自動 fallback 到 OpenRouter 的行為都必須先通知 Scott
+
 ### Changes not taking effect
 - **Tools/skills:** `/reset` starts a new session with updated toolset
 - **Config changes:** In gateway: `/restart`. In CLI: exit and relaunch.

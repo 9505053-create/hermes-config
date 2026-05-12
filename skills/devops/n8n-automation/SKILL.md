@@ -462,6 +462,7 @@ try {
 24. **Python vs JS Unicode 格式差異** — `\U0001f4f0` 是 Python 8-digit Unicode，在 JavaScript 中完全無效，會被當成字面文字 `U0001f4f0` 顯示。JS 需要：`\u{1f4f0}`（ES6）或 surrogate pairs `\uD83D\uDCF0`，或直接用 emoji 字元 `📰`。這會導致 Email 主旨顯示亂碼而非 emoji。解法：在 n8n Code node 中**直接用 emoji 字元**（📰🌍🤖🏛️），不要用任何 Unicode escape。
 25. **RSS 過濾太嚴導致新聞消失** — `twAllow = /總統|經濟|GDP/i` 這類白名單過濾太嚴，40 則 LTN 新聞可能只過 4 則。解法：改用**黑名單模式**（`twBlock = /星座|美食|NBA/i`），只排除明確不相關的類別，其餘全收。寧可多收也不要讓新聞區變成「無更新」。
 26. **英文新聞翻譯** — RSS 英文標題應自動翻譯繁中。用 Google Translate 免費 API（`translate.googleapis.com/translate_a/single`），先判斷 `needsTranslate()`（無中文 + 純英文 + >15字元），再翻譯。翻譯後保留原文標註 `<span>(original title)</span>` 供查證。
+27. **Postgres 空庫/DB reset 復原** — 若 `workflow_entity`/`credentials_entity` 變成 0 筆、API 回 401、log 顯示 `Processed 0 draft workflows, 0 published workflows`，代表 n8n 可能啟動到新空 Postgres。先 `pg_dump` 做回滾備份，再從 `_3AI_WorkSpace/backups/` 匯入 workflow/credential。`import:credentials` 的 JSON 必須是**陣列**；`import:workflow` 若遇到 `activeVersionId` 外鍵錯誤，改用精簡 workflow JSON，只保留 `id/name/nodes/connections/settings`。匯入後用 `n8n update:workflow --id=... --active=true`，再 `docker compose restart n8n`，因 CLI 會提示 running server 下變更需重啟才生效。
 
 遇到 n8n/workflow 故障時，**嚴禁即興發揮**，依序執行：
 

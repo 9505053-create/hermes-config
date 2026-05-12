@@ -312,10 +312,33 @@ YYYY-MM-DD_HHMM_主題簡稱/
 
 ## Phase 7: 交付與歸檔
 
-1. 完整檔案存入 `C:\Users\chien\_3AI_WorkSpace\debates\YYYY-MM-DD_HHMM_主題簡稱\`
+1. 完整檔案存入 `C:\\Users\\chien\\_3AI_WorkSpace\\debates\\YYYY-MM-DD_HHMM_主題簡稱\\`
 2. 本地備份到 `~/.hermes/memory/`
 3. 通知 Scott（Telegram / Email）
 4. 更新共享空間 INDEX.md
+5. **可選 Supabase 歸檔（重大且非敏感辯論）**：若辯論產生長期決策價值，且不含 API key、信用卡、個資或未遮罩敏感內容，將精簡 metadata 寫入 `public.hermes_debates`。
+
+### Supabase Debate Archive Rule
+
+觸發條件（至少符合兩項）：
+- 影響 Hermes 工作流、架構、資安、成本或長期記憶策略
+- Scott 明確要求「寫入 Supabase / 外部大腦 / 留檔」
+- final summary 產生可執行 Action Items
+- 辯論品質自評 ≥80，且 raw responses / manifest 已保存
+
+寫入內容限制：
+- `title`：辯論標題與日期
+- `trigger`：Scott 原始需求摘要，不含敏感資料
+- `process`：模式、輪數、參與 AI、檔案路徑、品質 gate 結果
+- `synthesis`：最終共識、行動項、需 Scott 決策事項
+- 不把 raw response 全文塞進 Supabase；raw 只存本地路徑引用
+
+保守寫入流程：
+1. 先檢查 `hermes_debates` schema。
+2. 先寫本地 markdown 與 workspace 檔案。
+3. 用 transaction 寫入 Supabase；如無 UNIQUE constraint，不使用盲目 `ON CONFLICT`。
+4. 寫入後用 `SELECT title, created_at` 讀回驗證。
+5. 在回報中列出本地路徑與 Supabase row 摘要。
 
 ---
 

@@ -73,6 +73,9 @@ Never upload raw `/mnt/c/Users/chien/.codex/auth.json`, `~/.codex/auth.json`, or
 
 ## Workflow
 
+### Step 0: Skill Library Health Audit (when backing up after skill changes)
+Before preserving the current state, audit and safely repair the skill library if Scott asked to review skills or if recent work created/edited skills. Use `references/skill-audit-repair-before-backup.md` for the reusable procedure: scan local + repo skill trees, fix YAML/frontmatter/oversized skill errors, re-audit to 0 errors/warnings, then back up the repaired state. Do not delete local-vs-repo mirror duplicates automatically; classify them as informational unless there is a real conflict.
+
 ### Step 1: Create Backup Directory
 ```bash
 BACKUP_BASE="/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup"

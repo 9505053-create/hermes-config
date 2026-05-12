@@ -8,6 +8,18 @@ trigger: "~!!!"
 # 3AI Code Builder v2.6 — 程式建構管線
 
 ## 核心原則
+
+### WINDOWS MODE for 3AI CLI Disk I/O（2026-05-12 強制）
+
+任何 Phase 需要 Claude / Codex / Gemini CLI 讀寫硬碟時，必須標示並使用 **WINDOWS MODE**，不可用 WSL-mode 結果判定 3AI CLI 無法寫入。
+
+- 載入/遵循 `3ai-windows-mode-disk-io` 技能。
+- 工作目錄固定用 `C:\Users\chien\_3AI_WorkSpace`。
+- Claude：`--print --allowedTools Bash Write Edit`
+- Codex：`exec --skip-git-repo-check --sandbox workspace-write`
+- Gemini：`--skip-trust --approval-mode yolo`
+- 寫入成功必須由 Hermes 讀回目標檔驗證，不能只信 CLI 自述。
+
 **Hermes 在此技能中完全不讀取、不分析程式碼。** 只做：
 1. 驗證 MD 檔案存在、判斷模式（frontmatter > 檔名 fallback）
 2. 建立時間戳目錄（`build_YYYYMMDD_HHMMSS/prompts/`、`output/`、`raw/`、`input/`）
@@ -578,6 +590,10 @@ Hermes: 通知 Scott 結果 + 路徑 + Pipeline Mode + Final Verdict
 
 ## CLI 呼叫指令
 
+### Windows 原生 3AI CLI 硬碟讀寫驗證
+
+已整理 session-specific reference：`references/windows-native-3ai-cli-disk-io.md`。當 Scott 要求確認 3AI CLI 是否能讀寫 `C:\Users\chien\_3AI_WorkSpace`，或管線需要讓 Claude/Codex/Gemini 直接落盤時，先套用該 reference 的模式：Windows 工作目錄 + `.cmd` wrapper + 各 CLI 正確授權參數，最後讀回 result 檔驗證，不只看 stdout。
+
 ### 方式一：使用 ai_cli_wrapper.py（推薦，v2.2）
 
 ```python
@@ -747,6 +763,7 @@ Phase 1 prompt 必須包含以下結構要求（避免 tkinter module-level impo
 | Claude 寫檔到錯誤路徑 | `--print --allowedTools` 模式下 Claude 寫到 workspace root 而非 build output | Phase 1 完成後用 `shutil.copy` 從 `_3AI_WorkSpace/` 複製 calculator.py、tests/、README.md、requirements.txt 到 `build_dir/output/` |
 | pytest cache 權限問題 | Windows Python 建立的 `.pytest_cache` 在 WSL 下 PermissionError | Auto cleanup 前用 `rm -rf` 確認刪除所有 cache，不依賴 Python shutil |
 | Windows pytest cache 孤兒 | WSL + cmd 都無法刪除 `pytest-cache-files-*`（權限 `d--x--x--x`） | **Phase 4 不要從 WSL 跑 pytest** — 讓 3AI CLI（Windows Python）自己跑測試，或在 prompt 中要求 Claude/Gemini 測試完自行清理 `__pycache__` 和 `.pytest_cache`。若已產生孤兒，只能在 Windows 檔案總管手動刪 |
+| 誤判 3AI CLI 不能寫硬碟 | 從 WSL 呼叫 CLI 時少了授權參數，stdout 顯示拒絕 `write_file` / shell，或結果檔沒產生 | 不要直接下結論。改用 Windows 工作目錄 `C:\Users\chien\_3AI_WorkSpace` + Windows `.cmd` wrapper：Claude 加 `--allowedTools Bash Write Edit`，Codex 加 `--sandbox workspace-write`，Gemini 加 `--approval-mode yolo`；最後讀回結果檔驗證。詳見 `references/windows-native-3ai-cli-disk-io.md` |
 | Phase 4 清理時機 | `__pycache__`、`.pytest_cache` 在 pytest 後才產生，來不及在 auto cleanup 前刪除 | build_runner.py 的 pytest 完成後，**立即**執行 cleanup（在 WSL chmod + rm 或用 cmd.exe rmdir）。不要等 Phase 5 才清，越早越好 |
 | Phase 5 報告過短 | Claude --print 模式對報告型 prompt 輸出極簡摘要 | Phase 5 改由 Hermes 自行撰寫 final_report.md，不依賴 Claude |
 | Codex 額度耗盡 | `rate limit` / `quota exceeded` | 🛑 **立即停止整個管線**，通知 Scott 哪個 CLI 額度耗盡 + 重置時間。等待 Scott 指示：等冷卻期結束後繼續，或先暫停。**嚴禁自動 fallback 到 Claude/Gemini** — Scott 的顧問團用 Opus 4.7，額度消耗快，需要保留 |
