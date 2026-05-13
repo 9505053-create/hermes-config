@@ -1,0 +1,249 @@
+=== OPENCLAW / 小蝦 STATE BACKUP MANIFEST ===
+Timestamp: 20260513-095016
+Backup path: /mnt/c/Users/chien/.openclaw/backups/state-snapshot-20260513-095016
+Scope: private local backup of OpenClaw core config/workspace/memory/agent state/diagnostics; browser profile and media excluded by default.
+Warning: raw/ may contain Telegram/OAuth/device tokens. Keep local/private; do not upload or share.
+
+--- Copied ---
+openclaw.json
+openclaw.json.last-good
+gateway-hidden.vbs
+workspace/
+memory/
+agents/
+telegram/
+devices/
+identity/
+tasks/
+searxng/
+logs/config-health.json
+
+--- Skipped / not present / intentionally excluded ---
+browser/ (not copied; files=321; bytes=65549948)
+media/ (not copied; files=2; bytes=107267)
+
+--- SQLite consistent backup attempts ---
+[
+  {
+    "source": "memory/main.sqlite",
+    "ok": false,
+    "error": "OperationalError('disk I/O error')"
+  },
+  {
+    "source": "tasks/runs.sqlite",
+    "ok": false,
+    "error": "OperationalError('disk I/O error')"
+  }
+]
+
+--- Files SHA256 ---
+f207494014be6e6edff86bcefa4d41285d4e4920a0a77ee3eb5aaa1dfaa5da39  diagnostics/channels_status_probe.txt  533 bytes
+bd8fa21275d6b02e44418ac9b3ab28777f0fe2c1da7bd1f5966d57b235e5057a  diagnostics/docker_searxng_inspect.json  10515 bytes
+7fc4bb189e9d3ca2d13db30de8930a9333a12792484d37c715ff3f58fa6849f6  diagnostics/docker_searxng_ps.txt  648 bytes
+bd6d0bdb6da4b00f0b932ce0ded00a6324bd01c6d74e719119abf17067680c42  diagnostics/gateway_status.txt  1055 bytes
+7ef03008ad98230c4f34b0bffdf7ddad5d518803f022ebb30377c191aa249f3a  diagnostics/models_status.txt  998 bytes
+10275c42fc0d32f2c0ef63a356c7d7691b0499ab4a7d8684c68ae2b5c67fe5ef  diagnostics/openclaw_version.txt  290 bytes
+a9ff59039d8e79d41d59fb34280ab626a92db71a5cf726d4b7379051126adaf0  diagnostics/scheduled_task.txt  1645 bytes
+3e01942dd37757eb7159089b4d07295f1414d9b463ba42b0f74232a991b596e1  diagnostics/scheduled_task.xml  1485 bytes
+b6358ca9bfb27f76bf870d74098edddc0f8c00d3d8dcdf0ab117cc5765726f4b  diagnostics/web_providers.json  2337 bytes
+9d25769e8627fd7770ae5ba98d35e95bca5c3236f07a8f138da86ad03bcbf825  raw/agents/main/agent/auth-profiles.json  2320 bytes
+f37970c39cb5dbe09bf097bac09d04fae35765bce43286471c3719e33b043f01  raw/agents/main/agent/auth-state.json  217 bytes
+aa7b5b967dc18b2d1647a990c87316b999b22fc2d5bd3005cd7b3edf753bb047  raw/agents/main/sessions/2d81e239-cf40-4598-8792-8c26ecac976a.jsonl.reset.2026-05-12T19-54-12.737Z  45818 bytes
+45c9b160424d4872515656db5bb3e1c550c8b1503622f164414b683817ed80a6  raw/agents/main/sessions/2d81e239-cf40-4598-8792-8c26ecac976a.trajectory-path.json  255 bytes
+833ce6217fdedd068f28de483898106af5fdeb8d199bda0a8d28e42dc0e94a2e  raw/agents/main/sessions/2d81e239-cf40-4598-8792-8c26ecac976a.trajectory.jsonl  216730 bytes
+b24c8722b281f4cb32d321cdb25efacc2939fdadea946655058eb977a7a6ae03  raw/agents/main/sessions/356c95ac-ec42-4234-9d56-46b6c2e091cc.jsonl  321898 bytes
+942f8d12d3309d221a0c67736c578efd383c87fde0b22c861fc743ccfa748045  raw/agents/main/sessions/356c95ac-ec42-4234-9d56-46b6c2e091cc.trajectory-path.json  255 bytes
+93763a2af7ce0a7533e9a28e0da9a030acedbe842b46b3e2d42375e31034c0ee  raw/agents/main/sessions/356c95ac-ec42-4234-9d56-46b6c2e091cc.trajectory.jsonl  6256132 bytes
+e151b29ffeb7ea900a7d7f2d17f671f116aac5d3387558aaf2fc027164039d44  raw/agents/main/sessions/754af4fc-06ad-4973-9cdc-af7f937a6192.jsonl.reset.2026-05-12T22-59-27.360Z  93665 bytes
+1119cde799c0cbe9c66264bb0270328061f8b03188de7a3ca699e89d4d95165b  raw/agents/main/sessions/754af4fc-06ad-4973-9cdc-af7f937a6192.trajectory-path.json  255 bytes
+c2977cced89fb77a838deab31c160934b701819b00dc55dab982fc624022aed7  raw/agents/main/sessions/754af4fc-06ad-4973-9cdc-af7f937a6192.trajectory.jsonl  237401 bytes
+a6bc5a140e226ff8abe988cd728efde553d7915396c0f234ff9c51d9e7808f24  raw/agents/main/sessions/7c657088-418e-4936-8475-57a8043afa8e.jsonl.reset.2026-05-12T19-45-37.671Z  78080 bytes
+c3f5724b7aff79626d8cc2e0acfd5218daffc3da8bd8439c8f862a88dfedbccd  raw/agents/main/sessions/7c657088-418e-4936-8475-57a8043afa8e.trajectory-path.json  255 bytes
+d885dd1c9942d59f5ac63b223c20902505e862192e5650eb9c57141a3eb9f8c4  raw/agents/main/sessions/7c657088-418e-4936-8475-57a8043afa8e.trajectory.jsonl  2437889 bytes
+1b3f3a6e82f28ad221d2d03fa8cdb4182f12be3b1fa5c3cd6f730b032994a42b  raw/agents/main/sessions/sessions.json  13617 bytes
+f7a75dca6eba0cbd00b4575b36ab17a68329984b729c84419bfc3a71b0531e14  raw/agents/main/sessions/sessions.json.telegram-sent-messages.json  54 bytes
+933624ef4a6f8417474f5c89564f7f14fd486857c2dc523d6cfbc222965fcfbe  raw/agents/main/sessions_backup_20260512_150132/24862e15-f986-4227-9991-ce26dee9b1c7.jsonl  1279 bytes
+71fdda587bee7ece06884248584848f044257daead48877c6446b98c322c36d5  raw/agents/main/sessions_backup_20260512_150132/sessions.json  3633 bytes
+39d369cfaeba838341e7f5a6658cd7211f85a685c5ba568103c0ec096a0c97ff  raw/devices/paired.json  1913 bytes
+44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a  raw/devices/pending.json  2 bytes
+f4fbfc1ecc14295bf8517f5cc173b39e9b00236e0bb9899a55054dbe82633127  raw/gateway-hidden.vbs  116 bytes
+ffeede3ebf8dee162eea3619d7a6c9de1a5d71ca64b20d22524330dc802cae0f  raw/identity/device-auth.json  318 bytes
+349b504a5f8a79add75a838aafeaf5a16e5b4f6726a7ca8785b6f42cb4c6ec7f  raw/identity/device.json  416 bytes
+35950ce5cc7f3da330f0e05e862c9160acbd0705fed82ef8a8275ec634201af6  raw/logs/config-health.json  1066 bytes
+6fcb0b6370c28911ba312fb010359da06b1df32d23eeeb3d9d1aa4e489c7f22b  raw/memory/main.sqlite  94208 bytes
+fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb  raw/memory/main.sqlite-shm  32768 bytes
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  raw/memory/main.sqlite-wal  0 bytes
+c70cc253bfba5444204765087d1ff239d1ae260ff32fee4dce351b7f3783ffcc  raw/openclaw.json  4251 bytes
+c70cc253bfba5444204765087d1ff239d1ae260ff32fee4dce351b7f3783ffcc  raw/openclaw.json.last-good  4251 bytes
+007e1b68210790637a0a4d18014653b96b51fcdc0cdee77bab5e3e6992e20f6a  raw/searxng/settings.yml  420 bytes
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  raw/sqlite-consistent/memory/main.sqlite  0 bytes
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  raw/sqlite-consistent/tasks/runs.sqlite  0 bytes
+586aff6b897f6e6c9bfce1df1b993ad52d3deeca262648f8ddbf50389156c1ff  raw/tasks/runs.sqlite  53248 bytes
+1599ab114e60ea216fff1d681d419023945d3014e617ce209a30838d73f6890b  raw/tasks/runs.sqlite-shm  32768 bytes
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  raw/tasks/runs.sqlite-wal  0 bytes
+d2a6da250028daaeb2f791e9569c3b7d634d8303d6b4865359a985564fa2c25e  raw/telegram/update-offset-default.json  72 bytes
+f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10  raw/workspace/.git/HEAD  23 bytes
+05becdb83bb897f6103c8d91439e2e9092144edf5b3955a746fce4975c12bfdc  raw/workspace/.git/config  130 bytes
+85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee  raw/workspace/.git/description  73 bytes
+0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7  raw/workspace/.git/hooks/applypatch-msg.sample  478 bytes
+1f74d5e9292979b573ebd59741d46cb93ff391acdd083d340b94370753d92437  raw/workspace/.git/hooks/commit-msg.sample  896 bytes
+e0549964e93897b519bd8e333c037e51fff0f88ba13e086a331592bf801fa1d0  raw/workspace/.git/hooks/fsmonitor-watchman.sample  4726 bytes
+81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5  raw/workspace/.git/hooks/post-update.sample  189 bytes
+e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475  raw/workspace/.git/hooks/pre-applypatch.sample  424 bytes
+57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b  raw/workspace/.git/hooks/pre-commit.sample  1649 bytes
+d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53  raw/workspace/.git/hooks/pre-merge-commit.sample  416 bytes
+ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a  raw/workspace/.git/hooks/pre-push.sample  1374 bytes
+4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3  raw/workspace/.git/hooks/pre-rebase.sample  4898 bytes
+a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989  raw/workspace/.git/hooks/pre-receive.sample  544 bytes
+e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619  raw/workspace/.git/hooks/prepare-commit-msg.sample  1492 bytes
+a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f  raw/workspace/.git/hooks/push-to-checkout.sample  2783 bytes
+44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92  raw/workspace/.git/hooks/sendemail-validate.sample  2308 bytes
+8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106  raw/workspace/.git/hooks/update.sample  3650 bytes
+6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1  raw/workspace/.git/info/exclude  240 bytes
+fde5ca95404613b49a24b760086d43197cdd46beda9cf886ffc9b8eb832e5a23  raw/workspace/.openclaw/workspace-state.json  120 bytes
+0b4037be76bfb9b8486b2dd381a5fb672ed7d9d79e8c1ee2aba9e28f96643877  raw/workspace/AGENTS.md  10610 bytes
+248159beea839df84c7cb13aeebf85162bc784e94d5bd67cc3f1fe1c2bc96423  raw/workspace/BASIC_OPS_GUARDRAILS.md  3829 bytes
+5a840ad5adc7bb6140b955bfb7a9fa2f47365e1cb7087ac9197831fbfef79888  raw/workspace/HEARTBEAT.md  226 bytes
+7a008369fe0ef86b5b56768b99830e2a796c5cc4695df7ef70b13143ee2a1b0f  raw/workspace/IDENTITY.md  665 bytes
+fdaa4d18497e917b5f79cb32db62431ddf2cc78117e3a163ad0998d81d181212  raw/workspace/MEMORY.md  3627 bytes
+a337dd2e04b01e32ddf682e19ad71709cf411c3e0af47ff79111cd915bb2d027  raw/workspace/SOUL.md  1918 bytes
+8823b1bc40072f19551d6593bb229be7eda7d76a3823b2770400861c848f2e52  raw/workspace/TOOLS.md  2248 bytes
+f0ce4f0bae2bb416ac94ccbb540577b6a68cd00b9e55b4b47b365554d662098d  raw/workspace/USER.md  1935 bytes
+a76167c62655abc83194722fcae5391b086485205e24a1702941b871e3ee5ce9  raw/workspace/hermes-import/HERMES_KNOWLEDGE_PACK.md  1951 bytes
+a6b276fd66831a4cb5cd2b10156382040f6667b5fedecb5488824b472d8362a4  raw/workspace/hermes-import/README.md  121 bytes
+39c5df3a5e9037e59640fdc2fc63bb2c27391873b0285087091a51d1d618ce49  raw/workspace/hermes-import/SKILLS_INDEX.md  28349 bytes
+73d50267d18dad0e98c9f81df54632cdf20e1dd66de361ad8b7f1fd6ebd531ab  raw/workspace/hermes-import/skills/3ai-commander/SKILL.md  10141 bytes
+94f6ba2a5f78f1e89e7c7242e867c0849430c8956e0affa78f42ce7d3231a191  raw/workspace/hermes-import/skills/3ai-pipeline/SKILL.md  7380 bytes
+c652e01e47938b8ac21c97873e0a14f5f3a773b554bd10737fbfdcc5e5c28d23  raw/workspace/hermes-import/skills/apple/apple-notes/SKILL.md  2169 bytes
+7ed9206a4df2739d41818a17de1b5ff79e7b24cdb5de9c2e74247c8835bcb515  raw/workspace/hermes-import/skills/apple/apple-reminders/SKILL.md  2530 bytes
+19ec56e3b7f9f0be13c26d99948ed5684d8fb1f9c478da078c19356b5df63f57  raw/workspace/hermes-import/skills/apple/findmy/SKILL.md  3709 bytes
+bc68b1648e301409bc25b1084ec26766213ca9f3c1b2fd3d3d6ebe3dbde9e967  raw/workspace/hermes-import/skills/apple/imessage/SKILL.md  2442 bytes
+08b4bb4647d983d1c56994c175829e8e4d4189a0bdffd44ff9db57c78451c90a  raw/workspace/hermes-import/skills/apple/macos-computer-use/SKILL.md  7309 bytes
+bb93c80180eed9952239f3de4b0b669b540bad87d2d0c6a148ffb3f77ea0c9e6  raw/workspace/hermes-import/skills/autonomous-ai-agents/3ai-code-builder/SKILL.md  43414 bytes
+606430ec1dc6dd4069b438c7ffcb34cb167717a06c584f6a69760f80cf42409a  raw/workspace/hermes-import/skills/autonomous-ai-agents/3ai-debate-workshop/SKILL.md  5065 bytes
+1baadd46084b677fa3de5a31a191735eed1a5b1f8c03aa5ce6ab82ce4b9e8b11  raw/workspace/hermes-import/skills/autonomous-ai-agents/3ai-debate-workshop-v2/SKILL.md  14106 bytes
+7ea179aaca20259f4d78b52a29739c7e45e62c6c40d59749da67fff891e32808  raw/workspace/hermes-import/skills/autonomous-ai-agents/3ai-windows-mode-disk-io/SKILL.md  4248 bytes
+071b987d3157f713245bc88725fdd216c26b3b32d0bfc95ff6dd0740219cfa58  raw/workspace/hermes-import/skills/autonomous-ai-agents/3ai-workspace-review/SKILL.md  2631 bytes
+e1c78bd3907fc37059b057d2c2a6388a30749bc066016698c6a578bf28a95262  raw/workspace/hermes-import/skills/autonomous-ai-agents/agent-external-brain-optimization/SKILL.md  5954 bytes
+22e4e50f42f03f908eb2ba7e30c9cd70bef2c6cda482e3b23354471d4d64599e  raw/workspace/hermes-import/skills/autonomous-ai-agents/claude-code/SKILL.md  35422 bytes
+aeb130c6ff56388578630f035aac3c3b4f9c2eda1886c9c5766755db5ee34771  raw/workspace/hermes-import/skills/autonomous-ai-agents/codex/SKILL.md  7036 bytes
+4b0c1e062341e5b72d0dbb5f9908a4ff55cb550881244fdc00333809f3ba6191  raw/workspace/hermes-import/skills/autonomous-ai-agents/gemini-cli/SKILL.md  9725 bytes
+c468583eab6dbe5476e3756d29bb0e8d7746f6340395084c90d0e2ca2e3da669  raw/workspace/hermes-import/skills/autonomous-ai-agents/hermes-agent/SKILL.md  35392 bytes
+5db85d4168a11e1d6f2c00f8592b09aacd984d586cb8819b2e7ae03868ce0ede  raw/workspace/hermes-import/skills/autonomous-ai-agents/hermes-workspace/SKILL.md  5754 bytes
+8966103f7645bbb50bb1d6fbaaf925cde59005f2ca0a61fb7eb89ca4bd5c03cb  raw/workspace/hermes-import/skills/autonomous-ai-agents/openclaw-windows-native/SKILL.md  7145 bytes
+afb3ea1f1b4300705f4a44f41ef2bb6f36c45e474b677dcb3c0aa4e6b3740595  raw/workspace/hermes-import/skills/autonomous-ai-agents/opencode/SKILL.md  7259 bytes
+433c5744229cc5dd26befebfc5e26a46ad00e3d62a0d3ad9eaf0e4e68ef1d85a  raw/workspace/hermes-import/skills/autonomous-ai-agents/workspace-structure/SKILL.md  3146 bytes
+89b4f9261ba3767db711f9046ba091a5e69a5f4777ec7ea0cdfbcb2f63850db8  raw/workspace/hermes-import/skills/code-review-implementation/SKILL.md  9038 bytes
+aee38272b35d268bffba704e16ed232594513ad058733fe11182c8552a2e2858  raw/workspace/hermes-import/skills/code-review-pipeline/SKILL.md  11972 bytes
+0e7e2736aafe052e409c2ad27863d51ef3007c116711e584033787ccb5d99d3f  raw/workspace/hermes-import/skills/creative/architecture-diagram/SKILL.md  5830 bytes
+b69fdd300045a3e68b4886c5c5c714f904c9277ac40b2da371bf9e156fd9fa88  raw/workspace/hermes-import/skills/creative/ascii-art/SKILL.md  10556 bytes
+1d4f84e0eacc0d8adfaee62e0f2ab947dd79302ebbf55d5cd07d94a92c92cb95  raw/workspace/hermes-import/skills/creative/ascii-video/SKILL.md  14864 bytes
+39daa86a4c9737a51c2734455a4b27f3fd35eb80ae2a70820093d4354a1e2de2  raw/workspace/hermes-import/skills/creative/baoyu-comic/SKILL.md  14621 bytes
+89e25da6d8ea1cac79b18d9e6c4c3b8d7a522df2eef559f151f19c6ce5b2a002  raw/workspace/hermes-import/skills/creative/baoyu-infographic/SKILL.md  10434 bytes
+4c24fb9579a06f165205b212105f7eb906cada8cce1290319d677195da2d45a7  raw/workspace/hermes-import/skills/creative/claude-design/SKILL.md  19859 bytes
+76166277bad5e880679e9e787afeeb8044bbb6fe1942946b0ff462d387534a62  raw/workspace/hermes-import/skills/creative/comfyui/SKILL.md  23846 bytes
+a0768ddf7685e2a3a4a69e4008bb42d812773c3efa3bcc1e0c7c073bacbdfda6  raw/workspace/hermes-import/skills/creative/creative-ideation/SKILL.md  6318 bytes
+38ed14bc712a413fdd2514ea9acf6864ffb64fcbaffe6b5cc608021a75ff89fa  raw/workspace/hermes-import/skills/creative/design-md/SKILL.md  7023 bytes
+45c9537c6259ccec05febb264a18b746e1f2a0f46a687e7551e4e40231d77450  raw/workspace/hermes-import/skills/creative/excalidraw/SKILL.md  7298 bytes
+4f2eece5122e8296e65930225d744f4fbaf50747e91031c1e17c5ea273911c35  raw/workspace/hermes-import/skills/creative/humanizer/SKILL.md  30025 bytes
+3459a6af999f0c9bfd61eb867836c8de90b33253493eb1b6aa4118d82fd320f4  raw/workspace/hermes-import/skills/creative/manim-video/SKILL.md  12023 bytes
+6a9722e2633ecdb3736e304f56c646258c5e777fd2c15a59c0d2b3ffa91b665a  raw/workspace/hermes-import/skills/creative/p5js/SKILL.md  27494 bytes
+01f351726675bb5ec258ca891bcd03ad6dbb51d4c16fe8e4ed25621ec2f1de04  raw/workspace/hermes-import/skills/creative/pixel-art/SKILL.md  7581 bytes
+efcef36d7686f406ab729bf62af23f5aa7bf84d94c754235445fae9344dd75f0  raw/workspace/hermes-import/skills/creative/popular-web-designs/SKILL.md  9723 bytes
+532570c95d1a0bf671a5565fa3c2a6131d3579f4378dd852012b39335a7668e3  raw/workspace/hermes-import/skills/creative/pretext/SKILL.md  14168 bytes
+c643ff8657341b39284dbe1c70442b4ac746f5702d8457759376d4165d6879e5  raw/workspace/hermes-import/skills/creative/sketch/SKILL.md  9304 bytes
+093dfa88e5b3596a35463a516733d014c202d14b49643724dea65e9c09c970b1  raw/workspace/hermes-import/skills/creative/songwriting-and-ai-music/SKILL.md  10206 bytes
+70a4217786c49122b76f2247fe63b18a61f4a0feaf18f4a4b5d176f2125b3641  raw/workspace/hermes-import/skills/creative/touchdesigner-mcp/SKILL.md  15429 bytes
+d93c4b4f50e66c0c074d49e43e28bf5ab87531eaa48884d0083568db827f5869  raw/workspace/hermes-import/skills/data-science/jupyter-live-kernel/SKILL.md  5285 bytes
+845113666e9cc47beb63ece6a67bdaa519dc59cd29e4dfe2968fa6494b0580ba  raw/workspace/hermes-import/skills/devops/hermes-backup-disaster-recovery/SKILL.md  14860 bytes
+9f33cd15aa5e9558b2e673ace734232fc396da73ffc3b8bbf9fb3af5e5806111  raw/workspace/hermes-import/skills/devops/kanban-orchestrator/SKILL.md  13371 bytes
+aef52e7513b68e0fb2308cc0e3680e49dcb01badd9bc4a0ae428eed1958873fd  raw/workspace/hermes-import/skills/devops/kanban-worker/SKILL.md  10030 bytes
+b7efb629f0faf7da8c64f8701f3d65e1896b810e21cf4ebe9fb3bcc2d472be34  raw/workspace/hermes-import/skills/devops/linux-service-permission-inheritance/SKILL.md  5735 bytes
+268d8a8972cd5d211b75fe12a218fb842840d99994e2d409ac00004bfeef61c9  raw/workspace/hermes-import/skills/devops/n8n-automation/SKILL.md  29997 bytes
+d76a3cd962d33e45408f5c51dc5f50012f9dbf6a9f20537b936de4eb8b7d6fdd  raw/workspace/hermes-import/skills/devops/open-webui-docker-upgrade/SKILL.md  5093 bytes
+a45a2290e1cff69104344ce533e3cf3a0ff13cb9fb97579388ced06792b888cc  raw/workspace/hermes-import/skills/devops/pipeline-dry-run/SKILL.md  4229 bytes
+287625fa5b848cc4f62ef9dc15bfd3e1b0b6112038e02ad8164c39177efcfd7d  raw/workspace/hermes-import/skills/devops/production-resilience/SKILL.md  4600 bytes
+e7ed2a2259e2a5749a21501a66ce4107936569c14106058826bde25d8e3a6473  raw/workspace/hermes-import/skills/devops/safe-system-update/SKILL.md  5406 bytes
+c03fde67b5add6dbbbd532d67a716c50e6401fe19cd1c67f7f84bf4017e1846d  raw/workspace/hermes-import/skills/devops/webhook-subscriptions/SKILL.md  6817 bytes
+beb1a41fc5d8606ec92cde93096a7fc282e01553cd1e40d91c3439c02a46da64  raw/workspace/hermes-import/skills/dogfood/SKILL.md  7230 bytes
+02eec54e70ab37d8318202b16d6579bee9e8e1a30b3de504953fe693a58bf401  raw/workspace/hermes-import/skills/email/hermes-email/SKILL.md  2155 bytes
+4079adade6401b6d0edcfb41e1f3c43701308e194c9bcb6271758feb006168a2  raw/workspace/hermes-import/skills/email/himalaya/SKILL.md  7639 bytes
+858f64c0e67efb296f832e63fdd3aedd16e954a2da474619eeaafef3cafec821  raw/workspace/hermes-import/skills/gaming/minecraft-modpack-server/SKILL.md  6559 bytes
+fe8da8e6dc5599ef3f5a0d4ffb8cb03083227643e2ca9594b9e2be19e07e667c  raw/workspace/hermes-import/skills/gaming/pokemon-player/SKILL.md  8709 bytes
+87ddc0578d9bcbc80addb34ca045e4263689873ce02b1b73e3d57275ec6315c6  raw/workspace/hermes-import/skills/github/codebase-inspection/SKILL.md  3628 bytes
+80ca9a0ae200b433d4d3a6634f173927e64e79f9a9513381c50da63e39c6b5a5  raw/workspace/hermes-import/skills/github/github-auth/SKILL.md  10245 bytes
+3cd38e249223c801a91475b92dec39e2f0f33cb1624e321375a37f29ba6d74e6  raw/workspace/hermes-import/skills/github/github-code-review/SKILL.md  13565 bytes
+31b932cb6c16e64ae2ce7850bf51ade1047f033943edd7c137b6088b9678b106  raw/workspace/hermes-import/skills/github/github-issues/SKILL.md  9265 bytes
+f41117e2498e74d9423576f400f33b59fbbe6b5d40ec0f61f6f440fc269a165b  raw/workspace/hermes-import/skills/github/github-pr-workflow/SKILL.md  9985 bytes
+355bcef566988194a31bfe0d1099d2f31d6502d4e8f64b78edf7ae2f94618d92  raw/workspace/hermes-import/skills/github/github-repo-management/SKILL.md  13683 bytes
+1270313db9dae414f5799cc3c8fd4454305df64a622b8a5f6d13fa1d014ff5f6  raw/workspace/hermes-import/skills/google-drive-crud/SKILL.md  7458 bytes
+200f9cd8c8d7c6f4eaacc973e9534308f5b7877142b5fc637d10f2762f1ff146  raw/workspace/hermes-import/skills/hermes-integrations/SKILL.md  14029 bytes
+15f5d1ab6fdca0d36daf15eea664f67b22bd5904d7c061ef92b5b905c22dbc12  raw/workspace/hermes-import/skills/mcp/native-mcp/SKILL.md  12325 bytes
+d5a09ca6b4c2d7140834782597243ebb36efab2da016662339d5aba57e20cb9f  raw/workspace/hermes-import/skills/media/gif-search/SKILL.md  2701 bytes
+d6f8322ba9ab47564ff73dc0ee8d8158d78cea4de557e5b0abe5c6921a12fa57  raw/workspace/hermes-import/skills/media/heartmula/SKILL.md  6412 bytes
+d9d8d1394c630bd83329cd54cd8f18e0e3cd140debe31c3ccf5d9667f054de07  raw/workspace/hermes-import/skills/media/songsee/SKILL.md  2336 bytes
+84b4c86e75f082882188bff3591eca78d222c0b337ef421a762e1a36139b66eb  raw/workspace/hermes-import/skills/media/spotify/SKILL.md  6319 bytes
+f6e573f84f3f62dadaa0839491d1558071b6e6da9db9878e7c765fe1311c66be  raw/workspace/hermes-import/skills/media/youtube-content/SKILL.md  3218 bytes
+944eee5113923639dcbc71d898ec69db33b7015e883b43665fa80a2850ea805b  raw/workspace/hermes-import/skills/mlops/evaluation/lm-evaluation-harness/SKILL.md  12017 bytes
+7ac565d48cf4e6927ff465774d35cd9c1e1bf681e1813ed35dc56b1c36423029  raw/workspace/hermes-import/skills/mlops/evaluation/weights-and-biases/SKILL.md  12386 bytes
+10d5bdf26e08ce4728923d8321493d1d18f7413f3a621e64c8feae6263cfe54c  raw/workspace/hermes-import/skills/mlops/huggingface-hub/SKILL.md  3674 bytes
+9c1ef45f6197fbc08b643416d5f2c2e5469dbd45fb01e17cf48a0406ffacf8c2  raw/workspace/hermes-import/skills/mlops/inference/llama-cpp/SKILL.md  8880 bytes
+9fb394a0af2a9733bc7e88919580a49c4a17108d0012543a839138ced5aac8d1  raw/workspace/hermes-import/skills/mlops/inference/obliteratus/SKILL.md  15464 bytes
+ea510f6e52ed9f2bf83a4fbd6595b79010ae2fc9ae249d93087c11635be909e8  raw/workspace/hermes-import/skills/mlops/inference/outlines/SKILL.md  15974 bytes
+f227ed7af15ad3ad1aba8dcae24459f45d6079f6d4d8bb32273a701e98ab741e  raw/workspace/hermes-import/skills/mlops/inference/vllm/SKILL.md  9068 bytes
+eebe52632e3312a55a352d766828e7153b2ee23e2e67c0e4e874474e5c52198c  raw/workspace/hermes-import/skills/mlops/models/audiocraft/SKILL.md  16189 bytes
+86440d99e8ec3bd7f0a92640d62bf307915ec2a7154e45dd55a214d58ee6966d  raw/workspace/hermes-import/skills/mlops/models/segment-anything/SKILL.md  13372 bytes
+9b5f79222e2154d3d0756505e7dffda01f2d013740e9aac454c6b88e746209f7  raw/workspace/hermes-import/skills/mlops/research/dspy/SKILL.md  15218 bytes
+8094630cb6211ab7c193824305ea8bfdfeb603bb7d3b0d5890623b1dda736c9a  raw/workspace/hermes-import/skills/mlops/training/axolotl/SKILL.md  4820 bytes
+872579a123f24a70e40a5cf8bfc04efb1ce85553ba35e08cd9891071424a3781  raw/workspace/hermes-import/skills/mlops/training/trl-fine-tuning/SKILL.md  12201 bytes
+7f5fd813bb3ae3d4c8648ecce69ae5a135954f49cb3164d86f2c589cad6518fc  raw/workspace/hermes-import/skills/mlops/training/unsloth/SKILL.md  2329 bytes
+968705f5934707c351e4ffd32a23e5c972911d9c5792134a253ea5cc5e7a1fcd  raw/workspace/hermes-import/skills/note-taking/filesystem-context-recovery/SKILL.md  8597 bytes
+d2d080f82893dac86190e3885720e27acb6730cbea8bbb1dd7c25aaa53231127  raw/workspace/hermes-import/skills/note-taking/obsidian/SKILL.md  2919 bytes
+2f7723c57af54113133d0ce293a56e89c6c7031387daecee1b06c77a1036b41b  raw/workspace/hermes-import/skills/note-taking/supabase-memory-recovery/SKILL.md  10483 bytes
+8ed81442f9c3366c6a96ae863fd502fad0fb84678dc6b7f90db46d0572831d58  raw/workspace/hermes-import/skills/productivity/airtable/SKILL.md  11293 bytes
+4564776ee310affdde9075f9b0d3ccc532ab4e1eb4cb6c1555f341686e484c6f  raw/workspace/hermes-import/skills/productivity/google-workspace/SKILL.md  10731 bytes
+7a5e2249a3f44c8f4c35bc363b25eb78472436a125521a02789c5849b58fee72  raw/workspace/hermes-import/skills/productivity/jobs-to-be-done/SKILL.md  4553 bytes
+e7b6fbb8b55f84903759a4b01462938453d5ccc92318bdbdd637f6704a8726ff  raw/workspace/hermes-import/skills/productivity/linear/SKILL.md  14782 bytes
+8c961ecf662838e3ff287570d343db8b1587ca7a6d565ec53eeab13f89407b29  raw/workspace/hermes-import/skills/productivity/maps/SKILL.md  6726 bytes
+4243b329789c6d7fcea95749438228e5f8cbc0234cd44d2d72cd86f837bf1f35  raw/workspace/hermes-import/skills/productivity/nano-pdf/SKILL.md  1414 bytes
+5c32db34c3b8b3fe5e63ee9167000600e276dbfe235405e5ce88c99f78e74339  raw/workspace/hermes-import/skills/productivity/notion/SKILL.md  5229 bytes
+720a1f1a534167ef29b563199e76e3146b2d77b3455a772c6eae5696ef7a384a  raw/workspace/hermes-import/skills/productivity/ocr-and-documents/SKILL.md  5280 bytes
+bb2084f5da312eec50f8ab3b1cb0f6ad3a86f4933f521b273fdc4dd1d4f52ada  raw/workspace/hermes-import/skills/productivity/powerpoint/SKILL.md  9298 bytes
+472e8772146f571fadbe3ea27ff71f0be4b0946f8263a7e5419cfee818168591  raw/workspace/hermes-import/skills/productivity/teams-meeting-pipeline/SKILL.md  6867 bytes
+a4480c3d10d5cadebc71defba99aa7eb1ee4cfd152151ac3dc2092e13c47247b  raw/workspace/hermes-import/skills/red-teaming/godmode/SKILL.md  20059 bytes
+2a6073a1ad08823dbdf26be64440b54155298db38fdee52c7b0a5d1cd0cfb05d  raw/workspace/hermes-import/skills/research/arxiv/SKILL.md  10085 bytes
+b85be5a9b86b90287266dd142a0ae9740be926298fbcb772f56b8a4d6451bb12  raw/workspace/hermes-import/skills/research/blogwatcher/SKILL.md  5111 bytes
+eb13a2b8c654eeee8bae2d218a8131f53f199065f61c4ac29c18b8b79eb85869  raw/workspace/hermes-import/skills/research/llm-wiki/SKILL.md  20113 bytes
+becfa71e730b482c3f087c4de4071fd25f0feb475aec1293aee0b845c10fa190  raw/workspace/hermes-import/skills/research/polymarket/SKILL.md  2985 bytes
+cab2766a62bd3d687a297723beee48df8e76014d648766fa2432c3ff6892e691  raw/workspace/hermes-import/skills/research/research-paper-writing/SKILL.md  3108 bytes
+a99339a3a433979111e56f2b2a32c7a07a9fc9e040000800c9116196631a3a26  raw/workspace/hermes-import/skills/security/config-credential-sanitization/SKILL.md  3996 bytes
+410316e574dbdf4442de337bef97f9906cb1b4c376b298044a806bf8a9b200e8  raw/workspace/hermes-import/skills/security/external-skill-import/SKILL.md  7165 bytes
+b6b8c8a813deaf58f6de0ab09e78322fd96c735b89a789bccff971a760407042  raw/workspace/hermes-import/skills/security/weekly-security-audit/SKILL.md  19466 bytes
+550f94848d10ab82619db8fec240a4d2b792c33606fba5d391bf3a78bc1119e9  raw/workspace/hermes-import/skills/smart-home/openhue/SKILL.md  2713 bytes
+46a50c6f6d3fd233d5eaa8af829d5f78f81ad97472571fde7f233e069485a611  raw/workspace/hermes-import/skills/social-media/xurl/SKILL.md  13993 bytes
+4ebbcb70f419ec8ce1fd4b09dfc355f111613d47f53f449e5a975026cdf2e8d4  raw/workspace/hermes-import/skills/software-development/clean-code/SKILL.md  4334 bytes
+55d5811c0b2d872dc59d87432720a113150dbbce2872524a36b3860a8967095d  raw/workspace/hermes-import/skills/software-development/debugging-hermes-tui-commands/SKILL.md  7910 bytes
+38964e8ec99d37edf4bf403cf3ac8a860afa4387a05087ea2af3c0af149c603e  raw/workspace/hermes-import/skills/software-development/dont-reinvent-the-wheel/SKILL.md  2958 bytes
+c6efbf4a9ea299bc61b9053819175d22a39f40d80265f6adeca8b47755ed6abd  raw/workspace/hermes-import/skills/software-development/hermes-agent-skill-authoring/SKILL.md  7944 bytes
+b9fd8cfefe546db1d56ec3e70fbec696afacf4ebb0d024224c361f7ced78d859  raw/workspace/hermes-import/skills/software-development/literate-programming/SKILL.md  5259 bytes
+f2f72c0c9e67143effc8cb9871a242309813af72c61b8d62548ae275c86f2d08  raw/workspace/hermes-import/skills/software-development/node-inspect-debugger/SKILL.md  10929 bytes
+9a4de28156f74cc1e099422a71db6bcb7c256ec09c9dbd0bb88eaacb07534d05  raw/workspace/hermes-import/skills/software-development/plan/SKILL.md  2016 bytes
+b3160fae19b9a7f1a8f042ec09cc2c55377959ca5f8d49f393137cecb94d8607  raw/workspace/hermes-import/skills/software-development/post-debug-archive/SKILL.md  4375 bytes
+ce7e38367ea54fb86e32d41be2fb3682482b7e3d748316cb666b3d4e3ca51a40  raw/workspace/hermes-import/skills/software-development/python-debugpy/SKILL.md  13172 bytes
+d4de0f5a724d8a239df15f05bd9608665305ddcc4faad084a674d9d046f1fb2f  raw/workspace/hermes-import/skills/software-development/refactoring-patterns/SKILL.md  4193 bytes
+0de2bc3923c28bb2e6fdf7f60c7a745e7d7123d520e63c8b173fcbc421865f4a  raw/workspace/hermes-import/skills/software-development/requesting-code-review/SKILL.md  8483 bytes
+d301bdb6e90a96d0f214e5c8a0f38e1202e88da410fc88fd42eaea18817be770  raw/workspace/hermes-import/skills/software-development/spike/SKILL.md  8753 bytes
+3fe606f9b2f5127905e06812bbff2b8708a5b0e66a8330207ce3546792b33102  raw/workspace/hermes-import/skills/software-development/subagent-driven-development/SKILL.md  10742 bytes
+82c6af9218a8e99fa37dde60ba9ac90aa7c4e5c5ce694856f183bb2bc7865dcd  raw/workspace/hermes-import/skills/software-development/system-design/SKILL.md  4436 bytes
+c1d66056ce0b4ec839bb69358c39e73bdde000cf3a99d2f53ab3d7e116f089ef  raw/workspace/hermes-import/skills/software-development/systematic-debugging/SKILL.md  10480 bytes
+6896c8f090b4bf758ddfc92c50f383da73bd8672cc39359ecaec083ec58999eb  raw/workspace/hermes-import/skills/software-development/test-driven-development/SKILL.md  9573 bytes
+22a2dc5a18a877c28fb5e93ed02d88f9470ea512509b2d7f0b9ba78e55e85785  raw/workspace/hermes-import/skills/software-development/workflow-to-skill-capture/SKILL.md  5378 bytes
+b930d5746acc1b0c092ab8522df559723dcfd1dfcb5323a7da85c7c2dd872d0d  raw/workspace/hermes-import/skills/software-development/writing-plans/SKILL.md  7229 bytes
+52c6bce0fc5062026e53bd2aa044047028f5182af1b7a2364421560ffecba18f  raw/workspace/hermes-import/skills/token-memory-manager/SKILL.md  6881 bytes
+c381d5bd3904bd31c0ddb6980b2f85017d86887a99d3b8211466a3e77028d39b  raw/workspace/hermes-import/skills/window-compress/SKILL.md  1688 bytes
+239e4875f511124fab06e94ff21511fd8f857554c6ffd82dfb796ed275b4ff32  raw/workspace/hermes-import/skills/yuanbao/SKILL.md  3795 bytes
+ee79667ae8f97aec1e2f7f8f5efc1f942e5c610c7f6da514e459f204dedd1f4f  raw/workspace/memory/.dreams/events.jsonl  242 bytes
+ad2a3919ede2f2a3e2290cc3cec5c022ebd3b29822c9a1a994befb94d9caae09  raw/workspace/memory/.dreams/short-term-recall.json  1299 bytes
+672a497843debbdccd761cf472ce6b00f41142420d5ac8ebfaec6dc20bcbbeac  raw/workspace/memory/2026-05-13.md  432 bytes
+999e868624369cbc95021c1f6b5d4ecdda0f164a3f5f825148f83455a8320bbb  sanitized/openclaw.json.SANITIZED.json  3997 bytes
+999e868624369cbc95021c1f6b5d4ecdda0f164a3f5f825148f83455a8320bbb  sanitized/openclaw.json.last-good.SANITIZED.json  3997 bytes

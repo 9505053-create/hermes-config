@@ -1,0 +1,22 @@
+OpenClaw / 小蝦 backup verification
+Timestamp: 20260513-095016
+
+Archive:
+- Path: C:\Users\chien\.openclaw\backups\state-snapshot-20260513-095016.tar.gz
+- Size: about 4.0M
+- tar listing: ok
+- Final archive SHA256 is reported separately in the chat/final report because embedding the archive hash inside the archive would change the hash.
+
+Gateway diagnostics captured:
+- openclaw gateway status: exit_code=0, Runtime running, Connectivity probe ok, Listening 127.0.0.1:18789
+- openclaw channels status --probe: exit_code=0, Telegram running/connected/polling/works
+- openclaw infer web providers --json: searxng configured=true selected=true
+
+SQLite verification on copied raw DBs:
+- raw/memory/main.sqlite: PRAGMA integrity_check = ok, tables = 10
+- raw/tasks/runs.sqlite: PRAGMA integrity_check = ok, tables = 2
+
+Note:
+- The attempted sqlite3 online backup API against the live Windows DB returned disk I/O error from WSL, but the raw copied DB files were verified readable and integrity_check=ok.
+- raw/ may contain Telegram/OAuth/device tokens. Keep local/private; do not upload/share.
+- Browser profile and inbound media were not copied by default.
