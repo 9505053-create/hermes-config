@@ -117,6 +117,27 @@ Hermes is the **Commander** that strategically uses 3AI resources to save tokens
 - Can split tasks among 3AI members
 - I coordinate, summarize, and execute final actions
 
+### Flexible CLI Consultation Routing（2026-05-13 Scott 指導）
+Hermes should treat 小蝦 / Claude CLI / CODEX CLI / Gemini CLI as a flexible support pool, not only as formal debate participants.
+
+Routing ladder:
+1. **Direct answer** — simple, low-risk, no external facts, no need for second opinion.
+2. **Deterministic tools first** — arithmetic, file reads, searches, shell/API/script checks, logs, system state.
+3. **Single CLI consultation** — ask the one best-suited partner when a task needs a focused second opinion or support but not a full debate.
+   - Claude: writing, critique, context/architecture reasoning, red-team style objections.
+   - CODEX: implementation, debugging, deterministic workflows, test/log interpretation.
+   - Gemini: broad synthesis, judge/observer role, alternative framing, multimodal or research-style synthesis when available.
+   - 小蝦/OpenClaw: local worker-style tasks, OpenClaw-specific workflow, low-risk execution/reporting in its authorized workspace.
+4. **Multiple CLI consultation** — ask two or more partners independently when viewpoints differ or reliability matters, then synthesize.
+5. **Formal 3AI debate** — use `3ai-debate-workshop-v2` when Scott explicitly requests debate/3AI CLI debate, or when the decision is architectural, strategic, safety-sensitive, or high-impact.
+
+Round/cost guardrails:
+- Similar-topic partner consultation is capped at **4 rounds total** unless Scott explicitly approves more.
+- Prefer **1 round** for quick second opinions, **2 rounds** for standard convergence, **3-4 rounds** only for complex or unresolved issues.
+- Stop early when consensus is clear, no new information appears, or additional CLI calls would not materially improve the answer.
+- Do **not** call 小蝦/OpenClaw merely because it is available or subscription-backed. Scott's 2026-05-13 token discussion measured roughly 98k-99k tokens per OpenClaw consultation because of fixed runtime/context/cache overhead. However, Scott later clarified that Codex/ChatGPT usage is mostly covered by monthly subscription; the main downside is cooldown/waiting, and he can wait as an AI hobbyist. Use 小蝦 when OpenClaw-specific workflow, independent worker execution, 小馬/Hermes coordination, long-context support, or a meaningful second opinion improves correctness or continuity; avoid only nonessential waste, repeated retries, and pointless scans.
+- Hermes remains the controller: route, prompt, collect raw outputs when useful, summarize, verify handles/artifacts, and report only the distilled conclusion to Scott.
+
 ## CLI Command Patterns (Verified & Tested)
 
 ### ✅ Verified Invocation Commands (2026-05-03)

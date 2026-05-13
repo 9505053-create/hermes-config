@@ -13,6 +13,10 @@ metadata:
 
 # Hermes Agent
 
+## Scott-facing identity note
+
+Scott named this Hermes instance **「小馬」** because it is short to type and loosely echoes the English sound of Hermes. In Scott-facing Traditional Chinese conversations, accept and use 小馬 as Hermes' nickname naturally. This is a communication identity preference, not a change to CLI commands, package names, or technical docs.
+
 Hermes Agent is an open-source AI agent framework by Nous Research that runs in your terminal, messaging platforms, and IDEs. It belongs to the same category as Claude Code (Anthropic), Codex (OpenAI), and OpenClaw — autonomous coding and task-execution agents that use tool calling to interact with your system. Hermes works with any LLM provider (OpenRouter, Anthropic, OpenAI, DeepSeek, local models, and 15+ others) and runs on Linux, macOS, and WSL.
 
 What makes Hermes different:
@@ -149,6 +153,18 @@ hermes gateway setup        Configure platforms
 ```
 
 Supported platforms: Telegram, Discord, Slack, WhatsApp, Signal, Email, SMS, Matrix, Mattermost, Home Assistant, DingTalk, Feishu, WeCom, BlueBubbles (iMessage), Weixin (WeChat), API Server, Webhooks. Open WebUI connects via the API Server adapter.
+
+### Open WebUI → Hermes API Server
+
+When configuring Open WebUI as a frontend for Hermes:
+1. Confirm the Hermes API Server/gateway is running and note its port (Scott's known setup used `8642`).
+2. In Open WebUI Admin Panel → Settings → Connections, add an OpenAI-compatible connection.
+3. For Open WebUI running in Docker on the same Windows/WSL host, set Base URL to `http://host.docker.internal:<port>/v1` (example: `http://host.docker.internal:8642/v1`); do **not** use `localhost` from inside the container.
+4. Use the Hermes API Server key from `~/.hermes/.env` (typically `API_SERVER_KEY`) as the API key.
+5. Restrict/confirm the model list includes `hermes-agent`.
+6. Verify from Open WebUI by selecting `hermes-agent` and sending a deterministic test such as: `只回覆 OK，測試 Open WebUI 是否已接上 Hermes API Server。` Expected response: `OK`.
+
+**Important URL distinction:** `host.docker.internal:<port>` is for the Open WebUI Docker container to call the Windows/WSL host. Scott should not type that URL in the Windows browser address bar. For the human-facing web UI, open `http://localhost:3000/` (or `http://127.0.0.1:3000/`). To sanity-check the Hermes API from Windows browser/PowerShell, use `http://localhost:<port>/health`; `/v1` is an API prefix, not a browsable web page, and model/chat endpoints require the API key.
 
 Platform docs: https://hermes-agent.nousresearch.com/docs/user-guide/messaging/
 
@@ -521,6 +537,10 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 
 ## Troubleshooting
 
+### Retrospective skill conversion audits
+
+When Scott asks whether older web research or discussion items were actually converted into reusable skills, follow the checklist in `references/skill-conversion-audit-pattern.md`: scan sessions, inventory skills, cross-check memory/Supabase when available, and report completed/pending/superseded items without drifting into unrelated setup status.
+
 ### Voice not working
 1. Check `stt.enabled: true` in config.yaml
 2. Verify provider: `pip install faster-whisper` or set API key
@@ -553,6 +573,17 @@ Scott 的 API 預算有明確優先級，**嚴禁違反**：
 - OpenRouter API Key 是 Scott 自費，僅在真正緊急或 GPT-5.5 完全不可用時調用
 - 「今天沒急迫到要花 API Key」→ 等中午冷卻，用 GPT-5.5 繼續
 - 任何自動 fallback 到 OpenRouter 的行為都必須先通知 Scott
+
+### Dashboard remote access safety
+
+Hermes Dashboard is a management UI for `config.yaml`, API keys, and sessions. The code refuses non-localhost binds unless `--insecure` is passed because it lacks robust authentication for hostile networks. Do **not** expose it directly as `http://<ddns>:9119` via router port-forward. Safe patterns:
+1. Keep Dashboard bound to `127.0.0.1:9119` and access through Tailscale/WireGuard/VPN.
+2. Put it behind a reverse proxy with HTTPS plus strong authentication (Cloudflare Access, QNAP reverse proxy with auth, or Nginx/Caddy Basic Auth) and only then bind/proxy internally.
+3. For simple remote chat, expose Open WebUI instead of Dashboard; Open WebUI has user accounts and is less sensitive than the Dashboard.
+
+If debugging DDNS access, first verify DNS resolves to the current public IP, then check router/NAT port-forwarding and Windows/WSL port reachability. Never switch Dashboard to `--host 0.0.0.0 --insecure` without an external auth layer.
+
+**WSL2 LAN-only access pattern:** If Scott explicitly wants home-LAN access such as `http://192.168.1.88:9119/` but not public DDNS access, bind the Dashboard inside WSL with `--host 0.0.0.0 --port 9119 --tui --insecure`, then add a Windows `netsh interface portproxy` from the Windows LAN IP to the current WSL IP and a Windows Firewall rule limited to `LocalAddress=<Windows LAN IP>`, `LocalPort=9119`, and an explicit home subnet such as `RemoteAddress=192.168.1.0/24`. Prefer `Profile=Any` plus explicit subnet because Windows sometimes classifies the home network as `Public`, causing `Profile=Private` rules to work only for localhost self-tests but fail from another LAN PC. Keep a timestamped backup of `/etc/systemd/system/hermes-dashboard.service`. Note WSL NAT IPs can change after reboot; if LAN access breaks, update the portproxy connect address to the new `hostname -I` value.
 
 ### Changes not taking effect
 - **Tools/skills:** `/reset` starts a new session with updated toolset
@@ -626,6 +657,15 @@ If `auxiliary` tasks (vision, compression, session_search) fail silently, the `a
 hermes config set auxiliary.vision.provider <your_provider>
 hermes config set auxiliary.vision.model <model_name>
 ```
+
+**Codex + Gemini compression 400:** If logs or Telegram show `Compression summary failed: Error code: 400 ... 'google/gemini-3-flash-preview' model is not supported when using Codex with a ChatGPT account`, the auxiliary compression model/provider are mismatched. Do not route an OpenRouter-style Gemini slug through `openai-codex`. For Scott's preferred budget hierarchy, pin compression to Codex/GPT-5.5 rather than OpenRouter:
+```bash
+# Backup config first, then set:
+hermes config set auxiliary.compression.provider openai-codex
+hermes config set auxiliary.compression.model gpt-5.5
+hermes config set auxiliary.compression.timeout 300
+```
+Restart the gateway or start a new session for the running process to pick up the config. If using OpenRouter intentionally, set `auxiliary.compression.provider openrouter` explicitly and tell Scott first because OpenRouter uses paid API balance.
 
 ---
 

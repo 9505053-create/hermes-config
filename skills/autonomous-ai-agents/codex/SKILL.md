@@ -77,6 +77,43 @@ codex --version
 - Codex v0.121.0 has model compatibility issues
 - Update to v0.128.0+ for gpt-5.5 support: `npm update -g codex`
 
+## Quota / Rate Limit Inspection
+
+Codex CLI does not expose a dedicated `codex usage` command in v0.128.0. To check current quota for Scott's Windows ChatGPT-login setup:
+
+1. Verify auth/model without exposing secrets:
+   ```bash
+   /mnt/c/Windows/System32/cmd.exe /c "codex.cmd login status && codex.cmd --version"
+   /mnt/c/Windows/System32/cmd.exe /c "type C:\\Users\\chien\\.codex\\config.toml"
+   ```
+   Redact any credentials if shown; normal config currently contains model/provider/project settings only.
+2. Run a tiny prompt to force Codex to refresh rate-limit metadata (this consumes a small amount of quota):
+   ```bash
+   # Write prompt file via write_file, then:
+   /mnt/c/Windows/System32/cmd.exe /c "cd /d C:\\Users\\chien\\_3AI_WorkSpace && type codex_quota_ping_prompt.txt | codex.cmd exec --skip-git-repo-check --sandbox read-only -"
+   ```
+   Avoid inline quoted prompts through `cmd.exe` because spaces/Chinese can be split incorrectly; pipe from a file instead.
+3. Parse the newest session JSONL under `C:\Users\chien\.codex\sessions\YYYY\MM\DD\rollout-*.jsonl` for `event_msg` payloads with `type=token_count` and `rate_limits`:
+   ```python
+   import json, pathlib, datetime
+   base = pathlib.Path('/mnt/c/Users/chien/.codex/sessions')
+   rows = []
+   for p in base.glob('20*/**/rollout-*.jsonl'):
+       for line in p.read_text(encoding='utf-8', errors='ignore').splitlines():
+           if '"rate_limits"' in line and '"token_count"' in line:
+               obj = json.loads(line)
+               rows.append((obj['timestamp'], str(p), obj['payload'].get('info'), obj['payload']['rate_limits']))
+   rows.sort(key=lambda x: x[0])
+   print(rows[-1])
+   ```
+4. Interpret fields:
+   - `plan_type`: account plan (e.g. `plus`).
+   - `primary.used_percent`: 5-hour Codex window consumption; `window_minutes=300`.
+   - `secondary.used_percent`: weekly Codex window consumption; `window_minutes=10080`.
+   - `resets_at`: Unix epoch reset time; convert with `datetime.fromtimestamp(...).astimezone()`.
+   - `rate_limit_reached_type`: null means not currently blocked.
+   - `credits`: usually null for ChatGPT plan.
+
 ## One-Shot Tasks
 
 ```

@@ -56,6 +56,9 @@ curl -s -X DELETE -H "X-N8N-API-KEY: $N8N_API_KEY" \
 | 簡單條件通知 | 需要上下文記憶的任務 |
 | 狀態檢查（health check） | 需要用戶互動的任務 |
 
+### OpenClaw / 小蝦 delegation boundary
+For one-off 小蝦 subtasks, prefer Hermes calling the Windows-native OpenClaw CLI directly from WSL, e.g. `cmd.exe /c "openclaw agent --message \"...\" --json --timeout 600"`, then Hermes verifies and summarizes the result. Use n8n only for scheduled/repetitive OpenClaw-related automation or health checks. Do not redesign the loopback-only OpenClaw Gateway exposure just so n8n can call it; if n8n must trigger OpenClaw, use an explicit host-side wrapper/bridge designed for that purpose and keep tokens/secrets out of workflow JSON.
+
 ## Active Workflows (21 total, all 🟢)
 | # | Name | Schedule | Category | Function |
 |---|------|----------|----------|----------|

@@ -63,12 +63,28 @@
     },
     "repeat": {
       "times": null,
-      "completed": 9
+      "completed": 10
     },
     "state": "scheduled",
     "skills": [
       "github-repo-management"
     ],
     "prompt_snippet": "執行 Hermes 設定備份腳本。\n\n請在終端機中執行：\nbash ~/.hermes/scripts/hermes-backup-sync.sh\n\n這個腳本會..."
+  },
+  {
+    "id": "e0ac82284964",
+    "name": "🦐 每日小蝦四地狀態備份",
+    "schedule": {
+      "kind": "cron",
+      "expr": "30 0 * * *",
+      "display": "30 0 * * *"
+    },
+    "repeat": {
+      "times": null,
+      "completed": 0
+    },
+    "state": "scheduled",
+    "skills": [],
+    "prompt_snippet": "..."
   }
 ]
