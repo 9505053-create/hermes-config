@@ -84,7 +84,17 @@ Transform task-specific details into reusable slots:
 
 Keep Scott-specific environment facts if they matter, such as WSL path translation or shared workspace paths.
 
-### Step 4: Add pitfalls
+### Step 4: Shape the skill with Skill Creator principles
+
+When adapting a skill-authoring guide such as `Skill Creator`, keep the useful design principles and discard marketplace-specific packaging:
+
+- **Concise by default**: the context window is shared; every paragraph must justify its token cost.
+- **Progressive disclosure**: keep only triggers, core workflow, pitfalls, and verification in `SKILL.md`; move long examples, API docs, variants, and background into `references/`.
+- **Right degree of freedom**: use text guidance for flexible tasks, pseudocode/configurable snippets for repeatable patterns, and scripts only for fragile deterministic steps.
+- **Skill as onboarding guide**: write only the procedural knowledge the agent would not reliably infer from general training.
+- **No clutter**: exclude process notes, raw chat history, unrelated setup logs, and user-facing documentation that does not help execution.
+
+### Step 5: Add pitfalls
 
 Every useful skill should say how it fails. Include:
 
@@ -95,7 +105,7 @@ Every useful skill should say how it fails. Include:
 - Safety red lines
 - Verification that catches hallucinated completion
 
-### Step 5: Add verification
+### Step 6: Add verification
 
 A skill is not complete until it says how to prove the task worked:
 
@@ -177,4 +187,7 @@ Do not implement background monitoring, auto-observation, or hidden session anal
 - [ ] Pitfalls included
 - [ ] Verification steps included
 - [ ] Skill content contains no secrets
+- [ ] Main `SKILL.md` is concise; long examples/details moved to `references/`
+- [ ] Instructions use the right freedom level: prose, pseudocode, or script based on task fragility
+- [ ] Skill contains no raw chat transcript, unrelated setup notes, or clutter
 - [ ] Skill was read back or listed after creation

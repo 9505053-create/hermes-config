@@ -173,6 +173,12 @@ Save the report to `{output_dir}/report.md`.
 | `browser_vision` | Screenshot + AI analysis; use `annotate=true` for element labels |
 | `browser_console` | Get JS console output and errors |
 
+## Optional external browser automation candidates
+
+Hermes' built-in browser toolset is the default for this skill. For repeated UI verification or coding-agent browser loops where token-efficient accessibility snapshots matter, Hermes now has a local `agent-browser` skill and WSL user-scope CLI install (`agent-browser@0.27.0`). It uses `open` -> `snapshot -i --json` -> ref-based interactions like `click @e2` / `fill @e3`. Load the `agent-browser` skill before using it.
+
+Do not install or enable additional external browser automation tools from marketplace instructions without first vetting them via `external-skill-import`, especially for cookies/session state, profile reuse, `eval`, uploads/downloads, and domain/action guardrails.
+
 ## Tips
 
 - **Always check `browser_console()` after navigating and after significant interactions.** Silent JS errors are among the most valuable findings.

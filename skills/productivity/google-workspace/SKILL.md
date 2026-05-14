@@ -261,6 +261,19 @@ All commands return JSON. Parse with `jq` or read directly. Key fields:
 4. **Calendar times must include timezone** — always use ISO 8601 with offset (e.g., `2026-03-01T10:00:00-06:00`) or UTC (`Z`).
 5. **Respect rate limits** — avoid rapid-fire sequential API calls. Batch reads when possible.
 
+## Optional `gog` / `gogcli` Adoption Notes
+
+Scott asked about the OpenClaw marketplace skill `gog` / `gogcli` on 2026-05-14. Evaluation summary:
+
+- Upstream CLI: `openclaw/gogcli` / `steipete/gogcli`, MIT, active, script-friendly Google Workspace CLI.
+- It covers more surfaces than the current Hermes wrapper: Gmail, Calendar, Drive, Docs, Sheets, Slides, Forms, Apps Script, Contacts/People, Tasks, Classroom, Chat, Workspace admin/Groups, Keep, and encrypted backup.
+- It has agent-relevant safety features: `--json`, `--gmail-no-send`, runtime allow/deny command guards, and compiled safety-profile binaries such as readonly / agent-safe.
+- Raw OpenClaw skill verdict: `WARNING / ADAPT-ONLY`. Do not install it verbatim; it includes examples for sending mail, creating/updating events, clearing Sheets ranges, and requires OAuth credentials.
+- Hermes already has a valid Google Workspace OAuth setup in `~/.hermes/google_token.json`; use this existing skill first unless Scott specifically needs broader `gogcli` coverage.
+- If adopting `gogcli`, prefer a controlled install and, for agent exposure, a read-only or agent-safe safety-profile binary. Never paste/log Google OAuth tokens/client secrets. Ask for confirmation before any send/create/update/delete/upload/broad backup operation.
+
+Detailed review: `/mnt/c/Users/chien/_3AI_WorkSpace/active/20260514-gogcli-skill-evaluation.md`.
+
 ## Troubleshooting
 
 | Problem | Fix |

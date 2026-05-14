@@ -49,6 +49,7 @@ Do **not** use this to automatically install or execute external scripts. This i
 
 4. **Security-sensitive skills need stricter review**
    - Anything involving credentials, API keys, shell, file deletion, network scanning, browser automation, or background hooks requires manual review before use.
+   - For browser automation skills specifically, also consult `references/browser-automation-skill-vetting.md` before recommending install/import; this covers cookies/session state, real browser profiles, `eval`, downloads/uploads, domain allowlists, content boundaries, and OpenClaw/小蝦 adoption rules.
 
 ## Triage Workflow
 
@@ -203,8 +204,28 @@ Before importing, check for:
 - Hidden hooks that run after tool use
 - Credential harvesting disguised as setup
 - Payment/marketplace flows that could violate Scott's no-spend red line
+- `network` + `shell` permission combination, especially when paired with broad file reads
+- Typosquatting / homoglyph names near popular skills (e.g. `gihub`, `code-reveiw`, extra hyphens)
+- Skills that ask to modify agent memory/identity files (`MEMORY.md`, `USER.md`, `SOUL.md`, `IDENTITY.md`) without a clear safe reason
+- Setup instructions using `curl`, `wget`, `nc`, `bash -i`, unknown IPs, or unpinned remote scripts
+- Broad filesystem scope such as `/**/*`, `/etc/`, home-directory credential stores, browser cookies/sessions, or cloud credential folders (`~/.ssh`, `~/.aws`, `~/.config`)
 
 If any appear, mark the repo `do-not-import` unless there is a clear safe subset to adapt manually.
+
+### 2026-05 Skill Vetter / ToxicSkills Notes
+
+Scott asked about the OpenClaw `skill-vetter` / "Skills Vetter" idea after seeing a YouTube mention. Web review found:
+
+- `UseAI-pro/openclaw-skills-security/skills/skill-vetter/SKILL.md` is an instruction-only checklist skill; the inspected folder contained only `SKILL.md` and declared no shell/network/file-write permissions.
+- It is useful as a checklist but largely overlaps with this `external-skill-import` skill.
+- Snyk's ToxicSkills report claimed broad ecosystem risk: thousands of skills scanned, critical findings in a significant minority, and confirmed malicious skills often combining malicious code patterns with prompt injection.
+- OWASP AST01 frames malicious skills as a critical risk because they can abuse both executable code and natural-language instructions, including memory/identity poisoning.
+
+Recommendation from that review:
+
+- For Hermes: do **not** blindly install raw `skill-vetter`; merge the useful checks here instead.
+- For 小蝦/OpenClaw: worth adding as an instruction-only local skill or importing this Hermes workflow, but avoid one-command marketplace installs until the exact source is vetted.
+- Always produce a structured verdict: `SAFE / WARNING / DANGER / BLOCK`, with permission justifications and red flags.
 
 ## Verification Checklist
 

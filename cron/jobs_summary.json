@@ -63,7 +63,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 10
+      "completed": 11
     },
     "state": "scheduled",
     "skills": [
@@ -81,7 +81,55 @@
     },
     "repeat": {
       "times": null,
+      "completed": 1
+    },
+    "state": "scheduled",
+    "skills": [],
+    "prompt_snippet": "..."
+  },
+  {
+    "id": "a6f5a4721def",
+    "name": "🦐→🐴 小蝦到小馬檔案信箱橋接",
+    "schedule": {
+      "kind": "cron",
+      "expr": "* * * * *",
+      "display": "* * * * *"
+    },
+    "repeat": {
+      "times": null,
+      "completed": 970
+    },
+    "state": "scheduled",
+    "skills": [],
+    "prompt_snippet": "..."
+  },
+  {
+    "id": "a9f8fecf8079",
+    "name": "n8n Daily News Digest 1700 watchdog",
+    "schedule": {
+      "kind": "cron",
+      "expr": "20 17 * * *",
+      "display": "20 17 * * *"
+    },
+    "repeat": {
+      "times": null,
       "completed": 0
+    },
+    "state": "scheduled",
+    "skills": [],
+    "prompt_snippet": "..."
+  },
+  {
+    "id": "7ae1d3d1b200",
+    "name": "n8n DB backup integrity verifier",
+    "schedule": {
+      "kind": "cron",
+      "expr": "5 18 * * *",
+      "display": "5 18 * * *"
+    },
+    "repeat": {
+      "times": null,
+      "completed": 1
     },
     "state": "scheduled",
     "skills": [],
