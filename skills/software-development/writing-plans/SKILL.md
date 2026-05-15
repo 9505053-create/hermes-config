@@ -192,8 +192,21 @@ Check:
 - [ ] Commands are exact with expected output
 - [ ] No missing context
 - [ ] DRY, YAGNI, TDD principles applied
+- [ ] If adding controllers/layers, module import boundaries are explicit enough to avoid circular imports
+- [ ] If adding state-machine integration (memory recall, undo, mode switch), public APIs and per-state behavior are specified before implementation
+- [ ] Edge-case tests cover not only headline examples but also ordering, rollover, invalid input, and negative/reverse cases
 
-### Step 7: Save the Plan
+### Step 7: External Review and Blocker Handling
+
+When a plan is reviewed by 3AI/humans before implementation:
+- Treat any `BLOCKED` verdict as a planning gate failure, not as a warning.
+- Patch the plan documents first; do not start coding around unresolved planning blockers.
+- Create a delta re-review package that includes prior reviews, updated docs, and a concise list of changes made in response.
+- After re-review clears blockers, immediately fold small non-blocking clarifications into the plan (missing test cases, ambiguous API semantics, checkpoint gates).
+- When reviewers disagree between an ambitious/gold behavior and a lower-risk scoped behavior, default to the lower-risk behavior for the current PR unless Scott explicitly chooses ambition; record the richer behavior as a future enhancement/non-goal.
+- If a proposed seam would require broad API migration, prefer a narrow event-drain/public seam that preserves existing call contracts, then specify tests that lock the chosen contract.
+
+### Step 8: Save the Plan
 
 ```bash
 mkdir -p docs/plans
@@ -272,11 +285,23 @@ git commit -m "type: description"
 
 ## Execution Handoff
 
-After saving the plan, offer the execution approach:
+After saving the plan, be explicit about the state boundary:
 
-**"Plan complete and saved. Ready to execute using subagent-driven-development — I'll dispatch a fresh subagent per task with two-stage review (spec compliance then code quality). Shall I proceed?"**
+- **"Planning complete" means no production implementation has been done yet.**
+- **"Implementation complete" means code, tests, docs, verification, and push are done.**
+- Avoid ambiguous phrases like "ready for implementation" without saying whether you will start now or are waiting.
 
-When executing, use the `subagent-driven-development` skill:
+If Scott has already authorized the overall PR/workstream and there is no unresolved blocker, **do not stop at the handoff**. Continue into implementation immediately after planning and review clears. Only ask before implementation when the plan changes scope, touches a red-line action, or Scott explicitly requested a pause.
+
+Good status wording:
+
+**"PR4 planning is complete; PR4 implementation has not started yet. I am starting implementation now."**
+
+If a pause is required:
+
+**"Plan complete and saved. I am pausing before implementation because [specific blocker/approval need]."**
+
+When executing, use the `subagent-driven-development` skill when delegation is useful:
 - Fresh `delegate_task` per task with full context
 - Spec compliance review after each task
 - Code quality review after spec passes

@@ -56,7 +56,21 @@ REPO=$(echo "$OWNER_REPO" | cut -d/ -f2)
 
 ## 1. Cloning Repositories
 
-Cloning is pure `git` — works identically either way:
+Cloning is pure `git` — works identically either way.
+
+**Scott / 3AI workspace convention:** when the user asks to ignore a stale local copy and work from GitHub, clone fresh into the 3AI development workspace rather than reusing the stale path:
+
+```bash
+# WSL path for C:\Users\chien\_3AI_WorkSpace\projects\repo-name
+mkdir -p /mnt/c/Users/chien/_3AI_WorkSpace/projects
+git clone https://github.com/owner/repo-name.git /mnt/c/Users/chien/_3AI_WorkSpace/projects/repo-name
+cd /mnt/c/Users/chien/_3AI_WorkSpace/projects/repo-name
+git status --short --branch
+git remote -v
+git log --oneline --decorate -5
+```
+
+General clone forms:
 
 ```bash
 # Clone via HTTPS (works with credential helper or token-embedded URL)

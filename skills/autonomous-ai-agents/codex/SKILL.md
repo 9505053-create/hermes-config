@@ -21,6 +21,34 @@ Delegate coding tasks to [Codex](https://github.com/openai/codex) via the Hermes
 - **Must run inside a git repository** — Codex refuses to run outside one (use `--skip-git-repo-check` to bypass)
 - Use `pty=true` in terminal calls — Codex is an interactive terminal app
 
+### MINIPC / Windows Mode Verification Note
+
+On Scott's MINIPC, Hermes/WSL can call Windows-native Codex through `cmd.exe` and `codex.cmd`. A 2026-05-15 smoke test verified:
+
+```text
+C:\Users\chien\AppData\Roaming\npm\codex.cmd
+codex-cli 0.128.0
+model: gpt-5.5
+provider: openai
+sandbox: workspace-write
+```
+
+GPT-5.5 Pro probe (2026-05-15): Hermes tested Codex agent with `--model gpt-5.5-pro` from `C:\Users\chien\_3AI_WorkSpace\_agent\Codex`. Codex v0.128.0 accepted the CLI flag far enough to display `model: gpt-5.5-pro`, but the API rejected it for Scott's ChatGPT-authenticated setup:
+
+```text
+The 'gpt-5.5-pro' model is not supported when using Codex with a ChatGPT account.
+```
+
+Therefore, do not assume ChatGPT Pro UI access to GPT-5.5 Pro automatically carries into Codex agent. Scott preference (2026-05-15): use `gpt-5.5` by default for CODEX AGENT. GPT-5.5 is the practical default for engineering execution/verification; GPT-5.5 Pro may be slower, token-expensive, and is currently rejected through the ChatGPT-authenticated Codex CLI path.
+
+Use prompt-file piping for Chinese/path-heavy prompts, then read back produced files from disk:
+
+```bat
+cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace\<task> && type prompt.txt | codex.cmd exec --skip-git-repo-check --sandbox workspace-write"
+```
+
+Default `exec` one-shot invocation does not leave a persistent visible Windows desktop work window; it exits after stdout/stderr are captured. Visible UI may still appear for OAuth/device pairing or explicit GUI/browser tasks.
+
 ### WSL Cross-Platform Setup (Windows + WSL)
 
 If Codex is installed on Windows, call it from WSL via cmd.exe:
@@ -113,6 +141,10 @@ Codex CLI does not expose a dedicated `codex usage` command in v0.128.0. To chec
    - `resets_at`: Unix epoch reset time; convert with `datetime.fromtimestamp(...).astimezone()`.
    - `rate_limit_reached_type`: null means not currently blocked.
    - `credits`: usually null for ChatGPT plan.
+
+## Image Prompt / Art Direction Tasks
+
+When Scott asks to involve Codex in making an image, use Codex as the **art director / prompt engineer**: have it produce a high-quality image-generation prompt, then render with the configured image backend/tool and post the resulting file with `MEDIA:/absolute/path`. See `references/image-prompt-orchestration.md` for the proven workflow, fallback handling, and teaching-trace checklist.
 
 ## One-Shot Tasks
 

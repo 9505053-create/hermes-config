@@ -63,7 +63,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 11
+      "completed": 12
     },
     "state": "scheduled",
     "skills": [
@@ -81,7 +81,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 1
+      "completed": 2
     },
     "state": "scheduled",
     "skills": [],
@@ -97,7 +97,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 970
+      "completed": 2389
     },
     "state": "scheduled",
     "skills": [],
@@ -113,7 +113,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 0
+      "completed": 1
     },
     "state": "scheduled",
     "skills": [],
@@ -129,7 +129,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 1
+      "completed": 2
     },
     "state": "scheduled",
     "skills": [],

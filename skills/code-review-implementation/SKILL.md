@@ -76,6 +76,25 @@ After all fixes are implemented and pushed:
 - Prioritize issues mentioned by multiple reviewers
 - Document your reasoning when choosing one approach over another
 
+### Distinguish Source Blockers from Review-Package Hygiene
+When a reviewer reports `BLOCKED`, first classify whether it is a source-code blocker or a review artifact blocker.
+
+Review-package hygiene signals:
+- Missing files in the submitted package that exist in the real repo (e.g., `tests/conftest.py`).
+- Test failures caused by copied temp/cache artifacts (`pytest-cache-files-*`, `.pytest_cache`, locked files).
+- `git diff --check` cannot run because the package is not a git checkout.
+- Reviewer can still pass targeted tests or says source-level review found no functional blocker.
+
+Required response:
+1. Verify the actual repo with the exact gate commands.
+2. Inspect package vs. repo for missing/extra files.
+3. Rebuild the review package from `git ls-files` only.
+4. Re-run verification both in the repo and inside `package/files`.
+5. Request a targeted re-review with the previous blocker and fix clearly stated.
+6. Patch any real documentation drift uncovered by the hygiene review.
+
+For 3AI package details, see `3ai-commander/references/review-package-hygiene.md`.
+
 ### Consensus Table Technique (2026-05-08)
 When processing multi-reviewer feedback, build a **consensus table**:
 | 問題 | Reviewer A | Reviewer B | Reviewer C | 共識 |

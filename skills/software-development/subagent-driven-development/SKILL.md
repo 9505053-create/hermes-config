@@ -158,7 +158,7 @@ todo([{"id": "task-1", "content": "Create User model with email field", "status"
 
 ### 3. Final Review
 
-After ALL tasks are complete, dispatch a final integration reviewer:
+After ALL tasks are complete, dispatch a final integration reviewer. If the work has any user-facing UI, also dispatch or include a UI/UX/aesthetic reviewer using `ui-programming-aesthetics`; check hierarchy, spacing, typography, density, states, accessibility, consistency, and anti-slop before calling the feature release-ready.
 
 ```python
 delegate_task(
@@ -171,6 +171,21 @@ delegate_task(
     - Ready for merge?
     """,
     toolsets=['terminal', 'file']
+)
+```
+
+For UI-bearing work, add a focused reviewer prompt:
+
+```python
+delegate_task(
+    goal="Review the user-facing interface for UI/UX/aesthetic quality",
+    context="""
+    Review as a UI/UX/aesthetic reviewer, not only as a programmer.
+    Check hierarchy, spacing, typography, density, states, accessibility,
+    consistency with existing UI, platform fit, and AI-design slop.
+    Return PASS / PASS_WITH_WARNINGS / BLOCKED with concrete fixes.
+    """,
+    toolsets=['terminal', 'file', 'browser']
 )
 ```
 

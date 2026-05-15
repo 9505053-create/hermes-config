@@ -103,6 +103,30 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `ci`, `chore`, `perf`
 
 ## 3. Pushing and Creating a PR
 
+### Scott / 3AI staged hardening preference
+
+For PR follow-up hardening or small local fix branches, Scott prefers this sequence unless he explicitly asks for continuous pushes:
+
+1. Complete the hardening locally on a focused branch.
+2. Run the full local gate (`pytest`, compile/static checks, `git diff --check`, plus project-specific smoke checks).
+3. If applicable, get 3AI review and resolve blockers.
+4. Commit all modified and untracked files needed for release completeness.
+5. Push the branch to GitHub for version control.
+6. Do **not** automatically create a PR, merge to `main`, or start the next PR; present the PR URL/branch state and wait for Scott's decision.
+
+For larger multi-phase feature work (planning → implementation → review), add a pre-implementation checkpoint before writing production code:
+
+1. Commit the planning/spec package and create or update a development-history file (for example `docs/<feature>/DEVELOPMENT_HISTORY.md`).
+2. Run a baseline verification gate.
+3. Push the planning branch to GitHub as a backup.
+4. Only then start implementation commits.
+5. Keep appending phase-by-phase history entries with TDD RED/GREEN evidence, verification commands, and commit hashes.
+6. Push another checkpoint before 3AI implementation review so reviewers inspect a backed-up branch tip.
+
+If a tiny documentation/status correction is discovered immediately after pushing a newly created branch, re-run the verification gate, then either:
+- amend and `git push --force-with-lease` only when the branch is private/no collaborators are affected; or
+- make a normal follow-up commit when history rewrite could surprise others.
+
 ### Push the Branch (same either way)
 
 ```bash
@@ -327,7 +351,13 @@ curl -s -X POST \
   -d "{\"query\": \"mutation { enablePullRequestAutoMerge(input: {pullRequestId: \\\"$PR_NODE_ID\\\", mergeMethod: SQUASH}) { clientMutationId } }\"}"
 ```
 
-## 7. Complete Workflow Example
+## 7. Fresh-Clone Stabilization and Direct Upload
+
+When the user explicitly says to ignore a local project copy and work from GitHub, treat the remote as source of truth: clone fresh into the 3AI development workspace, verify remote/log/status, make changes there, and do not import files from the stale local copy unless explicitly requested. For broad stabilization work, use tests-first, run a delegate review before pushing, fix blocking findings, then verify with `git diff --check`, compile check, full tests, and CLI smoke tests. See `references/fresh-clone-hardening-workflow.md` for the full pattern and pitfalls.
+
+If the user explicitly asks to upload changes back to their GitHub repo, a direct push to `main` is acceptable after the verification gate passes; otherwise prefer branch + PR.
+
+## 8. Complete Workflow Example
 
 ```bash
 # 1. Start from clean main

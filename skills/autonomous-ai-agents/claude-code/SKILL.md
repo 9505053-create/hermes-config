@@ -10,6 +10,27 @@ metadata:
     related_skills: [codex, hermes-agent, opencode]
 ---
 
+## MINIPC / Windows Mode Verification Note
+
+On Scott's MINIPC, Hermes/WSL can call Windows-native Claude Code through `cmd.exe` and `claude.cmd`. A 2026-05-15 smoke test verified:
+
+```text
+C:\Users\chien\AppData\Roaming\npm\claude.cmd
+2.1.126 (Claude Code)
+```
+
+Use prompt-file piping for Chinese/path-heavy prompts, then read back produced files from disk:
+
+```bat
+cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace\<task> && type prompt.txt | claude.cmd --print --allowedTools Bash Write Edit"
+```
+
+Model selection smoke test (2026-05-15): Hermes invoked Claude Code with `--model opus --output-format json --max-turns 1` from `C:\Users\chien\_3AI_WorkSpace\_agent\Claude Codex\`; the run succeeded and JSON `modelUsage` confirmed `claude-opus-4-7` with 1,000,000 context window and 64,000 max output tokens.
+
+Scott preference (2026-05-15): when Hermes invokes **CLAUDE / CLAUDE AGENT**, use `--model opus` by default to obtain the best answer. Treat `--model opus` as the stable CLI invocation for Opus 4.7 unless a future CLI/version test shows a different alias is required.
+
+Default `--print` one-shot invocation does not leave a persistent visible Windows desktop work window; it exits after stdout/stderr are captured. Visible UI may still appear for OAuth/device pairing or explicit GUI/browser tasks.
+
 ## Filesystem Write in Headless Mode (WSL)
 
 When invoking Claude Code in print mode from WSL to write files, you must pre-authorize tools since there's no interactive approval dialog:

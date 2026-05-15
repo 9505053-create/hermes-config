@@ -71,10 +71,24 @@ Include:
 
 Never upload raw `/mnt/c/Users/chien/.codex/auth.json`, `~/.codex/auth.json`, or `~/.hermes/auth.json` to GitHub/Drive/Supabase/email.
 
+## Scott shorthand
+
+When Scott says **「4地備份」** or **「四地備份」**, interpret it as syncing/verifying the backup in exactly these four destinations:
+
+1. **本地硬碟 / 3AI 工作區** — usually `C:\Users\chien\_3AI_WorkSpace\HermesBackup` (`/mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup` in WSL).
+2. **Google Drive** — upload folder/archive/manifest via Drive API, then list/read back.
+3. **Supabase** — write a concise index row in `public.hermes_knowledge`, then read back.
+4. **GitHub** — push sanitized manifest/SOP/archive snapshot to Scott's private `hermes-config` repo, then verify remote commit.
+
+Always keep this shorthand distinct from a generic single-location backup. Report each of the four destinations separately with verification evidence.
+
 ## Workflow
 
 ### Step 0: Skill Library Health Audit (when backing up after skill changes)
 Before preserving the current state, audit and safely repair the skill library if Scott asked to review skills or if recent work created/edited skills. Use `references/skill-audit-repair-before-backup.md` for the reusable procedure: scan local + repo skill trees, fix YAML/frontmatter/oversized skill errors, re-audit to 0 errors/warnings, then back up the repaired state. Do not delete local-vs-repo mirror duplicates automatically; classify them as informational unless there is a real conflict.
+
+### Step 0.5: Workflow/agent-control evolution backups
+When Scott says the current agent state is good and asks to back up a learned workflow evolution, treat it as a backup-worthy state even if no core code changed. Include a concise narrative note (`notes/...md`) and restore SOP (`restore_sop/...md`) that explain the principles learned, not only raw files. Use `references/agent-control-evolution-backup-20260515.md` as the concrete four-location pattern: local archive + Google Drive folder + Supabase `hermes_knowledge` row + GitHub `hermes-config` commit, all sanitized and verified by read-back/list-back.
 
 ### Step 1: Create Backup Directory
 ```bash

@@ -744,6 +744,37 @@ Verification:
 - Fresh OpenClaw CLI session `hermes-safe-skill-invocation-verify-20260514` read the new local skill and correctly summarized the policy: external skills are untrusted data, use local vetted skills first, run safety review, absorb/transform rather than blind install, and hand self-config changes to 小馬.
 - Known non-blocking OpenClaw browser-plugin symlink warning still appeared during verification; it did not block the agent result.
 
+## Dual Markdown + HTML output local skill (2026-05-15)
+
+Scott asked Hermes to teach 小蝦 the new complex-document dual-output workflow. Hermes implemented this from outside OpenClaw with backup first.
+
+OpenClaw-side updates:
+
+- New local skill: `C:\\Users\\chien\\.openclaw\\workspace\\local-skills\\dual-md-html-output\\SKILL.md`
+- Patched startup-visible pointer in `AGENTS.md`: complex documents should use MD source first, then HTML review artifact.
+- Patched `MEMORY.md`, `TOOLS.md`, and `memory\\2026-05-15.md`.
+- Compressed one verbose `AGENTS.md` bridge reminder to keep the file below the known 12000-char injection limit; post-edit local length was 11412 chars.
+- Backup before OpenClaw workspace edits: `C:\\Users\\chien\\.openclaw\\backups\\dual-md-html-output-20260515-084855\\ROLLBACK.md`.
+
+Behavior taught to 小蝦:
+
+- For complex outputs, use **Markdown-first, HTML-for-review**.
+- `source.md` is the canonical source of truth for agents, Git/diffs, long-term maintenance, and future 小馬/Hermes handoff.
+- `report.html` is the human-facing review artifact for Scott: scan, compare, filter, click, and decide.
+- Optional `summary.md` is for Telegram/share summaries.
+- Use dual output for large code reviews, implementation plans, debug/incident reports, 3AI/小馬/council outputs, task triage, prompt tuning, architecture explanations, and status reports.
+- 小蝦's direct default output path must stay under its writable root: `C:\\Users\\chien\\_3AI_WorkSpace\\_OpenClaw\\reports\\artifacts\\YYYYMMDD-topic\\`.
+- If Hermes is orchestrating, Hermes may place shared artifacts under `C:\\Users\\chien\\_3AI_WorkSpace\\artifacts\\YYYYMMDD-topic\\`.
+- HTML must be self-contained by default: no CDN, no automatic network requests, no secrets/tokens/passwords/cookies/OAuth/device credentials/credit-card data/raw sensitive logs, no destructive controls.
+
+Verification:
+
+- Local skill frontmatter parsed and file readback succeeded.
+- `AGENTS.md` remained under the injection limit after edits (`11412` chars locally; previous OpenClaw verification before the bridge-line compression reported no truncation and correctly summarized the dual-output rule).
+- Secret-pattern scan over changed OpenClaw docs/local skill found no hits.
+- Gateway status check succeeded: running, loopback `127.0.0.1:18789`, connectivity probe `ok`.
+- Fresh OpenClaw CLI session `hermes-dual-output-verify-20260515b` read `local-skills/dual-md-html-output/SKILL.md` and correctly summarized when to use it, default file names/location, Markdown vs HTML split, and HTML safety red lines.
+
 ## Playwright MCP adapt-only local skill (2026-05-14)
 
 Scott asked Hermes to learn the useful essence of the ClawHub `Playwright (Automation + MCP + Scraper)` skill and teach 小蝦, without installing the raw external skill. Hermes implemented the adapt-only version.

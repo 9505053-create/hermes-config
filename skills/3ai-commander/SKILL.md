@@ -19,19 +19,61 @@ When user mentions "3AI", "3AI助手", or "3AI xxxxx", this refers to the author
 **Purpose**: Hermes writes MD instructions here → 3AI CLIs read and process → results saved back here.
 
 ### How It Works
-1. **Hermes** writes a `.md` or `.txt` prompt file to the shared workspace
+1. **Hermes** writes a `.md` or `.txt` prompt file to the shared workspace or the agent-specific subworkspace
 2. **Hermes** invokes the CLI via `type prompt.txt | cli.cmd` pipe
 3. **CLI** reads the workspace files, produces output
 4. **Hermes** reads results back from the workspace
 
-### Capability Matrix (Verified 2026-05-03)
+### Agent-Specific Subworkspaces (Updated 2026-05-15)
+
+Scott created `_agent` subfolders to avoid cluttering the shared `_3AI_WorkSpace` root. For **3AI agent** tasks with disk I/O, route each agent to its own folder by default:
+
+```text
+Claude agent / Claude Code: C:\Users\chien\_3AI_WorkSpace\_agent\Claude Codex\
+Codex agent:                C:\Users\chien\_3AI_WorkSpace\_agent\Codex\
+Gemini agent:               C:\Users\chien\_3AI_WorkSpace\_agent\Gemini Workspace\
+```
+
+Use the shared root for coordination manifests/final summaries only. Keep prompts, logs, scratch outputs, and intermediate artifacts inside the relevant agent folder. A routing note exists at `C:\Users\chien\_3AI_WorkSpace\_agent\AGENT_WORKSPACE_ROUTING.md`.
+
+### Agent Trace / Teaching Archive (Updated 2026-05-15)
+
+Scott wants Hermes' future Claude Code / Codex CLI orchestration techniques to be learnable after the fact. When a completed Claude Code or Codex invocation has **rich learning value** (multi-step prompt design, review/fix/verify loop, cross-agent validation, meaningful judgment notes, raw logs worth studying), also write a readable trace package under the first-level workspace directory:
+
+```text
+C:\Users\chien\_3AI_WorkSpace\temp_agent\
+WSL: /mnt/c/Users/chien/_3AI_WorkSpace/temp_agent/
+```
+
+Recommended package layout:
+
+```text
+temp_agent/YYYYMMDD_HHMM_task_agent_trace/
+├── 00_README.md
+├── 01_hermes_plan.md
+├── 02_claude_prompt.md
+├── 03_claude_command.txt
+├── 04_claude_raw.log
+├── 05_codex_prompt.md
+├── 06_codex_command.txt
+├── 07_codex_raw.log
+├── 08_hermes_judgment.md
+├── 09_final_transcript.md
+└── artifacts/
+```
+
+Do not save secrets/API keys/tokens/cookies/credit-card data. Redact raw logs if needed. Simple one-shot CLI calls without learning value do not need a trace package.
+
+### Capability Matrix (Updated 2026-05-15)
 
 | CLI | Read Workspace | Write Workspace | Notes |
 |-----|---------------|-----------------|-------|
 | **Hermes** | ✅ | ✅ | Direct WSL access |
-| **Claude** | ✅ | ⚠️ Needs approval | Scott must approve first write per session |
-| **CODEX** | ✅ | ❌ Read-only | Exec sandbox is read-only |
-| **Gemini** | ✅ | ❌ 500 error | Backend error on write; may be temporary |
+| **Claude Code** | ✅ | ✅ | Use Windows mode with `--print --allowedTools Bash Write Edit`; verified by read-back smoke test on 2026-05-15. |
+| **CODEX CLI** | ✅ | ✅ | Use Windows mode with `exec --skip-git-repo-check --sandbox workspace-write`; verified with GPT-5.5 and read-back smoke test on 2026-05-15. |
+| **Gemini CLI** | ✅ | ✅ | Use Windows mode with `--skip-trust --approval-mode yolo`; broad approval, so restrict prompt and workspace. |
+
+Older notes saying CODEX/Gemini were read-only came from pre-approval/sandbox tests and are superseded by the Windows-mode disk I/O workflow.
 
 ## Setup and Verification
 
@@ -138,6 +180,14 @@ Round/cost guardrails:
 - Do **not** call 小蝦/OpenClaw merely because it is available or subscription-backed. Scott's 2026-05-13 token discussion measured roughly 98k-99k tokens per OpenClaw consultation because of fixed runtime/context/cache overhead. However, Scott later clarified that Codex/ChatGPT usage is mostly covered by monthly subscription; the main downside is cooldown/waiting, and he can wait as an AI hobbyist. Use 小蝦 when OpenClaw-specific workflow, independent worker execution, 小馬/Hermes coordination, long-context support, or a meaningful second opinion improves correctness or continuity; avoid only nonessential waste, repeated retries, and pointless scans.
 - Hermes remains the controller: route, prompt, collect raw outputs when useful, summarize, verify handles/artifacts, and report only the distilled conclusion to Scott.
 
+### Commander + UI aesthetics principle（2026-05-15 Scott 指導）
+
+Scott expects Hermes to be the **commander**, not the default laborer. For non-trivial development tasks, Hermes should plan, split work, write strong prompts, delegate heavy implementation/review to subagents or 3AI CLI, then verify and integrate. Do simple/obvious edits directly only when that is clearly faster.
+
+For any user-facing software, UI/UX/aesthetic quality is a normal evaluation item. Load `ui-programming-aesthetics` together with `claude-design` / `popular-web-designs` / `sketch` when relevant. Add a UI-aesthetic review lane or checklist for GUI, web, frontend, Tkinter, desktop, EXE, dashboard, or prototype deliverables. Functional correctness alone is not sufficient if the interface is chaotic, generic, or AI-sloppy.
+
+Scott also wants **visual-first planning**: before writing substantial UI code or a complex prompt describing an interface, Hermes should usually produce a quick sketch / wireframe / flowchart / block diagram / mind map first, then discuss and adjust with Scott. This is preferred because a picture aligns expectations faster than a long textual UI description and prevents expensive rework after implementation. Use simple deterministic drawing methods when paid image APIs are unnecessary: HTML/SVG mockups, Excalidraw JSON, Mermaid-like diagrams, ASCII sketches, or local PNG/SVG rendering. Use GPT Web / Image 2.0 only when Scott chooses to do so manually; do not spend extra API-key-based image generation just for planning visuals.
+
 ## CLI Command Patterns (Verified & Tested)
 
 ### ✅ Verified Invocation Commands (2026-05-03)
@@ -167,16 +217,40 @@ cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\ch
 5. Hermes reads:   output.md from workspace
 ```
 
-### Known Limitations
+### Known Limitations / Updated Pitfalls
 
 | Issue | Affected CLI | Workaround |
 |-------|-------------|------------|
-| `-p` flag truncates on spaces | Claude | Use `--print` + stdin pipe instead |
-| `-p` flag not supported | Gemini | Use stdin pipe (no `-p` at all) |
-| `exec` sandbox read-only | CODEX | Accept read-only; Hermes writes results |
-| `--skip-trust` required | Gemini | Always add `--skip-trust` |
-| Write needs approval | Claude | Scott must approve first write per session |
-| UNC path warning | All | Harmless — `cd /d` to local path first |
+| Long Chinese/path-heavy prompts can break shell quoting | All | Write prompt to a file and pipe with `type prompt.txt` |
+| `-p` / inline prompt flags can truncate or misparse on spaces | Claude/Gemini patterns | Prefer stdin pipe; for Claude use `--print`; Gemini has no `-p` |
+| Missing write approval causes false negatives | Claude | Use `--allowedTools Bash Write Edit` in headless print mode |
+| Missing sandbox write permission causes false negatives | CODEX | Use `--sandbox workspace-write` for filesystem tasks |
+| Missing approval mode causes false negatives | Gemini | Use `--approval-mode yolo` only in controlled workspace/prompt |
+| UNC path warning | All | Harmless if command includes `cd /d C:\Users\chien\_3AI_WorkSpace` |
+| Review package includes untracked pytest/cache artifacts | 3AI reviewers, especially Codex | Build review packages from `git ls-files` only; do not copy whole working trees. If reviewers run pytest inside copied packages, suggest `python -m pytest -q -p no:cacheprovider` to avoid reviewer-local cache directories. See `references/review-package-hygiene.md`. |
+| CLI quota/cooldown interrupts a review | Claude/Codex/Gemini | Treat as a scheduling issue, not a task failure. For Claude specifically, apply Scott's quota policy below: if reset is within 2 hours, wait/retry; if longer than 2 hours or weekly/day-long cooldown, reroute the Claude task to Codex instead of blocking the workflow. Record partial status and keep Scott informed. |
+| Background reviewer hangs with no output | Claude/Codex/Gemini | Use bounded waits/polls, then kill and record status; proceed with completed reviewers if consensus is sufficient, or schedule a retry. Use unique retry output filenames. See `references/windows-cli-background-review.md`. |
+
+### Claude Quota / Codex Fallback Policy（2026-05-15 Scott 指導）
+
+Scott uses Claude Opus 4.7 for high-value review/architecture/writing because it is token-expensive but often worth it. Claude user quota is comparatively tight and may hit daily/weekly cooldowns.
+
+When Claude CLI reports quota exhausted or asks to wait:
+
+1. Parse or infer the reset time when available.
+2. If the reset/cooldown is **within 2 hours**, wait or schedule a one-shot retry after reset; do not waste effort rewriting the task for another model unless urgent.
+3. If the reset/cooldown is **more than 2 hours**, day-long, weekly, or unclear but obviously long, reroute the original Claude task to **Codex GPT-5.5**.
+4. Preserve the original Claude prompt intent when rerouting to Codex, but adapt reviewer identity honestly: `You are Codex acting as the Claude substitute for this review because Claude quota is cooling down`.
+5. Document the substitution in the development/review history so Scott can see why Claude is missing.
+6. Do not treat Claude quota exhaustion as a code/test failure.
+
+Budget context:
+
+- Scott's ChatGPT/Codex monthly subscription is currently high-capacity (Scott mentioned NT$3000/month), so Codex GPT-5.5 is an acceptable fallback for Claude review/implementation tasks when Claude cooldown is too long.
+- Codex GPT-5.5 is considered strong enough for most implementation, validation, and review substitution tasks.
+- Continue using Claude when available for high-value critique, architecture, and writing judgment; fallback is about avoiding long workflow stalls, not because Claude is unimportant.
+
+Do not preserve old negative capability claims after a Windows-mode retry succeeds. The durable rule is: use the correct Windows-mode flags, bounded process handling, and verify by reading the produced file/diff back from disk.
 
 ## 3AI 共享空間利器 (已驗證)
 
@@ -200,15 +274,15 @@ cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt.txt | C:\Users\ch
 ```
 
 ### 快速使用
-1. `write_file` 寫 prompt.md → 共享空間
-2. `terminal` 管道呼叫對應 CLI（輸出導向 temp/）
+1. `write_file` 寫 prompt.md → 共享空間或對應 `_agent` 子工作區
+2. `terminal` 管道呼叫對應 CLI（輸出導向 temp/ 或 agent log）
 3. CLI 讀取 MD + 共享空間內檔案
-4. 結果同時輸出到 stdout（Hermes 接收）+ temp/*.log（Scott 可查看）
-5. 如需 CLI 寫回 → CODEX 只讀、Claude 需 Scott 授權
+4. 結果同時輸出到 stdout（Hermes 接收）+ log 檔（Scott 可查看）
+5. 如需 CLI 寫回 → 使用 Windows-mode 授權旗標：Claude `--allowedTools Bash Write Edit`、Codex `--sandbox workspace-write`、Gemini `--approval-mode yolo`；寫回後必須由 Hermes read-back 驗證
 ### 絕對禁忌
 - ❌ 不要用 `-p` 參數傳遞含空格/中文的長指令 (會截斷)
 - ❌ 不要省略 `cd /d` (CLI 無法存取 WSL 路徑)
-- ❌ 不要期望 CODEX/Gemini 能寫入共享空間
+- ❌ 不要沿用「CODEX/Gemini 不能寫入」的舊結論；若寫入失敗，先確認是否使用 Windows-mode 與正確 approval/sandbox flags
 
 ## Token Management
 

@@ -333,6 +333,20 @@ Never fix bugs without a test.
 - **Happy path only** — always test edge cases, errors, and boundaries
 - **Brittle tests** — tests should verify behavior, not structure; refactoring shouldn't break them
 
+## Controller/Event Integration Pattern
+
+When adding audit/history/telemetry side effects around existing controller APIs, prefer a narrow event-drain seam under TDD instead of broad return-type migrations:
+
+1. Write controller tests for the behavior that should emit an event and for actions that must not emit one.
+2. Verify RED on the missing seam, e.g. `AttributeError: '<Controller>' object has no attribute 'pop_history_entry'`.
+3. Add a private pending event field (`_history_entry`, `_pending_event`, etc.).
+4. Keep the existing primary method contract unchanged (for example, continue returning the display string).
+5. Add `pop_*()` to drain exactly one pending event and clear it; unrelated/invalid actions should clear or leave no event according to spec.
+6. Add UI/headless integration tests with fake widgets to verify the event is consumed once, displayed, and cleared without launching a real GUI.
+7. Run targeted controller/UI tests, then full suite, `py_compile`, and whitespace checks before committing.
+
+This pattern is useful for session history, analytics, status messages, and other side-channel outputs where the existing API is already stable.
+
 ## Final Rule
 
 ```

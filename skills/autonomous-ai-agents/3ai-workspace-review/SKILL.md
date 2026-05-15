@@ -53,13 +53,36 @@ cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt_gemini.txt | gemi
 ```
 
 ### Step 3: 收集結果
-- Claude：如需寫入，需 Scott 授權；通常從 stdout 收集
-- CODEX：只讀沙箱，從 stdout 收集；手動存成 *_result.md
-- Gemini：從 stdout 收集；手動存成 *_result.md
+- Claude：Windows mode 使用 `--allowedTools Bash Write Edit` 可寫入報告檔；仍需 Hermes read-back 驗證
+- CODEX：Windows mode 使用 `--sandbox workspace-write` 可寫入報告檔；仍需 Hermes read-back 驗證
+- Gemini：Windows mode 使用 `--approval-mode yolo` 可寫入報告檔；僅在受控 workspace/prompt 下使用，仍需 Hermes read-back 驗證
+- 每個 agent 的 stdout/stderr 另存到 logs/，最終報告以 output/*.md 為準
 
 ### Step 4: Hermes 統整
-- 讀取所有 *_result.md
-- 綜合建議、執行修改、推送 GitHub
+- 讀取所有 output/*_review.md
+- 檢查是否包含約定完成標記（例如 `REVIEW_COMPLETE`）
+- 複製到 central package 的 `agent_outputs/`
+- 綜合建議、提出 Scott 決策點；除非 Scott 明確要求，審核階段不直接修改/推送 GitHub
+
+### Step 5: PR Hardening / Pre-Next-Phase Gate（2026-05-15 MiniCalc pattern）
+當 review 結果是 `PASS_WITH_WARNINGS` 且沒有 blocking issue，適合用小型 hardening 分支收斂，不要直接擴張到下一個 PR scope：
+- 從已通過的 baseline commit 建立 `prX.Y-local-hardening` 類分支。
+- 小步 TDD：先加 failing tests，再實作，再跑 targeted tests。
+- 最低驗證 gate：`python3 -m pytest -q`、`python3 -m py_compile ...`、`git diff --check`。
+- 再建 3AI review package，讓 Claude/Codex/Gemini 各自審核，Hermes read-back raw reports 並產出 central `FINAL_3AI_REVIEW_SUMMARY.md`。
+- 若 3AI 無 blocker，才 commit；依 Scott 偏好，可以先完成本地 hardening，最後再 push GitHub branch 做版本控制。不要自動 merge `main` 或進下一個 PR；等 Scott 決策。
+- 可參考 `references/minicalc-pr-hardening-review-pattern-20260515.md`。
+
+### Step 6: Pre-Implementation Planning Review Gate（2026-05-15 MiniCalc PR3 pattern）
+當 Scott 要進入下一個 PR 規劃階段，但明確要求先不要 merge 前一分支、也不要開始實作時：
+- 從已通過的 prior branch 建立 `prN-planning` 類分支；不要自動 merge `main`。
+- 先產出三份文件：`docs/prN/PRN_SPEC.md`、`docs/prN/IMPLEMENTATION_PLAN.md`、`docs/prN/ACCEPTANCE_CRITERIA.md`。
+- 即使只是 docs-only planning，也先跑 `python3 -m pytest -q` 與 `git diff --check`，確認 baseline 沒被破壞。
+- 建立 central planning review package，分派 Claude/Codex/Gemini 依角色審核。
+- 若任一 reviewer 給 `BLOCKED`，視為 planning gate failure：先修文件，再建立 delta re-review package，附上前一輪 review 與修正清單。
+- re-review 無 blocker 後，將小型非阻塞警告直接補進 planning docs，再寫 `FINAL_3AI_REVIEW_SUMMARY.md`。
+- 只 commit planning docs；不要 push/merge，除非 Scott 明確要求。
+- 可參考 `references/minicalc-pr3-planning-review-pattern-20260515.md`。
 
 ## Prompt 撰寫技巧
 - 明確指定要讀取的檔案名稱
@@ -68,8 +91,8 @@ cmd.exe /c "cd /d C:\Users\chien\_3AI_WorkSpace && type prompt_gemini.txt | gemi
 - 要求具體行號的修改建議
 - 指定輸出檔名（但 CODEX/Gemini 無法寫入，需手動存）
 
-## 已知限制
-- CODEX exec 模式沙箱只讀
-- Gemini 寫入可能遇到 500 錯誤
-- Claude 寫入需 Scott 在終端機授權
-- 所有 CLI 的 stdin 管道有隱含長度限制（但比 -p 好很多）
+## 已知限制 / Pitfalls
+- 不要沿用舊結論「CODEX/Gemini 不能寫入」。Windows mode 加正確 flags 後可寫：Claude `--allowedTools Bash Write Edit`、Codex `--sandbox workspace-write`、Gemini `--approval-mode yolo`；仍必須由 Hermes read-back 驗證。
+- `--approval-mode yolo` 權限較大，只能用在受控 prompt、受控 workspace。
+- 含空白 Windows 路徑在 WSL→`cmd.exe` 巢狀 quoting 下可能失敗；使用 `dir /x` 找 8.3 short name（例如 `CLAUDE~1`、`GEMINI~1`）再呼叫。
+- 所有 CLI 的 stdin 管道有隱含長度限制（但比 `-p` 好很多）；長 prompt 寫成檔案後用 `type prompt.txt | ...`。

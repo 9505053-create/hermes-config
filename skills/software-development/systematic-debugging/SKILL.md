@@ -326,6 +326,10 @@ Use these Hermes tools during Phase 1:
 - **`terminal`** — Run tests, check git history, reproduce bugs
 - **`web_search`/`web_extract`** — Research error messages, library docs
 
+### Python CLI / Windows Screenshot Triage
+
+When a user asks whether a Python CLI project shown in a Windows terminal screenshot “cannot be used,” do not stop at the first `ModuleNotFoundError`. Read the README/requirements/main entrypoint, verify imports in the exact interpreter, separate syntax checks from runtime dependency checks, and watch for Windows `python3` Store alias behavior. Use the detailed recipe in `references/windows-python-cli-triage.md`.
+
 ### With delegate_task
 
 For complex multi-component debugging, dispatch investigation subagents:

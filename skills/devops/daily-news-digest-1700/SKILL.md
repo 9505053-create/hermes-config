@@ -113,6 +113,23 @@ Backup verifier principle:
 - Export workflow JSON through API after the DB dump.
 - When loading `.env`, override old environment values; do not use `os.environ.setdefault` for `N8N_API_KEY`.
 
+## Email Sender and Translation Rules
+
+Scott's preference:
+- Digest sender display name should show as `Hermes Agent`, even though the SMTP account is Gmail sending to Hotmail.
+- In the n8n `Email Send` node, set `parameters.fromEmail` to `Hermes Agent <9505053@gmail.com>`.
+- Do not send a test email unless Scott explicitly asks; use offline validation by running only the `Format Email` code node.
+- English RSS titles that need Google Translate include **international news, AI news, and RF regulatory/certification news**. The translation loop must cover `regNews`, not only `intlNews` and `aiNews`:
+  ```javascript
+  for (const item of [...intlNews, ...aiNews, ...regNews]) {
+    if (needsTranslate(item.title)) {
+      item.titleEn = item.title;
+      item.title = translateText(item.title);
+    }
+  }
+  ```
+- Preserve original English title with `titleEn` / `原文：...` for traceability.
+
 ## RF Regulatory / Certification Section Rules
 
 Scott's correction: RF section is not product news.

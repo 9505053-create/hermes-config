@@ -11,11 +11,14 @@ description: 3AI WorkSpace 目錄規劃原則 — 工作進行/完成/日誌/情
 _3AI_WorkSpace/
 ├── INDEX.md       ← 根目錄索引 (必讀，所有目錄說明)
 ├── active/        ← 工作進行區
+├── projects/      ← 程式開發區 / GitHub fresh clone 工作區
+├── code_create/   ← 早期/既有程式產出區（若 INDEX.md 指定使用則遵循）
 ├── completed/     ← 工作完成區
 ├── logs/          ← 系統日誌區
 ├── intel/         ← 網路情報區
 ├── debates/       ← 辯論區
-└── temp/          ← 暫存區
+├── temp/          ← 暫存區
+└── temp_agent/    ← Claude Code / Codex 操控教學紀錄暫存區
 ```
 
 ---
@@ -30,6 +33,18 @@ _3AI_WorkSpace/
 - 任務完成後，整包移至 `completed/`
 - 同時只處理一個任務（避免混亂）
 - prompt 檔用完可刪除
+
+### projects/ — 程式開發區 / GitHub fresh clone 工作區
+**使用者**: Hermes + 3AI + Scott
+**用途**: 從 GitHub 重新 clone 的專案、正在修復或開發的程式 repo。
+**規則**:
+- 使用者要求「忽略本機舊資料，回 GitHub 複製」時，優先 clone 到 `projects/<repo-name>/`。
+- clone 後先驗證 `git status --short --branch`、`git remote -v`、`git log --oneline -5`。
+- 不要把舊本機專案檔案混入 fresh clone，除非使用者明確要求。
+- 完成後依任務性質決定保留在 `projects/` 或複製摘要/成品到 `completed/`。
+
+### code_create/ — 既有程式產出區
+**用途**: 歷史或特定流程建立的程式產出。若 `INDEX.md` 或使用者指定此區，遵循指定；否則 GitHub fresh clone 優先使用 `projects/`。
 
 ### completed/ — 工作完成區
 **使用者**: Scott 好辨別、好查閱
@@ -85,6 +100,29 @@ debates/YYYY-MM-DD_主題/
 ### temp/ — 暫存區
 **用途**: 不好分類的臨時資料
 **規則**: 超過 7 天未使用自動清理
+
+### temp_agent/ — Agent 操控教學紀錄暫存區
+**用途**: 保存 Hermes/小馬調用 Claude Code、Codex CLI 後，對 Scott 有學習價值的操控紀錄。
+**使用時機**: 有豐富內容的完成案例，例如多輪 prompt、Claude/Codex 交叉驗證、修復驗證流程、可學習的中控判斷。
+**命名**: `YYYYMMDD_HHMM_任務簡述_agent_trace/`
+**建議內容**:
+```
+00_README.md
+01_hermes_plan.md
+02_claude_prompt.md
+03_claude_command.txt
+04_claude_raw.log
+05_codex_prompt.md
+06_codex_command.txt
+07_codex_raw.log
+08_hermes_judgment.md
+09_final_transcript.md
+artifacts/
+```
+**規則**:
+- 不保存 API key、token、cookie、密碼、信用卡資訊；raw log 如有敏感資訊須先遮罩。
+- 這裡是教學/暫存區，不取代正式 `completed/` 或專案交付目錄。
+- 簡單一次性 CLI 問答，沒有學習價值時可不存。
 
 ---
 

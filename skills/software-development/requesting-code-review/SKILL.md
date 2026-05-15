@@ -121,6 +121,9 @@ Quick scan before dispatching the reviewer:
 - [ ] No debug print/console.log left behind
 - [ ] No commented-out code
 - [ ] New code has tests (if test suite exists)
+- [ ] If the change has a user-facing UI, `ui-programming-aesthetics` was considered: hierarchy, spacing, typography, density, states, accessibility, consistency, and anti-slop.
+
+For GUI/web/frontend/desktop releases, add a UI/aesthetic reviewer or checklist in addition to normal code review. Functional correctness alone is not the full gate for Scott-facing deliverables.
 
 ## Step 5 — Independent reviewer subagent
 
