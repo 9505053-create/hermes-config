@@ -18,6 +18,7 @@ _3AI_WorkSpace/
 ├── intel/         ← 網路情報區
 ├── debates/       ← 辯論區
 ├── temp/          ← 暫存區
+├── temp_for-Scott/← 給 Scott 手動轉交/上傳/顧問團審查的暫存包
 └── temp_agent/    ← Claude Code / Codex 操控教學紀錄暫存區
 ```
 
@@ -100,6 +101,28 @@ debates/YYYY-MM-DD_主題/
 ### temp/ — 暫存區
 **用途**: 不好分類的臨時資料
 **規則**: 超過 7 天未使用自動清理
+
+### temp_for-Scott/ — Scott 手動轉交暫存包
+**用途**: Scott 要把 Hermes 產物交給 3AI 顧問團、Web 版 AI、人工審查者、或自己手動上傳時使用。
+**使用時機**:
+- 使用者明確指定 `C:\Users\chien\_3AI_WorkSpace\temp_for-Scott`。
+- 需要把 WSL/Linux 內的暫存產物轉成 Windows 可直接開啟/上傳的檔案包。
+- 需要附上審查 brief、prompt、成果圖、HTML、Markdown、或原始碼片段給外部顧問評估。
+**命名**: `temp_for-Scott/<topic_or_task>/`
+**建議內容**:
+```
+temp_for-Scott/<topic_or_task>/
+├── 00_review_brief_for_3AI.md   ← 給顧問團的背景、檔案清單、審查問題、可貼 prompt
+├── 01_artifact_source.*         ← HTML / MD / code 等可編輯來源
+├── 02_artifact_preview.*        ← PNG / PDF / screenshot 等預覽
+└── optional_supporting_files/
+```
+**規則**:
+- 回報給 Scott 時預設只給 Windows 路徑，例如 `C:\Users\chien\_3AI_WorkSpace\temp_for-Scott\...`。
+- 若原始檔在 `/tmp`、`/home/chien` 或其他 WSL 路徑，實務可行時先複製到此區，再回報 `C:\...` 路徑。
+- `\\wsl.localhost\Ubuntu\...` 只能當備用路徑，不當主要回報路徑。
+- brief 要讓沒有上下文的顧問團能看懂：背景、目標、產物清單、設計決策、自評、請對方回答的問題。
+- 不保存 API key、token、cookie、密碼、信用卡資訊；若 raw log 有敏感資料，先遮罩。
 
 ### temp_agent/ — Agent 操控教學紀錄暫存區
 **用途**: 保存 Hermes/小馬調用 Claude Code、Codex CLI 後，對 Scott 有學習價值的操控紀錄。

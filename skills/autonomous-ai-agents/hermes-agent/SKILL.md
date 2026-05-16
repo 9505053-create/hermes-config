@@ -192,6 +192,11 @@ hermes cron remove ID       Delete a job
 hermes cron status          Scheduler status
 ```
 
+Operational notes:
+- `hermes cron run <job_id>` / the cronjob tool may schedule the job for the next scheduler tick rather than synchronously returning the final agent result. Verify by checking `~/.hermes/cron/output/<job_id>/`, `~/.hermes/logs/agent.log`, and `hermes cron list` after the run has had time to finish.
+- If a cron job says `BLOCKED` before the agent runs, inspect the output markdown first; Hermes may have rejected the assembled prompt with its cron threat scanner before any report artifact or delivery was created.
+- For weekly security jobs, see the `weekly-security-audit` skill for cron-safe wording practices and false-positive diagnosis.
+
 ### Webhooks
 
 ```
@@ -451,6 +456,45 @@ stt:
 | NeuTTS (local) | None (`pip install neutts[all]` + `espeak-ng`) | Free |
 
 Voice commands: `/voice on` (voice-to-voice), `/voice tts` (always voice), `/voice off`.
+
+Scott's Traditional Chinese TTS preference/pitfall:
+- If Scott says he only hears the English name (e.g. only `Scott`) and the Chinese part is silent/truncated, check `tts.edge.voice`. An English Edge voice such as `en-US-AriaNeural` can fail badly on Chinese text.
+- Back up `~/.hermes/config.yaml`, then set a Taiwan Mandarin voice:
+  ```bash
+  cp ~/.hermes/config.yaml ~/.hermes/config.yaml.bak_tts_zh_$(date +%Y%m%d_%H%M%S)
+  hermes config set tts.edge.voice zh-TW-HsiaoChenNeural
+  ```
+- Generate a short Traditional Chinese test phrase and verify duration/size with `ffprobe` before telling Scott it works.
+
+### Real-time Voice vs Voice Messages
+
+On Telegram, Hermes supports voice-message turn-taking: voice file → STT → agent response → optional TTS audio file. This is not the same as a live phone call or ChatGPT Voice-style duplex audio.
+
+True real-time voice requires an additional audio transport/bridge:
+- Browser WebRTC/WebSocket voice bridge, or
+- Phone provider such as Twilio/Telnyx/Plivo/SIP with webhook/WebSocket media streams, or
+- OpenClaw's `@openclaw/voice-call` plugin.
+
+See `references/realtime-voice-and-phone-bridge.md` for the OpenClaw/Twilio/Telnyx architecture notes and recommended Hermes implementation route.
+
+OpenClaw's phone-call demos work by adding a telephone voice bridge, not by using LINE/Telegram bot calls. LINE/Telegram bots generally support voice messages, not bot-controlled live voice calls. When Scott asks why OpenClaw can call, explain the bridge layers: phone provider number → webhook/WebSocket audio stream → realtime voice or STT/LLM/TTS → agent tools → audio back to the call.
+
+### TTS language/voice sanity check
+
+When Scott reports that Telegram voice output only speaks names/English words and then goes silent or truncates Chinese, check the configured TTS voice locale before assuming Telegram delivery failed. With Edge TTS, an English voice such as `en-US-AriaNeural` may produce partial or unusable Mandarin output. Preferred Traditional Chinese voice for Scott is:
+
+```bash
+hermes config set tts.edge.voice zh-TW-HsiaoChenNeural
+```
+
+Safe procedure:
+1. Inspect `tts.provider` and `tts.edge.voice` in `~/.hermes/config.yaml`.
+2. Back up config before changing: `cp ~/.hermes/config.yaml ~/.hermes/config.yaml.bak_tts_<timestamp>`.
+3. Set the voice to `zh-TW-HsiaoChenNeural` for Traditional Chinese voice replies.
+4. Generate a short Chinese TTS test and verify duration/size with `ffprobe` if available.
+5. Give Scott the backup restore command in the final reply.
+
+Session detail: see `references/telegram-tts-zh-tw-voice-locale.md`.
 
 ---
 

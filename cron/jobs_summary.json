@@ -9,7 +9,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 3
+      "completed": 5
     },
     "state": "scheduled",
     "skills": [
@@ -27,7 +27,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 1
+      "completed": 2
     },
     "state": "scheduled",
     "skills": [
@@ -45,7 +45,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 1
+      "completed": 2
     },
     "state": "scheduled",
     "skills": [
@@ -63,7 +63,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 12
+      "completed": 13
     },
     "state": "scheduled",
     "skills": [
@@ -81,7 +81,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 2
+      "completed": 3
     },
     "state": "scheduled",
     "skills": [],
@@ -97,7 +97,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 2389
+      "completed": 3808
     },
     "state": "scheduled",
     "skills": [],
@@ -113,7 +113,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 1
+      "completed": 2
     },
     "state": "scheduled",
     "skills": [],
@@ -129,7 +129,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 2
+      "completed": 3
     },
     "state": "scheduled",
     "skills": [],

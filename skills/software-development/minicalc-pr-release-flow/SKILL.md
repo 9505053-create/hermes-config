@@ -17,6 +17,13 @@ Use when Scott asks to advance MiniCalc to the next PR/final phase.
   - `python3 -m pytest -q`
   - `python3 -m py_compile calculator.py source/*.py tests/*.py scripts/*.py` when scripts exist
   - `git diff --check`
+  - If reviewer-facing quality matters, run coverage and inspect weak spots: `python3 -m pytest --cov=source --cov=calculator --cov-report=term-missing`.
+- Add a focused edge-case probe after the happy-path tests. At minimum check:
+  - whitespace/blank user inputs are normalized consistently across controller and core layers;
+  - documented input grammar matches implementation strictness (for dates, enforce or document exactly `YYYY-MM-DD`);
+  - non-zero values must not be displayed as plain `0` after rounding; use scientific notation or an explicit precision policy;
+  - no controller calls a private engine method such as `_format_*` when a public API should exist;
+  - no dead helper functions, scattered tri-state input flags, unexplained magic constants, or redundant double-validation loops remain.
 - For Tkinter GUI smoke in WSL without a display, use Xvfb and document that it is executable headless GUI smoke, not human-visible Windows desktop smoke.
 
 ## Steps
@@ -56,6 +63,11 @@ Use when Scott asks to advance MiniCalc to the next PR/final phase.
    - Copy `git ls-files` into `package/files/`.
    - Include `PACKAGE_MANIFEST.md` and `VERIFICATION_FINAL.txt`.
    - Avoid copying pytest cache or untracked artifacts.
+   - Do **not** zip the whole working directory. Never include `.git/`, `build/`, `dist/`, `__pycache__/`, `.pytest_cache/`, or `pytest-cache-files-*` in a source review package.
+   - For public release, split artifacts:
+     - source release: source, tests, docs, README, pytest/config files, reproducible build instructions;
+     - binary release: `MiniCalc.exe`, README/release notes, hash, and build provenance.
+   - Prefer `git archive` or an explicit release script over manual folder zipping.
 8. Run 3AI review prompts from Windows workspace paths:
    - Gemini: `gemini.cmd --skip-trust --approval-mode yolo`
    - Codex: `codex.cmd exec --skip-git-repo-check --sandbox workspace-write`
@@ -78,6 +90,11 @@ Use when Scott asks to advance MiniCalc to the next PR/final phase.
 - Keep smoke scripts tracked so reviewers can audit/re-run them.
 - Do not claim PR is complete when only planning is complete.
 - PyInstaller creates build artifacts (`build/`, `dist/`, `.spec`). Keep the final `.exe` for delivery, but remove or intentionally commit the `.spec`; do not leave accidental untracked release artifacts in the repo.
+- `.gitignore` only prevents future tracking; it does not make a zip clean. Verify package contents with `unzip -l <archive>` or a manifest check before sharing.
+- A full green test suite can still miss specification mismatches. Add reviewer-style probes for whitespace, alternate ISO formats, tiny non-zero numbers, and UI wrapper behavior.
+- Treat GUI wrapper coverage separately from headless-core coverage. Low `calculator.py` coverage is not automatically a blocker, but release confidence should include fake-widget tests and/or Xvfb smoke.
+- Keep layer boundaries clean: controllers should not depend on private engine helpers; promote repeated formatting/parsing behavior to public core APIs.
+- If state flags start becoming `None` / empty string / sentinel strings / numeric text, stop and introduce an explicit state object or enum before adding more behavior.
 
 ## PR2→PR5 Lessons Learned
 
@@ -93,4 +110,9 @@ Use when Scott asks to advance MiniCalc to the next PR/final phase.
 - When reviewers raise non-blocking but actionable warnings, fix them immediately, rerun gates, commit/push, and optionally perform a focused re-review package.
 - When doing Tkinter UI verification from WSL, distinguish Xvfb executable GUI smoke from human-visible Windows desktop smoke.
 - For final merge: Scott approval → pre-merge gates → fast-forward merge → push `origin/main` → post-merge gates → verify local/remote HEADs match.
-- For user-trial executables after merge, place artifacts under `C:\Users\chien\_3AI_WorkSpace\temp_EXE` by default and keep a stable alias plus a versioned copy.
+- Review feedback from GPT/Claude/Gemini should be mined into durable gates, not treated as one-off praise. The May 16 external reviews produced these reusable upgrades:
+  - Preserve the winning pattern: headless core + controller layer + thin Tkinter UI wrapper + delayed Tk import.
+  - Keep TDD evidence, development history, acceptance criteria, smoke checklist, and lessons files as first-class deliverables.
+  - Add a release-hygiene gate: split source vs binary packages, avoid whole-working-directory zips, and publish hashes for executables.
+  - Add adversarial edge probes beyond the 121-test happy baseline: whitespace duration fields, date grammar strictness, tiny non-zero display, private API leakage, dead helpers, state explosion, magic constants, redundant validation, and GUI coverage weak spots.
+  - When a reviewer finds a reproducible bug, convert it to a RED test before fixing unless Scott explicitly says not to modify the app.

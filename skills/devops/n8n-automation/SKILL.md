@@ -494,6 +494,7 @@ try {
 | workflow 不觸發 | Inactive | n8n UI 重新啟用 |
 | `require('https')` 失敗 | 沙箱封鎖 HTTP | 用 HTTP Request node 替代 Code node |
 | 重啟後假陽性警報 | 監控 workflow 瞬間偵測到抖動 | 等 1-2 分鐘觀察，不需立即處理 |
+| `Task execution aborted because runner became unresponsive` around 30s | n8n Task Runner heartbeat window too short for a legitimate long Code node | Back up compose, set `N8N_RUNNERS_HEARTBEAT_INTERVAL: 120`, recreate n8n, then verify readiness and rerun offline validation |
 | `curl: not found` | 容器內沒 curl | 改用 `wget` |
 | `systemctl is-active` 失敗 | 容器看不到宿主機 systemd | 改用 HTTP health check |
 | `pgrep -f xxx` 找不到 | 容器看不到宿主機進程 | 改用 HTTP health check |

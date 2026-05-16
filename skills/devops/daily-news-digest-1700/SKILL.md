@@ -93,6 +93,38 @@ Prefer offline validation before sending test emails.
 - Compose service entrypoint is already `n8n`; do not run `n8n n8n execute`.
 - If CLI execution says missing start node, keep an `executeWorkflowTrigger` manual trigger connected to the main flow.
 
+## Task Runner Heartbeat Abort Pitfall
+
+Symptom:
+- Watchdog reports today's 17:00 run has no success.
+- The workflow exists and is active; n8n and Postgres health/readiness are OK.
+- Execution detail shows last node `Format Email` and error `Task execution aborted because runner became unresponsive` after about 30 seconds.
+- Docker logs may show `Task runner failed heartbeat check, restarting...`.
+
+Cause:
+- The `Format Email` Code node may legitimately spend more than the default heartbeat window doing RSS fetches, translation, filtering, and HTML generation. n8n Task Runner can misclassify the busy Code node as unresponsive and abort it.
+
+Fix pattern:
+1. Back up `/mnt/c/docker/n8n/compose.yaml` with a timestamp.
+2. Add or raise this env var under the `n8n` service:
+   ```yaml
+   N8N_RUNNERS_HEARTBEAT_INTERVAL: 120
+   ```
+3. Validate compose syntax: `cd /mnt/c/docker/n8n && docker compose config >/tmp/n8n_compose_config_checked.yml`.
+4. Recreate only n8n: `cd /mnt/c/docker/n8n && docker compose up -d --no-deps n8n`.
+5. Verify inside the container:
+   ```bash
+   docker inspect n8n --format '{{range .Config.Env}}{{println .}}{{end}}' | grep N8N_RUNNERS_HEARTBEAT_INTERVAL
+   curl -fsS http://localhost:5678/healthz/readiness
+   ```
+6. Run offline validation of the `Format Email` node before claiming recovery. Do not send a duplicate email unless Scott asks.
+
+Rollback command shape:
+```bash
+cp /mnt/c/docker/n8n/compose.yaml.bak_<timestamp> /mnt/c/docker/n8n/compose.yaml
+cd /mnt/c/docker/n8n && docker compose up -d --no-deps n8n
+```
+
 ## External Watchdog and Backup Verification
 
 The digest must not rely only on n8n to report n8n failure.

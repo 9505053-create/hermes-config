@@ -321,6 +321,8 @@ Longform handoff optimization (2026-05-14): Scott noted that long CLI messages b
 
 Important wording: this bridge is not an internal session private-message channel. 小蝦 may say it wrote a handoff request to 小馬信箱. 小蝦 may only say it received 小馬's reply after a corresponding outbox file exists. If 小馬 performs a CLI callback, call it "檔案信箱 + 小馬 CLI callback", not direct Telegram/session private messaging. Do not claim 小蝦 directly contacted the current 小馬 Telegram session.
 
+Receipt discipline patch (2026-05-16): When Hermes/小馬 initiates contact to OpenClaw via `openclaw agent --local --agent main --session-id ...`, report it as **OpenClaw CLI local session**, not as Telegram/bridge notification. Every cross-agent handoff report must include: channel, request/session id, evidence path, visible_to, status, and next_actor. Only claim "小蝦 Telegram 視窗已通知 Scott" after OpenClaw channel delivery or an actual Telegram-visible reply succeeds. 2026-05-16 observed failure: OpenClaw agent-internal `message` tool attempted `channel=telegram` and failed with "Action send requires a target"; retry with `target=current` failed with "Channel is required (no configured channels detected)"; the tool also has no `list` action. Therefore, do not instruct 小蝦 to self-deliver from an embedded/local agent session unless a configured channel/target is known and the tool result proves success. Safer host-side delivery path uses `openclaw message send --channel telegram --target 7292751008 --message "..." --media "C:\\path\\to\\artifact.png" --json` exactly once for real delivery. Do **not** treat `--dry-run --json` as a safe preview for Telegram: on 2026-05-16 it still returned Telegram Message ID 208 and Scott's screenshot showed duplicate messages when followed by the real send (Message ID 209). Use Python `subprocess.run([...])` rather than shell-interpolated `cmd.exe /c` for long Chinese text/paths. If OpenClaw Telegram delivery is unavailable or fails, say it is blocked and fall back to Hermes Telegram delivery with clear attribution. This prevents Scott from checking the wrong surface and thinking the handoff was lost.
+
 Bridge transient failure note (2026-05-14): Scott showed a Telegram cron alert for job `a6f5a4721def` where `openclaw-hermes-bridge.py` failed at `ensure_dirs()` / `Path.mkdir()` with `OSError: [Errno 5] Input/output error: '/mnt/c/Users/chien/_3AI_WorkSpace/_OpenClaw/bridge/hermes/inbox'`. Diagnosis from logs: Hermes gateway received SIGTERM from systemd at 16:59:22, the WSL boot ended at 16:59:32, and a new WSL boot started at 17:04:17. Therefore this alert can occur when WSL/Windows/DrvFS is stopping or restarting while the every-minute bridge cron touches `/mnt/c`; it is usually a transient host/mount interruption, not a missing directory or bad bridge config. Verification pattern: run `hermes gateway status`, `journalctl --list-boots`, stat the bridge dirs under `/mnt/c/.../bridge/hermes`, then manually run `python3 ~/.hermes/scripts/openclaw-hermes-bridge.py` and expect exit 0/empty output when inbox is empty. If it recurs while WSL is stable, add retry/backoff around `ensure_dirs()` or inspect Windows disk/WSL mount health.
 
 Hermes wrote the rule into OpenClaw's workspace:
@@ -774,6 +776,60 @@ Verification:
 - Secret-pattern scan over changed OpenClaw docs/local skill found no hits.
 - Gateway status check succeeded: running, loopback `127.0.0.1:18789`, connectivity probe `ok`.
 - Fresh OpenClaw CLI session `hermes-dual-output-verify-20260515b` read `local-skills/dual-md-html-output/SKILL.md` and correctly summarized when to use it, default file names/location, Markdown vs HTML split, and HTML safety red lines.
+
+## Flowchart + UI aesthetics local skills (2026-05-16)
+
+Scott explicitly reminded Hermes: 「流程圖和 UI 美學，記得要教小蝦」. Hermes implemented this from outside OpenClaw with backup first.
+
+OpenClaw-side updates:
+
+- New local skill: `C:\\\\Users\\\\chien\\\\.openclaw\\\\workspace\\\\local-skills\\\\diagram-visual-design\\\\SKILL.md`
+- New local skill: `C:\\\\Users\\\\chien\\\\.openclaw\\\\workspace\\\\local-skills\\\\ui-programming-aesthetics\\\\SKILL.md`
+- Patched startup-visible pointer in `AGENTS.md`: visual alignment and UI gates should be considered before/alongside implementation.
+- Patched `MEMORY.md`, `TOOLS.md`, and `memory\\\\2026-05-16.md`.
+- Backup before OpenClaw workspace edits: `C:\\\\Users\\\\chien\\\\.openclaw\\\\backups\\\\visual-flow-ui-aesthetics-20260516-061759\\\\ROLLBACK.md`.
+
+Behavior taught to 小蝦:
+
+- When Scott asks for a flowchart, architecture diagram, mind map, process map, state machine, agent pipeline, or when a complex explanation has 3+ meaningful components, use `local-skills/diagram-visual-design/SKILL.md` and consider a visual artifact rather than only text.
+- For GUI/web/frontend/Tkinter/desktop/EXE/product-surface tasks, use `local-skills/ui-programming-aesthetics/SKILL.md`; functional tests are not enough. Check hierarchy, spacing, typography, density, states, interaction, accessibility, consistency, and AI-design slop.
+- For non-trivial UI work, show a quick sketch / wireframe / flowchart / HTML mockup before heavy implementation when it reduces rework.
+- For complex review artifacts, compose with `dual-md-html-output`: Markdown source of truth plus self-contained HTML review artifact.
+
+Verification:
+
+- Local skill frontmatter checks passed for both new skills.
+- Changed OpenClaw docs/local skills had no obvious secret-pattern hits.
+- `AGENTS.md` character count stayed below the known 12000-character injection limit after the edit.
+- Gateway status check succeeded: running, loopback `127.0.0.1:18789`, connectivity probe `ok`.
+- Fresh OpenClaw CLI session `hermes-visual-ui-verify-20260516` read both local skills and correctly summarized: use flowcharts/visuals for workflows with 3+ meaningful components; UI tasks require hierarchy/layout/spacing/typography/density/states/interaction/accessibility/consistency/aesthetic-restraint gates; complex review artifacts combine Markdown source of truth with HTML review artifact.
+- Verification run reported the known non-blocking Windows browser-plugin symlink warning; it did not block the agent result.
+
+### Diagram visual v3 sync (2026-05-16)
+
+After Scott and the 3AI council critiqued the Token Governance mind map, Hermes upgraded 小蝦's `diagram-visual-design` local skill to v1.1.0 with the v3 governance-map rules:
+
+- Reading order must match left-to-right/top-to-bottom logic; `STEP 1 / ①–③` belongs left/top unless explicit guidance says otherwise.
+- Center principle and TL;DR action trigger must be orthogonal, not paraphrases.
+- Cards should use standardized rows with semantic labels; do not overclaim identical schemas.
+- Icons must use one visual family; code pills are only for literal commands/APIs/system tokens; shorthand such as `~~` must be self-explaining.
+- CJK line breaks must avoid isolated function words such as `的、是、了、之、把、被、對、在、向、用、給、與、和、及`.
+- Telegram/mobile output target must be declared; phone-first diagrams may need 1080×1350/720×1280 or overview + detail cards.
+
+Files changed:
+
+- Rewrote: `C:\\\\Users\\\\chien\\\\.openclaw\\\\workspace\\\\local-skills\\\\diagram-visual-design\\\\SKILL.md`
+- Added reference: `C:\\\\Users\\\\chien\\\\.openclaw\\\\workspace\\\\local-skills\\\\diagram-visual-design\\\\references\\\\token-governance-v3-lessons-20260516.md`
+- Patched short pointer in `AGENTS.md` and notes in `MEMORY.md`, `TOOLS.md`, `memory\\\\2026-05-16.md`.
+- Backup before edits: `C:\\\\Users\\\\chien\\\\.openclaw\\\\backups\\\\diagram-visual-v3-sync-20260516-082552\\\\ROLLBACK.md`.
+
+Verification:
+
+- Frontmatter check passed; secret-pattern scan found no hits.
+- `AGENTS.md` stayed below OpenClaw's 12000-character injection limit (`rawChars≈11642`, not truncated in fresh run).
+- Gateway status check succeeded: running on `127.0.0.1:18789`, connectivity probe `ok`.
+- Fresh OpenClaw CLI session `hermes-diagram-v3-sync-verify2-20260516` read the updated skill and reference, then correctly summarized the v3 gate and ended with: 「我會照這套 v3 gate 執行。」
+- Known non-blocking browser-plugin symlink warning still appeared; it did not block the result.
 
 ## Playwright MCP adapt-only local skill (2026-05-14)
 

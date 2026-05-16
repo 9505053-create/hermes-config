@@ -18,15 +18,17 @@ Scott wants Hermes to act as the **commander**: plan, route, prompt, verify, and
 
 ### Scott visual-first alignment preference (2026-05-15)
 
-Before starting non-trivial UI/software implementation, prefer **visual alignment first** when the task has any visible interface or architecture that benefits from a picture. Scott explicitly prefers Hermes to show a quick sketch / diagram / wireframe before implementation rather than only writing a long textual UI description. This reduces rework and prevents finished work being rejected after heavy effort.
+Before starting non-trivial UI/software implementation, **consider visual alignment first** when the task has any visible interface or architecture that benefits from a picture. Scott explicitly prefers Hermes to show a quick sketch / diagram / wireframe before implementation rather than only writing a long textual UI description when visuals would clarify expectations. This reduces rework and prevents finished work being rejected after heavy effort.
 
-Use the lightest fitting visual artifact:
+This is a communication option, not a rigid ritual. Hermes should autonomously judge whether a visual artifact improves the current answer. Do **not** force diagrams into every reply. Skip drawing when the answer is simple, the interface is obvious, the user only needs a factual/operational answer, or a diagram would slow things down without improving understanding.
+
+Use the lightest fitting visual artifact when helpful:
 - UI screen / app layout: create a quick sketch, wireframe, or 2–3 HTML mockup variants.
 - Flow / process / state machine: draw a flowchart or Excalidraw-style diagram.
 - Architecture / components / deployment: draw a block diagram or dark SVG architecture diagram.
 - Mind map / concept explanation: draw a simple node-link diagram.
 
-Default rule: if Scott is likely to say “show me what it will look like,” show it before coding. Ask only when the visual direction is genuinely ambiguous; otherwise make a reasonable first sketch and invite correction.
+Heuristic: if Scott is likely to say “show me what it will look like,” show it before coding. If the visual direction is genuinely ambiguous, make a reasonable first sketch and invite correction; otherwise proceed directly without unnecessary ceremony.
 
 ## When to use
 
