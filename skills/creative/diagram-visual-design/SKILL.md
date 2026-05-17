@@ -69,6 +69,11 @@ Reference case studies:
 - `references/mind-map-governance-redesign-20260516.md` — Token Governance mind-map redesign critique synthesis and v2 pattern.
 - `references/mind-map-v3-critique-synthesis-20260516.md` — follow-up 3AI critique: spatial logic, schema honesty, mobile output, icon consistency, code-pill scope.
 - `references/token-governance-mindmap-v3-implementation-20260516.md` — concrete v3 implementation pattern that passed vision review, including final copy, layout, pitfalls, and verification prompt.
+- `references/3ai-command-flowchart-review-20260517.md` — 3AI consultant synthesis for converting Hermes/3AI command SOPs into true decision flowcharts: red-line gates, pass/fail loops, route semantics, Windows Mode details, and SVG layout pitfalls.
+- `references/3ai-command-flowchart-v3-implementation-20260517.md` — superseded v3 implementation notes: logic pattern useful, but later Scott/3AI review found layout failures (overflow, diagonal crossing lines, overloaded reference panel). Do not copy its layout.
+- `references/3ai-command-flowchart-v4-rework-20260517.md` — corrective v4 pattern for Hermes/3AI command SOP diagrams: three-layer swimlane, Contract Bus, orthogonal routing, outer fail-loop, side Reference panel, card padding, and CJK/SVG verification.
+- `references/3ai-command-flowchart-v4-1-finish-pass-20260517.md` — v4.1 finish-pass rules from Scott/3AI review: title-band no-go zones, outer-gutter bypass routing, decision-node zone membership, short repair fail loop, Reference padding, deterministic SVG geometry QA, and focused SVG/vision verification.
+- `references/3ai-command-flowchart-v4-3-finish-pass-20260517.md` — v4.3 finish-pass rules from Scott/3AI review: semantic anchor centering, layer containment, connector waypoint bounds, right egress margins, Reference/Layer separation, and focused vision prompts.
 
 ### Main workflow
 
@@ -78,6 +83,61 @@ Reference case studies:
 - Keep main nodes visually dominant; feedback loops should be thinner/dashed.
 - Do not squeeze the terminal/output node under the previous step just because the row is full; either rebalance all node widths into one baseline row, or create a clearly separated output lane with at least 80–120px of vertical air.
 - Avoid U-turn arrows into a small output card near a feedback loop; this creates a crowded knot. Prefer a simple horizontal 4→5 arrow and route feedback below the entire row.
+
+### SOP / command flowcharts
+
+Use these rules when turning an operating manual, agent-command guide, safety procedure, or orchestration SOP into a flowchart. The goal is an **executable decision flow**, not just a pretty high-level summary.
+
+#### Gate semantics
+
+- Draw mandatory checks as real gates with explicit branches, not as ordinary reminder cards.
+  - Red-line gate: `hit → stop / ask Scott / mask data / forbid`; `clear → classify`.
+  - Verification gate: `pass → deliver`; `fail → repair / redelegate / report limitation`.
+  - High-risk system-change gate: `safe-system-update → 3AI Council → backup/rollback → compile/tests`.
+- For safety controls that can trigger both before and during execution, show two layers when useful:
+  - **Static preflight gate:** credit-card, secrets, obvious deletion/export risk.
+  - **Dynamic execution gate:** actual generated commands, file operations, upload/export targets, and side effects.
+- Add stop conditions for loops/debates: consensus clear, no new information, verification passed, extra agents add noise, or Scott decision is required.
+- Never let a high-impact debate path imply immediate execution. Use `debate → summary → Scott decision point → route to execution only if approved`.
+
+#### Route semantics
+
+- Distinguish execution modes clearly:
+  - `Hermes direct` — no agent prompt package required unless the shared artifact is renamed to `Execution Contract`.
+  - `delegate_task` — synchronous Hermes subagent; must be self-contained and later verified by Hermes.
+  - `3AI CLI` — Claude/Codex/Gemini Windows-mode CLI work; use prompt files, logs, and read-back verification.
+  - `independent/spawned Hermes Agent` — longer autonomous run with fuller tool access; do not blur with `delegate_task`.
+  - `OpenClaw/小蝦` — include when the workflow relies on Scott's Windows/OpenClaw worker rather than generic 3AI CLI.
+- If a selector explains Claude/Codex/Gemini roles, connect it to all paths it serves (`3AI CLI`, `3AI Debate`, `3AI Council/core changes`) or visually attach it as a child panel to a single route. Do not leave it as an unconnected decorative island.
+- Important operational details should survive compression when they are part of the SOP:
+  - Windows Mode: `cd /d`, prompt file + `type prompt.txt | cli.cmd`, avoid long `-p`, read-back verify.
+  - Claude quota fallback: wait/retry under 2 hours; otherwise reroute to Codex GPT-5.5 and document substitution.
+  - 3AI disk-I/O report fields: `Mode`, `Workspace`, `CLI flags`, `Disk verification`.
+
+#### Layout and SVG pitfalls
+
+- For 5+ route cards, prefer a strict grid, swimlanes, or wider canvas rather than five narrow cards with long CJK text. For command/SOP route splits, the preferred v4/v4.1 pattern is a single aligned route row plus a horizontal **Contract Bus** collecting B/C/E-style routes; do not draw independent diagonal connectors into one downstream card.
+- Use orthogonal / Manhattan routing for SOP diagrams. Reserve explicit gutters or bus lanes; connectors must not cross card rectangles, labels, code pills, helper panels, zone titles, or footers. Draw lines behind cards for visual layering, but do not rely on z-order to hide bad routing.
+- For manually positioned SVG, make geometry QA a hard gate rather than a visual opinion. Add `data-x`, `data-y`, `data-w`, and `data-h` to every `.card` and `.gate`, then run `scripts/svg_geometry_qa.py` before claiming PASS. The script must return PASS for node overlap, text overflow, connector crossing, and title-band crossing checks.
+- Geometry QA is necessary but not sufficient: also visually inspect connector labels, floating text, and standalone command pills. A path may avoid a title band while its label still sits on the title band; this is a FAIL. Keep connector labels outside all layer/reference title bands.
+- Add semantic connector QA for decision branches: a `hit` / `clear` / `pass` / `fail` branch should attach to the explicit gate/card anchor, not merely touch somewhere on the shape. For horizontal branches, source and target anchor `y` values should match; for vertical branches, anchor `x` values should match. If they cannot match, use a deliberate orthogonal elbow that starts and ends on the correct anchors.
+- Add containment QA beyond node collisions: every node, reference card, and connector waypoint should stay inside its intended layer/panel or an intentional named outer gutter. A connector that detours outside the layer right edge because a card is too close to the boundary is a FAIL even if it does not cross another node.
+- Reserve egress margins near container edges. Cards with outgoing routes need a visible right/left routing gutter (about 50px for main flow; about 30px minimum for reference panels) so the diagram does not look clipped or forced outside the frame.
+- Put command/code pills inside their parent `.card` group whenever possible, or explicitly verify their rect/text against the parent card; standalone pills are easy for geometry QA to miss.
+- Prefer layout by calculation over hand-tuned coordinates. Define grid columns/rows, gutters, padding, line heights, and font metrics up front; compute `box_width = max(estimated_line_widths) + padding*2` and `box_height = header + rows*line_height + padding*2`. If any assert fails, fix the layout algorithm rather than nudging pixels.
+- Treat every swimlane/zone title as a real obstacle. Reserve the top **55–65px title band** of each layer: no card, connector label, or arrow segment may pass through it. For a layer starting at `y=710`, first content/connector lanes should begin at about `y>=780`, not on the title baseline.
+- If a bypass line needs to cross multiple layers, route it through an outer gutter (for example `x<60` or the far-right margin) and re-enter only below the next layer's title band. Do not run a vertical channel through left-aligned zone titles.
+- Decision bridge nodes such as `Scott 決策點` and `SUM` must belong to one zone completely. Do not let important diamonds/cards straddle `Layer 2 / Layer 3` boundaries; either place them fully inside Layer 3 or create an explicit `Decision Bridge` lane.
+- Route verification fail loops as the shortest readable repair loop: `驗證 fail → 修正/重派 → Execution Contract`. Use an outer perimeter lane only when needed, and never let fail loops wrap around or pass through `OUT`, archive, delivery, or success cards.
+- Keep main flow and reference material separate. Move CLI flags, Windows Mode command snippets, Council/governance checklists, and long operational details into a right-side Reference panel or second page; main route cards should keep only route semantics. Reference panels still need the same padding and overlap checks as main cards.
+- Compute or measure text/chip bounds. A card with 3 body rows usually needs more height than a 2-row peer; a long title such as `Hermes 核心變更` may need a shorter label or wider card. Minimum rule: last text baseline must be at least 14–18px above the card bottom, and rightmost text/chip must stay at least 16–20px inside the card edge.
+- Code/flag pills must fit inside their parent container and not collide with body text. Long flags such as `--approval-mode yolo` require calculated width, a second line, or a warning callout; do not hand-place overlapping pills.
+- High-permission flags should use a warning style and a short risk note, e.g. `高權限：僅限受控 workspace`.
+- Route connectors around helper panels. Lines should not pass through role-selector boxes, flag pills, footnotes, or cards.
+- Keep semantic colors honest. If the legend says green means validation/delivery, do not use green for debate unless the legend says green means review/judge.
+- Use a broad CJK font fallback stack in SVG/HTML:
+  `"Noto Sans TC", "Noto Sans CJK TC", "Source Han Sans TC", "Microsoft JhengHei", "PingFang TC", "Heiti TC", "Arial Unicode MS", system-ui, sans-serif`.
+- Deliver a PNG/PDF preview with SVG source when font portability matters; consider converting text to paths only for final archival copies where editability is no longer needed.
 
 ### Mind map
 
@@ -176,7 +236,20 @@ Line semantics:
 Avoid:
 
 - Text clipped by cards.
+- Fixed-height cards with variable-length CJK text; maintain at least 18–24px bottom padding or remove text rather than shrinking until unreadable.
+- Long diagonal point-to-point connectors in SOP diagrams; use orthogonal routing plus gutters/buses instead.
+- Independent route connectors all converging into one downstream card, creating spaghetti; use a Contract Bus or swimlane merge.
+- Fail loops that visually cut through `OUT`, archive, delivery, or success paths; fail must travel outside and return to the repair/contract node.
+- Mixing main process with reference/cheat-sheet content; CLI flags and governance checklists belong in a side Reference panel or appendix.
+- Cards with unequal content density forced into identical heights, causing 3-row cards or long CJK titles to overflow.
 - Lines crossing through labels.
+- Connector lines passing through helper panels, selector boxes, code/flag pills, or footnotes.
+- Treating a mandatory safety or verification check as a normal sequential card instead of a branched gate.
+- Omitting failure/repair loops after verification, making the process imply one-shot success.
+- Making debate/review paths flow directly into execution when the source SOP requires a summary and Scott decision point first.
+- Blurring distinct agent modes such as `delegate_task`, `3AI CLI`, independent Hermes Agent, and OpenClaw/小蝦 under one generic `agent` label.
+- Neutral styling for dangerous/high-permission command flags such as `--approval-mode yolo`; use warning treatment and a controlled-workspace note.
+- Code/flag pills overlapping each other or exceeding their parent panel.
 - Child nodes touching or overlapping the center node.
 - Oversized filled triangle arrowheads; in SVG, avoid `markerUnits="strokeWidth"` for normal UI diagrams because it can scale arrowheads into chunky, crude triangles.
 - Directional arrowheads on mind-map spokes; mind maps should usually use undirected soft connector lines unless direction is semantically important.
@@ -212,12 +285,18 @@ Avoid:
 8. **Apply design system:** choose theme, typography, semantic colors, spacing, consistent icons, code-tag treatment, zone strength, and line semantics.
 9. **Generate artifact:** write HTML/SVG, Mermaid, or `.excalidraw` file.
 10. **Verify visually:** open in browser or inspect with vision. Check clipping, overlap, arrow routing, contrast, edge margins, mobile/Telegram readability, CJK line breaks, icon consistency, code-pill scope, reading order, TL;DR/center orthogonality, and whether any floating element looks like an unintended node.
-11. **Iterate once if needed:** fix concrete visual issues before final delivery.
+11. **Run deterministic geometry QA before visual sign-off for hand-authored SVG/HTML:** do not rely on eyesight or vision review alone when coordinates are manually placed.
+   - If the SVG uses `.card` / `.gate` groups with `data-x`, `data-y`, `data-w`, `data-h`, run:
+     `python ~/.hermes/skills/creative/diagram-visual-design/scripts/svg_geometry_qa.py <diagram.svg>`
+   - The diagram is **not deliverable** if QA reports `box_collision`, `text_overflow_right`, `text_overflow_bottom`, `connector_crosses_node`, or `connector_crosses_title_band`.
+   - Add task-specific hard assertions for semantic anchors and containers when the design has known gates/layers. Examples: `redgate.midY == stop.midY == hit_path.y`; every card belongs to its intended Layer/REF panel; connector waypoints do not exceed layer/canvas safe bounds; right-edge cards leave enough egress gutter.
+   - If QA fails, fix layout math or regenerate from a grid/autosizing script; do not just nudge pixels by eye.
+12. **Iterate once if needed:** fix concrete visual issues before final delivery.
    - If Scott marks a red box/circle, treat it as a design review, not a vague complaint.
    - Diagnose whether the issue is content architecture, structural layout, connector routing, density, typography, or style mismatch.
    - Prefer structural fixes over pixel nudges when multiple elements crowd one area.
-   - After fixing, run a screenshot/vision pass focused specifically on the marked region.
-12. **Report format and path:** include screenshot/media path and source file path when useful. For Scott, always report Windows paths first. If outputs were created under WSL-only locations such as `/tmp` or `/home/chien`, copy durable deliverables to `C:\Users\chien\_3AI_WorkSpace\artifacts\...` or `C:\Users\chien\_3AI_WorkSpace\temp_for-Scott\...` before reporting, and use `\\wsl.localhost\Ubuntu\...` only as a fallback.
+   - After fixing, rerun geometry QA, then run a screenshot/vision pass focused specifically on the marked region.
+13. **Report format and path:** include screenshot/media path and source file path when useful. For Scott, always report Windows paths first. If outputs were created under WSL-only locations such as `/tmp` or `/home/chien`, copy durable deliverables to `C:\Users\chien\_3AI_WorkSpace\artifacts\...` or `C:\Users\chien\_3AI_WorkSpace\temp_for-Scott\...` before reporting, and use `\\wsl.localhost\Ubuntu\...` only as a fallback.
 
 ## Mermaid-Specific Rules
 
@@ -237,7 +316,7 @@ Avoid:
 - Use zone borders/backgrounds with enough contrast to survive screenshot compression; grouping containers should be perceivable, not merely decorative.
 - Use CSS variables for pill tiers: neutral technical pills should not overpower the verbs; dangerous/prohibited terms may use stronger dark/red styling.
 - Draw connector paths behind cards when possible, and connect them to semantic anchors.
-- Use browser screenshot verification before final.
+- Use browser screenshot verification before final. If an HTML wrapper preview appears blank or lacks DOM content, open the underlying SVG directly and verify that rendered artifact before assuming the diagram failed; capture the screenshot from the successfully rendered view.
 - For self-contained HTML/SVG diagrams, run a DOM bounding-box gate before delivery: every important `.card`/node must stay inside the canvas safe area; grouped cards must stay inside their zone/container; footers/captions/notes must not intersect any card/node; any `bottom > canvas.bottom`, `right > canvas.right`, or footer-card overlap is a FAIL, not a style nit.
 - If the user critiques the visual, inspect their marked-up screenshot and patch the artifact rather than starting over blindly.
 
@@ -266,9 +345,19 @@ Do **not** install new diagram MCP servers or global npm packages during normal 
 - [ ] Content schema is honest: uniform labels only when actually uniform; otherwise standardized rows with semantic labels.
 - [ ] TL;DR and center text are not redundant; one states principle and one states action/trigger.
 - [ ] All directives are unambiguous and action-oriented.
-- [ ] No clipped text.
+- [ ] No clipped text; each card keeps at least 18–24px bottom padding or the content was shortened.
+- [ ] Cards, titles, footers, and code/flag pills fit inside their containers; no pill overlap or overflow.
+- [ ] SOP routes use orthogonal / Manhattan routing or a deliberate bus/swimlane pattern; no long diagonal point-to-point connectors through the layout.
+- [ ] Multi-route merges use a Contract Bus or clean merge lane instead of spaghetti convergence.
+- [ ] Required SOP gates are drawn as branches, not mere reminder cards.
+- [ ] Verification has an explicit pass/fail path; failed verification returns to repair/redelegate/report-limitation using an outer lane that does not cross success/delivery cards.
+- [ ] Debate/review paths do not imply execution before the required summary/decision point.
+- [ ] Distinct agent modes are labeled honestly (`delegate_task`, `3AI CLI`, independent Hermes Agent, OpenClaw/小蝦) when relevant.
+- [ ] CLI flags, command snippets, and Council/governance details are separated into Reference/appendix panels unless they are the node's primary decision content.
+- [ ] High-permission flags or side-effect paths have warning styling and controlled-workspace/approval notes.
+- [ ] If SVG was hand-authored or absolute-positioned, deterministic geometry QA passed with `scripts/svg_geometry_qa.py` before browser/vision review.
 - [ ] No node overlap.
-- [ ] No arrows/lines through text or unrelated nodes.
+- [ ] No arrows/lines through text, unrelated nodes, or layer title bands.
 - [ ] Connector anchors attach to meaningful points, not arbitrary floating edges.
 - [ ] Colors/line styles have semantic meaning.
 - [ ] Icons are stylistically consistent.
