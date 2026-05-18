@@ -74,6 +74,8 @@ Reference case studies:
 - `references/3ai-command-flowchart-v4-rework-20260517.md` — corrective v4 pattern for Hermes/3AI command SOP diagrams: three-layer swimlane, Contract Bus, orthogonal routing, outer fail-loop, side Reference panel, card padding, and CJK/SVG verification.
 - `references/3ai-command-flowchart-v4-1-finish-pass-20260517.md` — v4.1 finish-pass rules from Scott/3AI review: title-band no-go zones, outer-gutter bypass routing, decision-node zone membership, short repair fail loop, Reference padding, deterministic SVG geometry QA, and focused SVG/vision verification.
 - `references/3ai-command-flowchart-v4-3-finish-pass-20260517.md` — v4.3 finish-pass rules from Scott/3AI review: semantic anchor centering, layer containment, connector waypoint bounds, right egress margins, Reference/Layer separation, and focused vision prompts.
+- `references/process-flowchart-experience-lessons-20260518.md` — distilled 經驗校訓 from the 3AI command-flowchart production loop: flowcharts as executable decision machines, branch gates, fail loops, bus/swimlane routing, deterministic + focused visual QA, and teaching rules for 小蝦/OpenClaw.
+- `references/mobile-telegram-flowchart-remediation-20260518.md` — Scott correction after a 小蝦 Telegram diagram failed readability: PNG generation is not delivery PASS; mobile-first/split exports and phone-scale typography checks are mandatory when Telegram is the target.
 
 ### Main workflow
 
@@ -310,6 +312,7 @@ Avoid:
 
 - Default desktop canvas: 1600×1000 or 1600×900 for widescreen overview.
 - For Telegram/mobile-first reading, also produce a mobile canvas such as 1080×1350, 720×1280, or split into overview + detail cards. A 1600×900 image compressed to phone-chat width is not sufficient for reading 12–16px card text.
+- **PNG generated is not delivery validation.** If the target is Telegram, estimate `phone_preview_width / image_width` and the resulting effective body-text size before saying the diagram is done. If critical text would render below about 10–12 visible pixels, the image is a FAIL even when the PNG file exists; split or regenerate a mobile export.
 - For dense 3-row governance cards on a 1600×900 desktop canvas, do not assume 138px card height is enough; verify bottom rows. In the Token Governance v3 case, about 156px was needed for 3 rows plus header.
 - Keep all important content inside the central 90% safe area.
 - Use CSS variables for colors and typography; if using a light theme, consider whether Scott would benefit from an alternate Catppuccin/dark theme for engineering review.

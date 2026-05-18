@@ -270,6 +270,7 @@ Detailed session-specific coordination pattern: see `references/hermes-openclaw-
 - For ad hoc subtask delegation, Scott does **not** need to manually relay messages. Hermes can call the Windows-native OpenClaw CLI from WSL and collect the result. Use this for bounded low-risk analysis/review/report-generation subtasks, then Hermes verifies/summarizes the result for Scott.
 - Current safest one-off delegation pattern from WSL is `openclaw agent --local --agent main --message "..." --json --timeout 600` invoked through `cmd.exe`/Windows context. In practice, `openclaw agent --message ...` without `--agent main` fails with `Pass --to <E.164>, --session-id, or --agent`; gateway mode can also hit `scope upgrade pending approval`, while `--local --agent main` successfully uses the OpenClaw auth profile / Codex OAuth route.
 - For long Chinese prompts or prompts containing newlines, avoid shell quoting directly in `cmd.exe /c "..."`. Prefer a small Python wrapper using `subprocess.run(["cmd.exe","/c","openclaw","agent","--local","--agent","main","--message", prompt,"--json","--timeout","600"], ...)`, and keep the prompt mostly one-line to avoid Windows command parsing surprises. Parse `finalAssistantVisibleText` from the JSON output, then independently verify any file paths 小蝦 claims to write.
+- For teaching or verification prompts that ask 小蝦 to read multiple new rules/files, do **not** rely on one long `openclaw agent` turn as the only proof. If a long CLI verification times out while gateway/channel probes are healthy, do not keep retrying the same prompt. Write the durable rule into OpenClaw local skill / MEMORY / learnings, verify with file readback and sentinel strings, then optionally ask a short fresh-session summary later.
 - If 小蝦 fails to fetch web/YouTube content due tool limits but writes a failure report, Hermes can recover by fetching the external content with its own tools and re-delegating a bounded write/report task to 小蝦, clearly noting in the report that Hermes supplied the transcript/source data.
 - Prefer direct `openclaw agent` CLI delegation over n8n for one-off 小蝦 subtasks. Use n8n for scheduled/repetitive automations or health checks; do not expose the loopback-only Gateway externally just to make n8n talk to OpenClaw.
 - Avoid Telegram bot-to-bot delegation as the primary path; use Telegram for Scott-facing interaction, not Hermes-to-OpenClaw orchestration.
@@ -532,6 +533,28 @@ When Scott asks whether 龍蝦 / 小蝦 is healthy:
 3. Run `openclaw channels status --probe` to confirm Telegram polling and connectivity.
 4. Run `openclaw models status` to confirm `openai-codex` OAuth and default model.
 5. Query scheduled task if persistence/autostart is in question.
+
+### Low-token watchdog preference (2026-05-18)
+
+Scott corrected the maintenance cadence for 小蝦 liveness checks to **every 3 hours**, not frequent polling. For low-interaction periods, prefer a Hermes cron `no_agent=True` script-only watchdog so normal checks consume **zero LLM tokens** and stay silent when healthy. Session-specific details, including the WSL→Windows `cmd.exe` quoting pitfall and verification output, are in `references/openclaw-watchdog-zero-token-20260518.md`.
+
+Current implemented job from the 2026-05-18 session:
+
+- Script: `~/.hermes/scripts/openclaw-watchdog.py`
+- Cron id: `dbf8eda121b1`
+- Schedule: `0 */3 * * *`
+- Normal healthy output: empty stdout; log only.
+- Failure behavior: restart OpenClaw Gateway, re-probe, then emit a fixed notification; do not invoke an agent/LLM unless repeated failures require deeper analysis.
+
+### Repeated Telegram silence / watchdog diagnosis
+
+If Scott says Telegram calls to 小蝦 repeatedly get no response, first separate **configuration** from **runtime liveness**:
+
+- If token/channel/model/OAuth are configured and healthy but `openclaw gateway status` shows `Runtime: stopped`, `Connectivity probe: failed`, or `ECONNREFUSED 127.0.0.1:18789`, this is a gateway liveness failure, not Scott misuse.
+- If the gateway is running but logs show `Polling stall detected`, repeated `telegram sendChatAction failed`, `telegram sendMessage failed`, or `telegram final reply failed`, treat it as Telegram transport/polling instability.
+- The Windows Scheduled Task is primarily a logon starter; do not assume it is a robust watchdog for mid-session crashes/stalls.
+- Preferred durable mitigation is a lightweight watchdog that probes gateway/channel health, restarts only on repeated failure, waits 10–20 seconds, re-probes, and reports evidence to Scott.
+- See `references/openclaw-telegram-silent-gateway-watchdog-2026-05-18.md` for the session-specific evidence, commands, log patterns, and host-side Telegram delivery verification syntax.
 
 Quick recovery pattern from 2026-05-13:
 

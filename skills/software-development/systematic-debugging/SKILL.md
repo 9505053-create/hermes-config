@@ -360,6 +360,10 @@ When fixing bugs:
 3. Fix the root cause (GREEN)
 4. The test proves the fix and prevents regression
 
+### AI Agent Behavior Bugs
+
+For probabilistic agent failures where traditional stack traces are not enough (wrong tool choice, skipped clarification, planner/router drift, prompt regression), collect trace evidence before fixing. A local trace/eval tool such as Raindrop Workshop can stream token/tool-call/decision traces, then let Codex or Claude Code inspect the trajectory, write an eval, patch the prompt/code/tool schema, and replay. Start in a sandbox; do not instrument Hermes core without the `safe-system-update` process. See `references/raindrop-workshop-agent-tracing.md` for the adoption pattern and safety notes.
+
 ## Real-World Impact
 
 From debugging sessions:

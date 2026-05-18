@@ -63,7 +63,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 14
+      "completed": 15
     },
     "state": "scheduled",
     "skills": [
@@ -81,7 +81,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 4
+      "completed": 5
     },
     "state": "scheduled",
     "skills": [],
@@ -97,7 +97,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 5237
+      "completed": 6666
     },
     "state": "scheduled",
     "skills": [],
@@ -113,7 +113,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 3
+      "completed": 4
     },
     "state": "scheduled",
     "skills": [],
@@ -129,7 +129,23 @@
     },
     "repeat": {
       "times": null,
-      "completed": 4
+      "completed": 5
+    },
+    "state": "scheduled",
+    "skills": [],
+    "prompt_snippet": "..."
+  },
+  {
+    "id": "dbf8eda121b1",
+    "name": "🦐 小蝦 OpenClaw 3小時零token watchdog",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 */3 * * *",
+      "display": "0 */3 * * *"
+    },
+    "repeat": {
+      "times": null,
+      "completed": 6
     },
     "state": "scheduled",
     "skills": [],
