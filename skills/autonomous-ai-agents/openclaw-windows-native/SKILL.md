@@ -892,3 +892,4 @@ Verification:
 - This skill intentionally contains no API keys or Telegram token.
 - Treat any pasted OpenClaw config containing tokens as sensitive; do not send to third parties.
 - Do not add public port-forwarding for OpenClaw Gateway without explicit approval and an authentication design.
+- For Claw Chain / OpenShell / MCP loopback vulnerability questions, use `references/openclaw-claw-chain-version-check-20260519.md`: verify installed version, latest npm version, gateway bind address, `netstat`, and OpenShell plugin status before judging exposure. Do not claim public exposure if the gateway is loopback-only, and do not claim OpenShell-specific exploitability if OpenShell Sandbox is disabled.

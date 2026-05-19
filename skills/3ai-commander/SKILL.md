@@ -159,6 +159,42 @@ Hermes is the **Commander** that strategically uses 3AI resources to save tokens
 - Can split tasks among 3AI members
 - I coordinate, summarize, and execute final actions
 
+### Controller Role + Execution Pool（2026-05-19 Scott 補充）
+
+Scott's explicit role split:
+
+- **Hermes / 小馬 = commander/controller**: plan, decide routing, write prompts, create work arrangements, coordinate, verify, summarize, and report.
+- **Hermes may execute directly** when the task is simple, deterministic, low-risk, or faster to do in-controller.
+- **3AI CLI agents** are not the only workers. Hermes also has **3AI / Hermes subagents** via `delegate_task` and should use them when their strengths fit.
+- Do not delegate every task. Delegation is a tool, not a ritual.
+
+Execution pool routing:
+
+1. **Hermes direct execution**
+   - Best for: quick answers, single-file reads/edits, simple checks, deterministic tool calls, small summaries, low-risk actions.
+   - Avoid delegating when the overhead exceeds the task.
+
+2. **Hermes subagents / 3AI agents (`delegate_task`)**
+   - Best for: parallel independent analysis, code review slices, focused research, spec/quality review, implementation subtasks with bounded context, comparison of alternatives.
+   - Strengths: fresh context, parallelism, no Windows CLI shell overhead, good for scoped reasoning/review.
+   - Weaknesses: cannot ask Scott directly, cannot continue if parent turn is interrupted, summaries are self-reports and must be verified for artifacts/side effects.
+   - Use with `subagent-driven-development` for planned implementation/review loops.
+
+3. **3AI CLI agents (Claude / Codex / Gemini / OpenClaw where relevant)**
+   - Best for: heavy coding, architecture critique, long-form review, subscription-backed high-capacity work, Windows-native disk I/O, independent external-model judgment, formal 3AI debate.
+   - Strengths: distinct model perspectives, monthly subscription resources, stronger separation from Hermes context, can write artifacts in `_3AI_WorkSpace` with correct flags.
+   - Weaknesses: CLI quota/cooldown, Windows invocation overhead, must manage prompt files/logs, outputs require read-back verification.
+
+Default decision rule:
+
+- **Simple task** → Hermes direct.
+- **Independent parallel reasoning/review** → Hermes subagents first.
+- **Heavy implementation / formal 3AI / external-model judgment** → 3AI CLI agents.
+- **High-impact tasks** → plan first, then mix Hermes direct + subagents + CLI agents according to strengths.
+- Hermes always owns the final judgment and user-facing summary.
+
+Session-specific detail and the bundled-skill routing arrangement from Scott's 2026-05-19 correction are archived in `references/hermes-skill-routing-2026-05-19.md`.
+
 ### Flexible CLI Consultation Routing（2026-05-13 Scott 指導）
 Hermes should treat 小蝦 / Claude CLI / CODEX CLI / Gemini CLI as a flexible support pool, not only as formal debate participants.
 
@@ -179,6 +215,32 @@ Round/cost guardrails:
 - Stop early when consensus is clear, no new information appears, or additional CLI calls would not materially improve the answer.
 - Do **not** call 小蝦/OpenClaw merely because it is available or subscription-backed. Scott's 2026-05-13 token discussion measured roughly 98k-99k tokens per OpenClaw consultation because of fixed runtime/context/cache overhead. However, Scott later clarified that Codex/ChatGPT usage is mostly covered by monthly subscription; the main downside is cooldown/waiting, and he can wait as an AI hobbyist. Use 小蝦 when OpenClaw-specific workflow, independent worker execution, 小馬/Hermes coordination, long-context support, or a meaningful second opinion improves correctness or continuity; avoid only nonessential waste, repeated retries, and pointless scans.
 - Hermes remains the controller: route, prompt, collect raw outputs when useful, summarize, verify handles/artifacts, and report only the distilled conclusion to Scott.
+
+### External tool adoption principle（2026-05-19 Scott 指導）
+
+When evaluating external multi-agent management or memory tools (e.g. cc-switch, claude-mem, WebUI variants), default to **Hermes-led orchestration first** rather than handing control to another manager. Scott prefers the main control plane to remain with Hermes/小馬.
+
+Adoption ladder:
+1. **Prompt/workspace solution first** — use Hermes-written prompts, shared workspace manifests, agent-specific subworkspaces, logs, and read-back verification to coordinate Claude/Codex/Gemini.
+2. **Hermes native memory first** — use AGENTS.md, skills, session_search, trace archives, and workspace reports before adding a third-party memory layer.
+3. **External tools only for clear gaps** — install or integrate tools like cc-switch/claude-mem only if they provide a concrete capability Hermes cannot already achieve safely through orchestration, such as a needed GUI, proven cross-agent hook capture, or audited usage analytics.
+4. **Do not cede policy authority** — external tools must not rewrite provider budgets, bypass safety rules, auto-sync credentials, or become the primary source of truth for prompts/memory without Scott's explicit approval.
+5. **Pilot before adoption** — test in a non-sensitive workspace, with secrets excluded, cloud sync disabled, and rollback/backup documented.
+
+Practical implication: for most 3AI coordination and memory-continuity needs, Hermes should maintain control by generating stronger prompts, routing tasks, preserving structured artifacts, and promoting verified lessons into skills.
+
+### Bundled Hermes skill leverage map（2026-05-19 Scott 官網技能盤點）
+
+When coordinating Scott's 3AI/Hermes workflows, prefer composing Hermes' bundled/local skills before adding external tools:
+
+- **Planning lane**: `plan` / `writing-plans` / `spike` for no-execution planning, bite-sized implementation plans, and throwaway feasibility tests.
+- **Implementation quality lane**: `test-driven-development` / `systematic-debugging` / `requesting-code-review` for RED-GREEN-REFACTOR, root-cause debugging, and pre-commit quality gates.
+- **Parallel work lane**: `subagent-driven-development` and, for larger queues, `kanban-orchestrator` + `kanban-worker`; keep Hermes as controller and use workers for scoped execution/review only.
+- **Visual/communication lane**: `sketch` / `architecture-diagram` / `excalidraw` / `popular-web-designs` / `humanizer` to produce clearer human-facing plans, diagrams, UI mockups, and less AI-sounding writing.
+- **Research/monitoring lane**: `blogwatcher` / `llm-wiki` / `arxiv` / `youtube-content` for ongoing intelligence and structured knowledge capture.
+- **Productivity lane**: `ocr-and-documents` / `powerpoint` / `google-workspace` / `teams-meeting-pipeline` when Scott provides docs, slides, meeting artifacts, Drive/Gmail/Calendar tasks, or PDFs.
+
+Default absorption rule: update Scott-specific workflow skills only with durable routing rules and pitfalls. Do not copy whole bundled skills or install external equivalents when the local Hermes skill already covers the capability.
 
 ### Commander + UI aesthetics principle（2026-05-15 Scott 指導）
 

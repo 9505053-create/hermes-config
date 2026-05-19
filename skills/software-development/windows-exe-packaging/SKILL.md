@@ -26,10 +26,11 @@ Do not scatter executables across Desktop/Downloads/project folders unless Scott
 
 ## Workflow
 
-Reusable helper: `scripts/package_pyinstaller_windows.ps1` packages a PyInstaller onefile executable, copies the stable and versioned artifacts into `C:\Users\chien\_3AI_WorkSpace\temp_EXE`, computes SHA256, and performs a 5-second startup smoke. Use it when the project fits the standard Python/PyInstaller pattern; otherwise follow the manual steps below.
+Reusable helper: `scripts/package_pyinstaller_windows.ps1` packages a PyInstaller onefile executable, copies the stable and versioned artifacts into `C:\\Users\\chien\\_3AI_WorkSpace\\temp_EXE`, computes SHA256, and performs a 5-second startup smoke. Use it when the project fits the standard Python/PyInstaller pattern; otherwise follow the manual steps below.
 
-1. Identify the project entry point, usually `main.py`, `app.py`, or a project-specific file such as `calculator.py`.
-2. Confirm Windows Python and PyInstaller are available:
+1. **Inspect the app purpose before packaging.** Read `README.md`, the likely entry point, and dependency/config files to confirm what the executable will do. Do not blindly turn freshly downloaded code into an `.exe` if the README/entry point shows it automates prohibited activity (for example: Google/Play Books viewer auto page-turning, screenshot capture, DRM/access-control bypass, or bulk capture of protected content). In that case, stop before PyInstaller and offer a compliant refactor/export-based packaging path instead.
+2. Identify the project entry point, usually `main.py`, `app.py`, or a project-specific file such as `calculator.py`.
+3. Confirm Windows Python and PyInstaller are available:
    ```bash
    /mnt/c/Windows/System32/cmd.exe /c "where python && python --version && python -m PyInstaller --version"
    ```
@@ -76,7 +77,12 @@ Reusable helper: `scripts/package_pyinstaller_windows.ps1` packages a PyInstalle
 
 ## Pitfalls
 
+- Boundary communication matters: if packaging must stop because the app centers on prohibited viewer-capture/DRM/access-control behavior, say the exact narrow blocker in one sentence, do not frame it as general fear of PyInstaller or EXE packaging, and immediately offer an allowed packageable path (export-file organizer, OCR/PDF tools for user-owned files, or a refactor that removes the sensitive automation). For ordinary apps inside Scott's red lines, package directly without extra hesitation.
 - A WSL-built binary is not a Windows `.exe`; invoke Windows Python through `cmd.exe` or PowerShell.
 - PyInstaller onefile GUI executables may trigger SmartScreen because they are unsigned. Tell Scott this is expected for unsigned local builds.
-- `--windowed` hides console output; avoid it for CLI tools.
+- `--windowed` hides console output; avoid it for CLI tools. For Click/Rich/argparse command-line apps, explicitly use `--console` and verify with `--help` plus one functional command, not only a GUI-style `Start-Process` smoke.
+- If the app reads local config/templates/data files by path, add them with PyInstaller `--add-data`; see `references/google-books-capture-cli-packaging-20260519.md` for verified Click CLI examples, including the earlier config-bundled OCR build and the later lightweight `gbooks-helper` build.
+- For the specific Google/Play Books viewer-capture boundary discovered during packaging, see `references/bookcapture-viewer-capture-packaging-boundary-20260519.md`.
+- When invoking PowerShell from WSL, quote carefully: use single-quoted `-Command '...'` or a script file so `$variables` are not expanded away by the outer shell.
+- When smoke-testing a Windows `.exe` from WSL, pass Windows-style paths (`C:\\...`) to the executable, not `/mnt/c/...`; the process is Windows-native and Click path validation will reject WSL paths as nonexistent.
 - Do not delete old files in `temp_EXE` unless Scott asks. Overwrite only the stable `<AppName>.exe` alias and keep versioned copies for traceability.
