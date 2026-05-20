@@ -14,6 +14,20 @@ metadata:
 
 Use [Google Gemini CLI](https://github.com/google-gemini/gemini-cli) for coding tasks, analysis, and multi-AI collaboration. Gemini excels at natural language processing, code review, and terminal operations.
 
+## 2026-05 Google Antigravity CLI transition
+
+Google announced on 2026-05-19 that consumer Gemini CLI / Gemini Code Assist usage is transitioning to **Antigravity CLI**. Key operational facts for Scott's workflow:
+
+- Antigravity CLI is available from `https://antigravity.google/download` and is intended to replace consumer Gemini CLI usage.
+- Google says Gemini CLI and Gemini Code Assist IDE extensions will stop serving consumer/free/AI Pro/AI Ultra requests on **2026-06-18**; enterprise access is described as unchanged.
+- Antigravity CLI is Go-based, shares the Antigravity agent harness with Antigravity 2.0, and preserves critical Gemini CLI concepts: Agent Skills, Hooks, Subagents, and Extensions as Antigravity plugins.
+- It is **not guaranteed to have 1:1 feature parity at launch**, so do not migrate Scott's 3AI workflow blindly.
+- Current Scott workflow impact: keep `gemini.cmd` path active until cutover. If Gemini CLI stops serving requests, do not panic-rebuild the whole 3AI workflow; route the former Gemini lane to Antigravity CLI after a minimal smoke test.
+- Scott's explicit commander rule: **Hermes / 小馬 remains the commander**. Antigravity may be delegated tasks as a worker/agent platform and may internally split work among its own subagents, but Hermes only asks for and verifies the final artifact/result. Do not let Antigravity become the primary controller, memory source, budget policy owner, or schedule authority.
+- Antigravity migration posture: pilot Antigravity CLI in a controlled `_3AI_WorkSpace/_agent/Gemini Workspace` test folder, then update invocation templates only after read/write/headless/result-readback behavior is verified. Safety-policy parity is desirable, but Scott accepts that Antigravity can internally allocate subtasks as long as Hermes owns the prompt boundary and verifies outputs.
+- As of the last check in Scott's environment, Windows `gemini.cmd` was version `0.40.1`; `antigravity`/`agy` CLI was not yet found in PATH.
+
+
 ## Prerequisites
 
 - Gemini CLI installed via npm: `npm install -g @google/gemini-cli`

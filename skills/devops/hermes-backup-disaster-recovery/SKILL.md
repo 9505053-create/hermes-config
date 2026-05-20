@@ -282,6 +282,24 @@ sudo /home/chien/.local/bin/hermes gateway restart
 
 ## Pitfalls (Learned from v0.11→v0.13 Upgrade — 2026-05-11)
 
+### ⚠️ Google Drive OAuth: refresh token 400 / `invalid_grant`
+If a backup job fails while calling `gdrive_access_token()` with `HTTP Error 400: Bad Request`, test the token directly before debugging Drive upload code:
+
+```bash
+python3 ~/.hermes/hermes-agent/skills/productivity/google-workspace/scripts/setup.py --check
+~/.hermes/scripts/openclaw-four-location-backup.py --check
+```
+
+`invalid_grant: Token has been expired or revoked` means the **refresh token itself is dead**. Do not retry; generate a fresh consent URL and ask Scott to paste the localhost redirect URL/code:
+
+```bash
+python3 ~/.hermes/hermes-agent/skills/productivity/google-workspace/scripts/setup.py --auth-url
+python3 ~/.hermes/hermes-agent/skills/productivity/google-workspace/scripts/setup.py --auth-code '<PASTED_REDIRECT_URL_OR_CODE>'
+python3 ~/.hermes/scripts/openclaw-four-location-backup.py --check
+```
+
+For `openclaw-four-location-backup.py`, ensure `--check` validates `google_refresh_token_valid`, not just the existence of `google_token.json`; otherwise cron will look healthy until the nightly run crashes.
+
 ### ⚠️ Google Drive OAuth: `drive.readonly` ≠ `drive`
 The `google-workspace` setup script defaults to `drive.readonly` scope. This allows **listing/reading** files but **blocks folder creation and file uploads** (403 Forbidden / insufficientPermissions).
 

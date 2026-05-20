@@ -180,10 +180,11 @@ Execution pool routing:
    - Weaknesses: cannot ask Scott directly, cannot continue if parent turn is interrupted, summaries are self-reports and must be verified for artifacts/side effects.
    - Use with `subagent-driven-development` for planned implementation/review loops.
 
-3. **3AI CLI agents (Claude / Codex / Gemini / OpenClaw where relevant)**
+3. **3AI CLI agents (Claude / Codex / Gemini / Antigravity / OpenClaw where relevant)**
    - Best for: heavy coding, architecture critique, long-form review, subscription-backed high-capacity work, Windows-native disk I/O, independent external-model judgment, formal 3AI debate.
    - Strengths: distinct model perspectives, monthly subscription resources, stronger separation from Hermes context, can write artifacts in `_3AI_WorkSpace` with correct flags.
    - Weaknesses: CLI quota/cooldown, Windows invocation overhead, must manage prompt files/logs, outputs require read-back verification.
+   - Google lane update (2026-05-20 Scott instruction): Google is transitioning consumer Gemini CLI to Antigravity CLI. If Gemini CLI becomes unavailable, Hermes remains commander and delegates the former Gemini role to Antigravity as a worker platform. Antigravity may internally distribute subtasks to its own agents/subagents; Hermes should not micromanage that internal allocation. Hermes writes the task boundary, retrieves the requested result/artifact, verifies it, and integrates it into Scott's workflow.
 
 Default decision rule:
 
