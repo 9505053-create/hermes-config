@@ -4,7 +4,7 @@
 Use this when Scott wants Hermes to use his existing ChatGPT/Codex subscription quota instead of paid OpenRouter/OpenAI API spend.
 
 ## Known-good configuration
-`~/.hermes/config.yaml`:
+`~/.hermes/config.yaml` for Scott's current budget policy:
 
 ```yaml
 model:
@@ -12,10 +12,11 @@ model:
   provider: openai-codex
 providers: {}
 fallback_providers: []
-fallback_model:
-  provider: openrouter
-  model: xiaomi/mimo-v2-pro
+# Do NOT set fallback_model to OpenRouter by default.
+# Scott reserves OpenRouter credit for emergency rescue only.
 ```
+
+Historical note: older setups used a legacy `fallback_model` block pointing at OpenRouter (`xiaomi/mimo-v2-pro`). Remove that block unless Scott explicitly authorizes emergency fallback; otherwise a Codex auth failure can silently spend OpenRouter credits.
 
 ## Windows → WSL Codex credential bridge
 Windows Codex stores ChatGPT/Codex OAuth at:

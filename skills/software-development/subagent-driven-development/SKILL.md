@@ -208,6 +208,7 @@ git add -A && git commit -m "feat: complete [feature name] implementation"
 
 **Too big:**
 - "Implement user authentication system"
+- "Analyze 100+ spreadsheet rows and write per-row JSON for every row"
 
 **Right size:**
 - "Create User model with email and password fields"
@@ -215,6 +216,10 @@ git add -A && git commit -m "feat: complete [feature name] implementation"
 - "Create login endpoint"
 - "Add JWT token generation"
 - "Create registration endpoint"
+- "Analyze a 10-row canary sample and prove the output schema works"
+- "Deep-review 20–30 already-prioritized spreadsheet rows for one theme"
+
+For data-review / report-generation work, use a **canary before parallelism**: run one small sample first, read the output file, and only then scale. If 2+ subagents time out in the first wave, stop retrying the same task shape; reduce batch size, switch to deterministic local processing, or delegate only the high-priority subset by theme.
 
 ## Red Flags — Never Do These
 

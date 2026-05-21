@@ -599,7 +599,7 @@ When Scott asks whether older web research or discussion items were actually con
 1. `hermes doctor` — check config and dependencies
 2. `hermes login` — re-authenticate OAuth providers
 3. Check `.env` has the right API key
-4. **OpenAI Codex via ChatGPT subscription**: if Scott wants GPT-5.5 through Codex quota, configure `model.provider: openai-codex`, `model.default: gpt-5.5`, and keep `fallback_model` on OpenRouter `xiaomi/mimo-v2-pro`. Windows Codex login is not always enough in WSL: bridge `/mnt/c/Users/chien/.codex` to `~/.codex` and ensure `~/.hermes/auth.json` has an `openai-codex` OAuth credential pool entry. See `references/openai-codex-gpt55-via-windows-auth.md`.
+4. **OpenAI Codex via ChatGPT subscription**: if Scott wants GPT-5.5 through Codex quota, configure `model.provider: openai-codex`, `model.default: gpt-5.5`, and keep `fallback_providers: []` with no legacy `fallback_model` unless Scott explicitly authorizes emergency OpenRouter spend. Windows Codex login is not always enough in WSL: bridge `/mnt/c/Users/chien/.codex` to `~/.codex` and ensure `~/.hermes/auth.json` has an `openai-codex` OAuth credential pool entry. See `references/openai-codex-gpt55-via-windows-auth.md`.
 5. **Copilot 403**: `gh auth login` tokens do NOT work for Copilot API. You must use the Copilot-specific OAuth device code flow via `hermes model` → GitHub Copilot.
 
 ### Scott's Provider Fallback Hierarchy ⛔
@@ -701,6 +701,19 @@ If `auxiliary` tasks (vision, compression, session_search) fail silently, the `a
 hermes config set auxiliary.vision.provider <your_provider>
 hermes config set auxiliary.vision.model <model_name>
 ```
+
+**Telegram warning: `No auxiliary LLM provider configured — context compression will drop middle turns without a summary. Run hermes setup or set OPENROUTER_API_KEY.`**
+- Meaning: Hermes has no configured auxiliary provider for compression/summary tasks.
+- Impact: not dangerous, but long conversations may lose middle turns instead of being summarized.
+- Scott-facing explanation: this is a continuity/quality warning, not a virus, not an HTML/file error.
+- Fix: run `hermes setup` or explicitly set auxiliary providers. For Scott's cost hierarchy, do not reflexively spend OpenRouter balance; prefer an existing subscription/OAuth provider when suitable.
+
+**Telegram warning: `Compression summary failed: Error code: 401 ... authentication token is expired ... token_expired ... Inserted a fallback context marker.`**
+- Meaning: a provider was configured, but its auth token expired while generating a context-compression summary.
+- Impact: the session can continue with a fallback marker, but cross-window/context continuity may be lower quality.
+- Fix: refresh the relevant OAuth/API credential (for OAuth providers, use `hermes login --provider <provider>`; for API-key providers, update `~/.hermes/.env`) and restart the gateway or start a new session.
+
+**Telegram vision 404 from OpenRouter fallback:** If logs or Telegram show `API failed after 3 retries — HTTP 404: No endpoints found that support image input` plus `Max retries (3) exhausted — trying fallback...`, inspect recent gateway logs and config for stale processes or legacy `fallback_model: openrouter / xiaomi/mimo-v2-pro`. In Scott's setup OpenRouter is emergency reserve only, so remove silent OpenRouter fallback unless explicitly authorized, refresh Codex auth if needed, restart gateway, and run the vision smoke test. See `references/telegram-vision-openrouter-fallback-404.md`.
 
 **Codex + Gemini compression 400:** If logs or Telegram show `Compression summary failed: Error code: 400 ... 'google/gemini-3-flash-preview' model is not supported when using Codex with a ChatGPT account`, the auxiliary compression model/provider are mismatched. Do not route an OpenRouter-style Gemini slug through `openai-codex`. For Scott's preferred budget hierarchy, pin compression to Codex/GPT-5.5 rather than OpenRouter:
 ```bash

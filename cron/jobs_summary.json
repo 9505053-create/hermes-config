@@ -63,7 +63,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 17
+      "completed": 18
     },
     "state": "scheduled",
     "skills": [
@@ -81,7 +81,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 8
+      "completed": 10
     },
     "state": "scheduled",
     "skills": [],
@@ -97,7 +97,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 9521
+      "completed": 10944
     },
     "state": "scheduled",
     "skills": [],
@@ -113,7 +113,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 6
+      "completed": 7
     },
     "state": "scheduled",
     "skills": [],
@@ -129,7 +129,7 @@
     },
     "repeat": {
       "times": null,
-      "completed": 7
+      "completed": 8
     },
     "state": "scheduled",
     "skills": [],
@@ -145,7 +145,23 @@
     },
     "repeat": {
       "times": null,
-      "completed": 21
+      "completed": 30
+    },
+    "state": "scheduled",
+    "skills": [],
+    "prompt_snippet": "..."
+  },
+  {
+    "id": "9b6eb0dfe7b8",
+    "name": "🩺 每日代理/授權健康檢查",
+    "schedule": {
+      "kind": "cron",
+      "expr": "30 6 * * *",
+      "display": "30 6 * * *"
+    },
+    "repeat": {
+      "times": null,
+      "completed": 1
     },
     "state": "scheduled",
     "skills": [],

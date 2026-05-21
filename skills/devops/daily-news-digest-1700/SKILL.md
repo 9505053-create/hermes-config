@@ -132,6 +132,17 @@ The digest must not rely only on n8n to report n8n failure.
 Existing external Hermes cronjobs:
 - `n8n Daily News Digest 1700 watchdog` — daily 17:20 — script `n8n_daily_digest_watchdog.py` — silent on success, alert on failure.
 - `n8n DB backup integrity verifier` — daily 18:05 — script `n8n_state_backup_verify.py` — performs DB dump and workflow export, silent on success.
+- `每日代理/授權健康檢查` — daily 06:30 — script `daily-agent-health-check.py` — checks controllable worker/auth surfaces (Hermes delegate_task availability, Claude/Codex/Gemini/AGY/OpenClaw CLI, optional Antigravity Desktop/CDP, Google Drive OAuth), writes status to `~/.hermes/status/daily_agent_health_latest.json` and `/mnt/c/docker/n8n/n8n_data/hermes_status/daily_agent_health_latest.json`, silent on success, alerts only when manual attention/auth is needed.
+
+Daily 17:00 footer integration:
+- The `Format Email` Code node reads `/home/node/.n8n/hermes_status/daily_agent_health_latest.json` (host path: `/mnt/c/docker/n8n/n8n_data/hermes_status/daily_agent_health_latest.json`).
+- Footer must include both the 06:30 agent/auth status and backup statuses, especially `每日 00:00 Hermes 設定備份到 GitHub`.
+- If the status file is missing, show a small warning footer rather than failing the entire news digest.
+
+Cron script timeout pitfall:
+- Long no-agent backup scripts can be killed by the scheduler default script timeout (observed: OpenClaw four-location backup timed out after 120s).
+- Use config key `cron.script_timeout_seconds: 600` for longer but legitimate backup scripts. Backup config first before changing:
+  `cp ~/.hermes/config.yaml ~/.hermes/config.yaml.bak_cron_script_timeout_$(date +%Y%m%d_%H%M%S)` then `hermes config set cron.script_timeout_seconds 600`.
 
 Watchdog principle:
 - Check today's 17:00+ successful execution from outside n8n.

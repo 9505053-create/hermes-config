@@ -97,15 +97,29 @@ Answer shape:
 
 ### C. OCR / document / receipt / form image
 
-Use when the task is to read text from an image or scanned document.
+Use when the task is to read text from an image or scanned document, or when native vision fails but the screenshot likely contains machine-readable text.
 
 Workflow:
 
 1. Ask vision/OCR to extract text verbatim and preserve structure.
-2. For long PDFs/scans, use `ocr-and-documents` and choose `web_extract`, `pymupdf`, or `marker-pdf` as appropriate.
-3. Preserve tables, bullets, headers, amounts, dates, and visible confidence issues.
-4. If text is faint/rotated/low-contrast, state uncertainty and optionally preprocess with local image processing.
-5. Never invent unreadable text. Mark unclear regions as `[unclear]`.
+2. If `vision_analyze` / `browser_vision` returns “No endpoints found that support image input” or similar provider errors, do not stop there:
+   - Use local OCR if available.
+   - If OCR is not installed and a quick local install is acceptable, install a lightweight OCR stack such as:
+     ```bash
+     python3 -m pip install rapidocr-onnxruntime pillow
+     ```
+   - Run:
+     ```python
+     from rapidocr_onnxruntime import RapidOCR
+     result, elapse = RapidOCR()(image_path)
+     for box, text, score in result or []:
+         print(f"{score:.2f}: {text}")
+     ```
+   - Use the OCR text as evidence and mention if OCR confidence/line breaks are imperfect.
+3. For long PDFs/scans, use `ocr-and-documents` and choose `web_extract`, `pymupdf`, or `marker-pdf` as appropriate.
+4. Preserve tables, bullets, headers, amounts, dates, and visible confidence issues.
+5. If text is faint/rotated/low-contrast, state uncertainty and optionally preprocess with local image processing.
+6. Never invent unreadable text. Mark unclear regions as `[unclear]`.
 
 ### D. Chart / graph / data visualization
 
@@ -160,6 +174,8 @@ Do not use remote image-processing APIs unless Scott explicitly wants them. Do n
 ## Tool Selection Defaults
 
 - **Single attached image / Telegram screenshot**: `vision_analyze` first.
+2. **If native vision endpoint fails or is unavailable**: fall back to local OCR before giving up. A lightweight option that worked for screenshots is `python3 -m pip install rapidocr-onnxruntime pillow`, then run `RapidOCR()(image_path)` and extract high-confidence lines. This is especially useful for Telegram warning/error screenshots.
+   - If the screenshot itself is a Hermes/gateway error such as `No endpoints found that support image input`, do not treat it only as an OCR problem. Load `hermes-agent`, inspect gateway logs/config, and check whether image payloads were routed to a non-vision fallback model (for Scott, especially silent OpenRouter fallback).
 - **Interactive webpage visual QA**: browser tools, `browser_vision`; consider `agent-browser` or Playwright only for repeatable UI testing.
 - **External repo/skill shown in screenshot**: web search/extract + external skill vetting.
 - **PDF/scanned document**: `ocr-and-documents`.

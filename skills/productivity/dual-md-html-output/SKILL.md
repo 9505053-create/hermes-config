@@ -131,6 +131,20 @@ Include:
 - Owner/capacity/estimate indicators when available
 - Copy/export as Markdown
 
+### Large link-review dashboards
+
+Use this when Scott asks to review many spreadsheet links in a human-readable way.
+
+Include:
+
+- Summary cards: total links, source types, readable/failed links, high/medium/low workflow-help counts.
+- A clear caveat when the analysis is metadata-only or transcript-light.
+- Per-row fields: original row number, link status, date/type/source, subject, URL, key points/highlights, agent commentary, workflow-help rating, confidence, tags, and suggested action.
+- Sticky filters: all, high/medium/low, priority/action, readable/failed, YouTube/article, plus full-text search.
+- Verification: HTML parser success, row count match, browser console clean, and one filter interaction test.
+  - Prefer a real browser/UI click (`browser_click` or manual click) plus DOM count verification.
+  - If a direct DOM `.click()` works but browser/UI click does not, mark the interaction test as inconclusive instead of simply “verified”; inspect overlay/z-index/accessibility/ref issues before calling the dashboard fully interactive.
+
 ### Prompt tuner
 
 Include:

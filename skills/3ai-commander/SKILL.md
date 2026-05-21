@@ -196,8 +196,53 @@ Default decision rule:
 
 Session-specific detail and the bundled-skill routing arrangement from Scott's 2026-05-19 correction are archived in `references/hermes-skill-routing-2026-05-19.md`.
 
+### Worker Specialization Matrix（2026-05-21 web-checked）
+
+Scott asked Hermes to actively research and remember which controllable workers are best for which jobs. Sources checked include official Claude Code docs, OpenAI Codex CLI docs, Gemini CLI repository/docs, and Google Antigravity CLI docs, plus MINIPC smoke tests.
+
+Current MINIPC worker availability verified from Hermes/WSL on 2026-05-21:
+
+| Worker | Observed version / path | Best at | Avoid / weakness | Default routing |
+|---|---|---|---|---|
+| Hermes direct | Native tools | Fast deterministic actions, file reads/edits, shell/API checks, final verification, user-facing synthesis | Expensive token reasoning if used for large open-ended exploration | Use directly for small or deterministic tasks; Hermes always remains commander/controller |
+| Hermes `delegate_task` subagents | Native Hermes subagents | Parallel independent research/review, context-isolated analysis, bounded implementation/review slices | Cannot ask Scott; self-reported side effects must be verified; cancelled if parent turn is interrupted | Use before external CLIs when parallel reasoning is enough and no Windows CLI state is needed |
+| Claude Code | `claude.cmd` 2.1.126; default `--model opus` per Scott | Architecture critique, high-quality reasoning, writing/editing judgment, nuanced code review, security/design objections, long-context explanation, subagent/team workflows | Quota tighter; Opus is precious; may be slower; requires `--allowedTools Bash Write Edit` for headless writes | Use for high-value review/architecture/writing; if cooldown >2h reroute to Codex GPT-5.5 |
+| Codex CLI | `codex.cmd` 0.128.0; practical model GPT-5.5 | Implementation, debugging, tests, deterministic refactors, CI/log interpretation, sandboxed workspace-write coding, local code review, image prompt/art direction | Requires git repo unless `--skip-git-repo-check`; GPT-5.5 Pro rejected via Scott's ChatGPT-auth path; outputs still need read-back verification | Use as primary engineering executor/validator and Claude fallback for long cooldowns |
+| Gemini CLI | `gemini.cmd` 0.40.1 | Broad synthesis, alternate framing, Google-search-grounded/current info, large-context scan, terminal scripting, multimodal/sketch/PDF style prompts when available | Consumer service path expected to stop after 2026-06-18; `--approval-mode yolo` is global and risky; 429 capacity noise; no directory-scoped sandbox like Codex | Use as Google-lane reviewer/synthesizer until cutoff; keep prompts controlled and verify files |
+| Antigravity CLI / AGY | `agy.exe` 1.0.0; WSL wrapper `/home/chien/.local/bin/agy` | Google-lane successor, agent-first workflows, asynchronous subagents, plugins/skills/MCP/hooks, terminal sandbox, GUI/CDP collaboration, broad workspace task orchestration | Newer and less proven; print-mode stdout capture unreliable in Hermes tests; plain `agy` may not resolve in stale WSL-spawned Windows shells; use absolute path/wrapper | Pilot as Gemini replacement and multi-agent Google worker; prefer file bridge/transcript parsing until stdout is reliable |
+
+### Non-CLI / workspace resources that must not be omitted（2026-05-21 Scott correction）
+
+Scott corrected Hermes that the controllable resource map is broader than CLI binaries. In addition to Claude/Codex/Gemini/Antigravity command-line invocation, Hermes must remember these workspace/resource lanes as first-class orchestration surfaces:
+
+| Resource lane | Concrete access / bridge | Best at | Weakness / caution | Default routing |
+|---|---|---|---|---|
+| **Gemini Workspace** | Agent subworkspace `C:\Users\chien\_3AI_WorkSpace\_agent\Gemini Workspace\` / WSL `/mnt/c/Users/chien/_3AI_WorkSpace/_agent/Gemini Workspace`; can be used as a durable file bridge for Gemini/Google-lane workers and for review artifacts | Google-lane review packages, broad synthesis artifacts, large-context package exchange, persistent outputs that Hermes can read back, handoff to Antigravity/Gemini-family tools | Not itself the reasoning engine; must pair with a worker invocation or human/desktop interaction; path contains a space so prefer quoted paths or Windows shortname when needed | Always route Gemini/Antigravity review prompts, logs, packages, and outputs here instead of cluttering root workspace; read-back every claimed output |
+| **CODEX / Codex Workspace** | Agent subworkspace `C:\Users\chien\_3AI_WorkSpace\_agent\Codex\` / WSL `/mnt/c/Users/chien/_3AI_WorkSpace/_agent/Codex`; plus Scott's subscription-backed Codex access through the local Codex agent path | Engineering implementation packages, tests/log interpretation, code review artifacts, prompt/result archives, teaching traces | Distinguish the durable workspace/resource lane from the `codex.cmd` CLI transport; CLI output still must be verified from disk; ChatGPT UI/CODEX capabilities do not automatically imply every model is available in CLI | Use as the primary durable engineering worker lane for Codex tasks; store prompts, packages, outputs, and logs here; verify with file/diff read-back |
+| **HTML / Codex Workspace decision artifacts** | Shared workspace artifacts such as `C:\Users\chien\_3AI_WorkSpace\artifacts\YYYYMMDD-topic\` and `temp_agent\...` trace packages | Human-in-the-loop review, PR/code-review dashboards, task triage, plan comparison, teaching future Hermes how a workflow was run | HTML is executable content: no secrets/tokens; self-contained only; Markdown remains source of truth | For complex decision reports, produce Markdown source plus optional self-contained HTML review interface |
+
+Important phrasing rule: when summarizing Scott's available resources, do **not** say only “CLI pool”. Say **execution/resource pool** and include both transports (CLI/browser/desktop/file bridge) and durable workspaces.
+
+Routing heuristics:
+
+1. **Simple deterministic task** → Hermes direct.
+2. **Need parallel opinions but no durable file side effects** → Hermes `delegate_task` subagents.
+3. **High-value architecture / critique / writing quality / subtle review** → Claude Code Opus.
+4. **Concrete implementation / tests / debugging / refactor / CI triage** → Codex GPT-5.5.
+5. **Broad synthesis / current web-grounded Google perspective / alternative framing** → Gemini CLI while available; after cutoff, Antigravity CLI.
+6. **Google-lane agentic work with subagents, plugins, or GUI/CDP/file-bridge collaboration** → Antigravity CLI / Desktop, but Hermes keeps task boundary and final verification.
+7. **Formal high-impact decision** → ask at least two different model families independently, then Hermes synthesizes and verifies.
+
+Fallback rules:
+
+- Claude quota/cooldown >2h → Codex substitute, preserving Claude-style reviewer intent.
+- Gemini CLI unavailable after 2026-06-18 → route Gemini lane to Antigravity CLI.
+- AGY print stdout missing → parse newest transcript under `C:\Users\chien\.gemini\antigravity-cli\brain\<id>\.system_generated\logs\transcript.jsonl` or use `_agent\Antigravity` file bridge.
+- Any worker claims it wrote files → Hermes must read back the file/diff before reporting success.
+- Any worker has broad approval (`Gemini --approval-mode yolo`, Claude dangerous permissions, AGY always-proceed) → use controlled prompt + controlled workspace + no secrets.
+
 ### Flexible CLI Consultation Routing（2026-05-13 Scott 指導）
-Hermes should treat 小蝦 / Claude CLI / CODEX CLI / Gemini CLI as a flexible support pool, not only as formal debate participants.
+Hermes should treat 小蝦 / Claude CLI / CODEX CLI / Gemini CLI / Antigravity CLI as a flexible support pool, not only as formal debate participants.
 
 Routing ladder:
 1. **Direct answer** — simple, low-risk, no external facts, no need for second opinion.
