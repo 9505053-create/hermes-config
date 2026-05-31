@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "providers": {
+    "openai-codex": {
+      "tokens": "***REDACTED***",
+      "last_refresh": "***REDACTED***",
+      "auth_mode": "***REDACTED***"
+    }
+  },
+  "credential_pool": "***REDACTED***",
+  "updated_at": "2026-05-31T15:41:19.040386+00:00",
+  "active_provider": "openai-codex"
+}
