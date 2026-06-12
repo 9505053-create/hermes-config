@@ -1,0 +1,87 @@
+diff --git a/optional-skills/mlops/training/trl-fine-tuning/SKILL.md b/optional-skills/mlops/training/trl-fine-tuning/SKILL.md
+index 1fc6f6ccf..1fbfda818 100644
+--- a/optional-skills/mlops/training/trl-fine-tuning/SKILL.md
++++ b/optional-skills/mlops/training/trl-fine-tuning/SKILL.md
+@@ -9,6 +9,7 @@ platforms: [linux, macos, windows]
+ metadata:
+   hermes:
+     tags: [Post-Training, TRL, Reinforcement Learning, Fine-Tuning, SFT, DPO, PPO, GRPO, RLHF, Preference Alignment, HuggingFace]
++    related_skills: [opencode, huggingface-hub, weights-and-biases, evaluating-llms-harness]
+ 
+ ---
+ 
+@@ -449,6 +450,16 @@ config = PPOConfig(
+ - Enable gradient checkpointing
+ - Use smaller batch sizes with gradient accumulation
+ 
++## OpenCode TRL Post-Training Review Lane
++
++Use OpenCode only as a bounded reviewer/helper for TRL post-training scripts, configs, tests, and runbook artifacts:
++
++- Good fits: review SFT/DPO/PPO/GRPO script structure, dataset formatting code, reward-model scaffolds, training argument sanity checks, tiny synthetic examples, and README/runbook drafts.
++- Hermes remains responsible for GPU/RAM checks, model/license selection, dataset privacy classification, reward/preference data handling, and the decision to start any run.
++- Do not send API keys, HF tokens, W&B keys, private preference data, proprietary prompts, human feedback records, generated checkpoints, or gated model credentials to OpenCode.
++- Do not let OpenCode launch training/RL loops, install heavyweight GPU packages, download large models, push checkpoints, or run expensive evals without explicit limits.
++- After OpenCode output, Hermes must run syntax checks and prefer tiny synthetic CPU/lightweight smokes before recommending full post-training.
++
+ ## Resources
+ 
+ - Docs: https://huggingface.co/docs/trl/
+diff --git a/skills/mlops/evaluation/lm-evaluation-harness/SKILL.md b/skills/mlops/evaluation/lm-evaluation-harness/SKILL.md
+index 79c59f1e3..8c79e4a3e 100644
+--- a/skills/mlops/evaluation/lm-evaluation-harness/SKILL.md
++++ b/skills/mlops/evaluation/lm-evaluation-harness/SKILL.md
+@@ -9,6 +9,7 @@ platforms: [linux, macos]
+ metadata:
+   hermes:
+     tags: [Evaluation, LM Evaluation Harness, Benchmarking, MMLU, HumanEval, GSM8K, EleutherAI, Model Quality, Academic Benchmarks, Industry Standard]
++    related_skills: [opencode, serving-llms-vllm, huggingface-hub, weights-and-biases]
+ 
+ ---
+ 
+@@ -487,6 +488,16 @@ lm_eval --model hf \
+   - MMLU (full): 2 hours
+   - HumanEval: 20 minutes
+ 
++## OpenCode lm-eval Harness Review Lane
++
++Use OpenCode only as a bounded reviewer/helper for local benchmark configuration, wrappers, and result-processing artifacts:
++
++- Good fits: review `lm_eval` command wrappers, YAML/task config snippets, result parsers, comparison dashboards, small synthetic benchmark fixtures, and CI smoke tests.
++- Hermes remains responsible for model/license checks, dataset/task selection, benchmark scope, cost/runtime budgets, and final result interpretation.
++- Do not send API keys, private model credentials, gated datasets, private eval prompts, proprietary benchmark data, or unreleased results to OpenCode unless explicitly scoped.
++- Do not let OpenCode run full benchmark suites, download large models/datasets, call paid APIs, publish scores, or mutate W&B/HF state without explicit limits.
++- After OpenCode output, Hermes must run schema/syntax checks and prefer tiny synthetic or `--limit` smokes before any real evaluation.
++
+ ## Resources
+ 
+ - GitHub: https://github.com/EleutherAI/lm-evaluation-harness
+diff --git a/skills/mlops/inference/vllm/SKILL.md b/skills/mlops/inference/vllm/SKILL.md
+index 2f754e1b0..21769cb7e 100644
+--- a/skills/mlops/inference/vllm/SKILL.md
++++ b/skills/mlops/inference/vllm/SKILL.md
+@@ -9,6 +9,7 @@ platforms: [linux, macos]
+ metadata:
+   hermes:
+     tags: [vLLM, Inference Serving, PagedAttention, Continuous Batching, High Throughput, Production, OpenAI API, Quantization, Tensor Parallelism]
++    related_skills: [opencode, llama-cpp, evaluating-llms-harness, huggingface-hub]
+ 
+ ---
+ 
+@@ -361,6 +362,16 @@ vllm serve MODEL --speculative-model DRAFT_MODEL
+ 
+ Supported platforms: NVIDIA (primary), AMD ROCm, Intel GPUs, TPUs
+ 
++## OpenCode vLLM Serving Review Lane
++
++Use OpenCode only as a bounded reviewer/helper for vLLM serving code, config, tests, and runbook artifacts:
++
++- Good fits: review launch scripts, Dockerfiles, OpenAI-compatible client snippets, benchmarking harnesses, Prometheus/Grafana config snippets, and synthetic smoke-test code.
++- Hermes remains responsible for GPU/RAM checks, model/license selection, credential handling, network exposure, and the decision to start any server.
++- Do not send provider tokens, Hugging Face tokens, private model URLs, production endpoint secrets, customer prompts, or private logs to OpenCode.
++- Do not let OpenCode install CUDA/PyTorch stacks, download huge models, expose `0.0.0.0` services, change firewall/proxy settings, or run load tests without explicit scope and rollback.
++- After OpenCode output, Hermes must syntax-check scripts/configs and run only local synthetic smoke tests before recommending real serving.
++
+ ## Resources
+ 
+ - Official docs: https://docs.vllm.ai

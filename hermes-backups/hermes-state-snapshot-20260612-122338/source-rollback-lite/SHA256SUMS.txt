@@ -1,0 +1,8 @@
+2fda573c7001cfdac680b9666aae78bbb6fe77fabb21ec7324c6ff4d61322132  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260612-122338/source-rollback-lite/GIT_STATUS_SHORT.txt
+6403203dd5a0867eb14d104ee8a73730bd72dd9ad92e78d996a6dba0a5dcfc01  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260612-122338/source-rollback-lite/PREUPDATE_BRANCH.txt
+0c6621be385c69fab16524dc24c6fa190d2001b87a49bb77083287469e17a37d  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260612-122338/source-rollback-lite/PREUPDATE_HEAD.txt
+0f630eda32a5bcf7277fc3f31708a66befe5b4ab560a7366de479643900b45a1  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260612-122338/source-rollback-lite/REMOTES.txt
+767f1e6da4b3ad1ae3f342b964e6f4a1c4b7a77734c4ee98bf84545bb495dabd  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260612-122338/source-rollback-lite/ROLLBACK_SOURCE_REPO.md
+9ad38bd37460f765ed22d5da0cbd535105c87210f861f9e51e5047517058d80c  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260612-122338/source-rollback-lite/local_tracked_changes.patch
+d27729828a54440c6df1e22ebb7ba067bcb0f97847b868d64d5ad97555cb04f8  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260612-122338/source-rollback-lite/untracked-files.tar.gz
+3fc5b0f722758e3b4e03a6ce8339ede042df73dc9c5cd902faff2edd5dd07488  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260612-122338/source-rollback-lite/untracked_file_roots.txt

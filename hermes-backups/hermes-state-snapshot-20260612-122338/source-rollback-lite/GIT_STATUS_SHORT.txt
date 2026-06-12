@@ -1,0 +1,5 @@
+ M optional-skills/mlops/training/trl-fine-tuning/SKILL.md
+ M skills/mlops/evaluation/lm-evaluation-harness/SKILL.md
+ M skills/mlops/inference/vllm/SKILL.md
+?? tinker-atropos/
+?? tools/reward_model.py
