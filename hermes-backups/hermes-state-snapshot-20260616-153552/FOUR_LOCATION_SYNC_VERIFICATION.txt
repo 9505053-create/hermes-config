@@ -1,0 +1,24 @@
+Hermes / 小馬 four-location backup verification
+Label: hermes-state-snapshot-20260616-153552
+
+Encrypted SHA256: d80d016350f0e1de62afea8d41231519c38bc5cf3c9f8e65844b23e247137422
+
+Location 1 - Local disk: OK
+Local archive: C:\Users\chien\_3AI_WorkSpace\HermesBackup\hermes-state-snapshot-20260616-153552.tar.gz.gpg
+
+Location 2 - Google Drive: OK
+Folder ID: 1ncaQ-zwJv8wB-KP7mUbqioRyLIMo4jFy
+File count: 11
+
+Location 3 - Supabase: OK
+label"|"encrypted_sha256"|"drive_folder"|"github_commit
+hermes-state-snapshot-20260616-153552"|"d80d016350f0e1de62afea8d41231519c38bc5cf3c9f8e65844b23e247137422"|"1ncaQ-zwJv8wB-KP7mUbqioRyLIMo4jFy"|"207a1e6ace4126af731ed832a2d45b6e2e21ea1f
+(1 row)
+
+Location 4 - GitHub: OK
+Repo path: hermes-backups/hermes-state-snapshot-20260616-153552
+Commit: 207a1e6ace4126af731ed832a2d45b6e2e21ea1f
+Remote main: 207a1e6ace4126af731ed832a2d45b6e2e21ea1f
+Repo archive SHA256: d80d016350f0e1de62afea8d41231519c38bc5cf3c9f8e65844b23e247137422
+
+Security: raw unencrypted backup remains local only; external destinations contain encrypted archive and sanitized docs. Passphrase is never printed.
