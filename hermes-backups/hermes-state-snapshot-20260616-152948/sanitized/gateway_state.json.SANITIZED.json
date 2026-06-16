@@ -1,0 +1,29 @@
+{
+  "pid": 177,
+  "kind": "hermes-gateway",
+  "argv": [
+    "/home/chien/.hermes/hermes-agent/hermes_cli/main.py",
+    "gateway",
+    "run"
+  ],
+  "start_time": 28552426,
+  "gateway_state": "running",
+  "exit_reason": null,
+  "restart_requested": false,
+  "active_agents": 0,
+  "platforms": {
+    "telegram": {
+      "state": "connected",
+      "error_code": null,
+      "error_message": null,
+      "updated_at": "2026-06-16T07:23:44.395324+00:00"
+    },
+    "api_server": {
+      "state": "connected",
+      "error_code": null,
+      "error_message": null,
+      "updated_at": "2026-06-16T07:23:44.483957+00:00"
+    }
+  },
+  "updated_at": "2026-06-16T07:23:44.490372+00:00"
+}
