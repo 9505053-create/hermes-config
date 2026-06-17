@@ -1,0 +1,24 @@
+OpenClaw / 小蝦 four-location backup verification
+Label: state-snapshot-20260618-004631
+
+Encrypted SHA256: 15c13776d2c2a9804ce44993306c98e8579e4065aeeb2a4aa9e19d7b9d3518b2
+
+Location 1 - Local disk: OK
+Local archive: C:\Users\chien\.openclaw\backups\state-snapshot-20260618-004631.tar.gz.gpg
+
+Location 2 - Google Drive: OK
+Folder ID: 19ii22Kw7XcUKRvM4F4kY9HiHGin7Wg7v
+File count: 7
+
+Location 3 - Supabase: OK
+label"|"encrypted_sha256"|"drive_folder"|"github_commit
+state-snapshot-20260618-004631"|"15c13776d2c2a9804ce44993306c98e8579e4065aeeb2a4aa9e19d7b9d3518b2"|"19ii22Kw7XcUKRvM4F4kY9HiHGin7Wg7v"|"5bfe8d4cc70c1aab40d97bc2902674c44a986101
+(1 row)
+
+Location 4 - GitHub: OK
+Repo path: openclaw-backups/state-snapshot-20260618-004631
+Commit: 5bfe8d4cc70c1aab40d97bc2902674c44a986101
+Remote main: 5bfe8d4cc70c1aab40d97bc2902674c44a986101
+Repo archive SHA256: 15c13776d2c2a9804ce44993306c98e8579e4065aeeb2a4aa9e19d7b9d3518b2
+
+Security: raw unencrypted backup remains local only; external destinations contain encrypted archive and sanitized docs.
