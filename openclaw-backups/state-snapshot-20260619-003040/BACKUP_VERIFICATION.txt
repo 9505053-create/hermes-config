@@ -1,0 +1,8 @@
+OpenClaw / 小蝦 backup verification
+Label: state-snapshot-20260619-003040
+
+Copied entries: 12
+Skipped/excluded entries: 2
+SQLite checks: [{"db": "memory/main.sqlite", "integrity_check": "ok", "tables": 10}]
+Diagnostics captured: gateway/channel/model/web provider/task/docker.
+Raw backup remains local only; external copies are encrypted.
