@@ -1,0 +1,8 @@
+Hermes / 小馬 backup verification
+Label: hermes-state-snapshot-20260621-021901
+
+Copied entries: 21
+Skipped/excluded entries: 1
+SQLite checks: []
+Diagnostics captured: version/config/gateway/cron/git status.
+Raw backup remains local; external copies are encrypted.
