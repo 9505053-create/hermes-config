@@ -36,6 +36,13 @@ logs/*.log
 *.trace
 cron/output/
 
+# === 大型加密備份封包 ===
+# 完整加密封包保存在本地 / Google Drive / Supabase；GitHub 僅保存 metadata、checksum、restore SOP。
+hermes-backups/**/*.tar.gz.gpg
+openclaw-backups/**/*.tar.gz.gpg
+hermes-backups/**/*.tar.gz
+openclaw-backups/**/*.tar.gz
+
 # === Database Files ===
 *.db
 *.sqlite
