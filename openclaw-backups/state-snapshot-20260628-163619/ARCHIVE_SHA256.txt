@@ -1,0 +1,2 @@
+22e33629ab439bc9978df59c7ea8dbf6c9a8345497dbc841ead22c8cd9274b2c  /mnt/c/Users/chien/.openclaw/backups/state-snapshot-20260628-163619.tar.gz
+c7cc9ceb07ed86dc84b180d3981cfd352007a176119354d5ec5e552cd84bff93  /mnt/c/Users/chien/.openclaw/backups/state-snapshot-20260628-163619.tar.gz.gpg
