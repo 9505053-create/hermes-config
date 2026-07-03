@@ -1,0 +1,2 @@
+91841adc43d9d22ccf9e557aecaf53552282e16a5941705b263298b37f46d917  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260704-022717.tar.gz
+9d90fee65f17b9b5f7aa94473b887a4ba8e96683436ac25c08c24e01f26ff9d8  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260704-022717.tar.gz.gpg
