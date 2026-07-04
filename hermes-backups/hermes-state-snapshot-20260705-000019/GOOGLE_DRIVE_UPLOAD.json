@@ -1,0 +1,139 @@
+{
+  "root_folder": {
+    "id": "1OMUZW-1pcBMk7Kcp6ih4Mn2BeYq3hKNp",
+    "name": "HermesBackups"
+  },
+  "backup_folder": {
+    "kind": "drive#file",
+    "id": "1QXeoTKvQZTxiep7n9VojmOCS_fFLRhXN",
+    "name": "hermes-state-snapshot-20260705-000019",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  "uploaded": [
+    {
+      "id": "1rZViCzktE6YKt52UG5x_oL-lqWKg7Gzv",
+      "name": "hermes-state-snapshot-20260705-000019.tar.gz.gpg",
+      "md5Checksum": "c623f74dabe5f6040c4e19fd33968872",
+      "size": "194562541"
+    },
+    {
+      "id": "1H35YleT7oP1Bvs6As5TWIiFAvIRm7Tl3",
+      "name": "MANIFEST.txt",
+      "md5Checksum": "d987a634f03288ad3335e35309c48bf7",
+      "size": "1253605"
+    },
+    {
+      "id": "1asw_FjGGdpiJXdkG82WfbtneT0maLEZj",
+      "name": "RESTORE_SOP.md",
+      "md5Checksum": "0d2bf366ad398f801b907de197435c25",
+      "size": "2436"
+    },
+    {
+      "id": "1MYp4NW_jlA0jP7Any3lS2zGNCbQO6CxQ",
+      "name": "BACKUP_VERIFICATION.txt",
+      "md5Checksum": "5ce9b7f07741f706c73e184064a0fbb9",
+      "size": "266"
+    },
+    {
+      "id": "1jUjcd-Yn2iEcOuXjmfA-FRy0NT6hInAg",
+      "name": "ARCHIVE_SHA256.txt",
+      "md5Checksum": "0216fb4d0c40220df9b2696fc27d6093",
+      "size": "320"
+    },
+    {
+      "id": "1SrMW_blpOpVqqLdomMx02eSl_Fbi5vVg",
+      "name": ".env.SANITIZED",
+      "md5Checksum": "8c2c7c133a358f5ba97d87004a862d7c",
+      "size": "18813"
+    },
+    {
+      "id": "1S_8ROZkU6B7mSfbvqR5R4USlCzBqN3Z8",
+      "name": "auth.json.SANITIZED.json",
+      "md5Checksum": "07229403caf9593612068c1f5f4e5854",
+      "size": "349"
+    },
+    {
+      "id": "1_t27S9dQ6uJqDjIH9tlDab_x7I049KpD",
+      "name": "channel_directory.json.SANITIZED.json",
+      "md5Checksum": "aa7d478dad852303dcab731c0748e3e1",
+      "size": "750"
+    },
+    {
+      "id": "1m7XXUlu3OBXzti0_vlMLcA5fKoshJh9U",
+      "name": "config.yaml.SANITIZED",
+      "md5Checksum": "1c698b3ec1ca9560bfd7e61f2229cf70",
+      "size": "17119"
+    },
+    {
+      "id": "1RW9j2NC79NhhfraAXqJKXEctS-abIk_H",
+      "name": "gateway_state.json.SANITIZED.json",
+      "md5Checksum": "fdf16ca44f7ae4fdab306cbf608b8fab",
+      "size": "679"
+    },
+    {
+      "id": "1g4lbBdPVmI906J9a0BuHA7koiQvfAN8L",
+      "name": "google_token.json.SANITIZED.json",
+      "md5Checksum": "04c48f75b1345255622cc75ab473144a",
+      "size": "728"
+    }
+  ],
+  "listing": {
+    "files": [
+      {
+        "size": "728",
+        "id": "1g4lbBdPVmI906J9a0BuHA7koiQvfAN8L",
+        "name": "google_token.json.SANITIZED.json"
+      },
+      {
+        "size": "679",
+        "id": "1RW9j2NC79NhhfraAXqJKXEctS-abIk_H",
+        "name": "gateway_state.json.SANITIZED.json"
+      },
+      {
+        "size": "17119",
+        "id": "1m7XXUlu3OBXzti0_vlMLcA5fKoshJh9U",
+        "name": "config.yaml.SANITIZED"
+      },
+      {
+        "size": "750",
+        "id": "1_t27S9dQ6uJqDjIH9tlDab_x7I049KpD",
+        "name": "channel_directory.json.SANITIZED.json"
+      },
+      {
+        "size": "349",
+        "id": "1S_8ROZkU6B7mSfbvqR5R4USlCzBqN3Z8",
+        "name": "auth.json.SANITIZED.json"
+      },
+      {
+        "size": "18813",
+        "id": "1SrMW_blpOpVqqLdomMx02eSl_Fbi5vVg",
+        "name": ".env.SANITIZED"
+      },
+      {
+        "size": "320",
+        "id": "1jUjcd-Yn2iEcOuXjmfA-FRy0NT6hInAg",
+        "name": "ARCHIVE_SHA256.txt"
+      },
+      {
+        "size": "266",
+        "id": "1MYp4NW_jlA0jP7Any3lS2zGNCbQO6CxQ",
+        "name": "BACKUP_VERIFICATION.txt"
+      },
+      {
+        "size": "2436",
+        "id": "1asw_FjGGdpiJXdkG82WfbtneT0maLEZj",
+        "name": "RESTORE_SOP.md"
+      },
+      {
+        "size": "1253605",
+        "id": "1H35YleT7oP1Bvs6As5TWIiFAvIRm7Tl3",
+        "name": "MANIFEST.txt"
+      },
+      {
+        "size": "194562541",
+        "id": "1rZViCzktE6YKt52UG5x_oL-lqWKg7Gzv",
+        "name": "hermes-state-snapshot-20260705-000019.tar.gz.gpg"
+      }
+    ]
+  }
+}
