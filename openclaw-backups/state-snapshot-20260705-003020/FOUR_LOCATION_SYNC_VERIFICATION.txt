@@ -1,0 +1,24 @@
+OpenClaw / 小蝦 four-location backup verification
+Label: state-snapshot-20260705-003020
+
+Encrypted SHA256: 2d7bfdffa413c43fbb89968f72af9718dd1f423c086e3c4d23d141f47004dcc9
+
+Location 1 - Local disk: OK
+Local archive: C:\Users\chien\.openclaw\backups\state-snapshot-20260705-003020.tar.gz.gpg
+
+Location 2 - Google Drive: OK
+Folder ID: 1QOnNa4PUV3j0y0QAceItPMPxEJ7vzvmH
+File count: 7
+
+Location 3 - Supabase: OK
+label|encrypted_sha256|drive_folder|github_commit
+state-snapshot-20260705-003020|2d7bfdffa413c43fbb89968f72af9718dd1f423c086e3c4d23d141f47004dcc9|1QOnNa4PUV3j0y0QAceItPMPxEJ7vzvmH|65309f3f9ac729a34067b9f305f0c856bebdf3f2
+(1 row)
+
+Location 4 - GitHub: OK
+Repo path: openclaw-backups/state-snapshot-20260705-003020
+Commit: 65309f3f9ac729a34067b9f305f0c856bebdf3f2
+Remote main: 65309f3f9ac729a34067b9f305f0c856bebdf3f2
+Repo archive SHA256: not stored in GitHub (see GITHUB_ARCHIVE_NOTE.json)
+
+Security: raw unencrypted backup remains local only. Local disk, Google Drive, and Supabase contain the encrypted archive; GitHub contains restore metadata, checksums, Drive evidence, and sanitized docs only.
