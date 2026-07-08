@@ -1,0 +1,95 @@
+{
+  "root_folder": {
+    "id": "1-0teety4Tb2yZLDdvk6GXmpvrqQ6StE1",
+    "name": "OpenClawBackups"
+  },
+  "backup_folder": {
+    "kind": "drive#file",
+    "id": "1M-r_6PxejDzJcJXfhUe4zrK7ZG3UMY7W",
+    "name": "state-snapshot-20260709-003046",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  "uploaded": [
+    {
+      "id": "1mEp7v_-wolyqPrSw5ipfsBfJhmLpxMCf",
+      "name": "state-snapshot-20260709-003046.tar.gz.gpg",
+      "md5Checksum": "9ae6ef0e1035994252b5d4f71b8073a1",
+      "size": "44082775"
+    },
+    {
+      "id": "1e5vWdBKgOLrSA9RE6ti5K7oVObZ7pejM",
+      "name": "MANIFEST.txt",
+      "md5Checksum": "39b3c13d459543a5eec4d7b561ccd8f7",
+      "size": "107242"
+    },
+    {
+      "id": "1NmwHCLyZ14sHMe6UXTt9AEhsJB-LshSZ",
+      "name": "RESTORE_SOP.md",
+      "md5Checksum": "bbada6800e3b3744cc2509bff4dad967",
+      "size": "1471"
+    },
+    {
+      "id": "1WEyqlifHP9BozyG-pVpZbJds7xdmpD2W",
+      "name": "BACKUP_VERIFICATION.txt",
+      "md5Checksum": "fac222ee084598c1aa1e222a945f764a",
+      "size": "341"
+    },
+    {
+      "id": "1-moHd_lMyLAf16Jww1uQmfDO63G79GgR",
+      "name": "ARCHIVE_SHA256.txt",
+      "md5Checksum": "0b35bfe4ff37e7e99f29c5dc336936e2",
+      "size": "286"
+    },
+    {
+      "id": "1Ie9Cm9AjOOelKe3msFe8r2hONNJ0Mq57",
+      "name": "openclaw.json.SANITIZED.json",
+      "md5Checksum": "86fe41d0789fab0f5ab78cea16dcd87c",
+      "size": "4929"
+    },
+    {
+      "id": "1NYMbaQDwJZ19USurcUMvj13rSjxnCtQy",
+      "name": "openclaw.json.last-good.SANITIZED.json",
+      "md5Checksum": "86fe41d0789fab0f5ab78cea16dcd87c",
+      "size": "4929"
+    }
+  ],
+  "listing": {
+    "files": [
+      {
+        "size": "4929",
+        "id": "1NYMbaQDwJZ19USurcUMvj13rSjxnCtQy",
+        "name": "openclaw.json.last-good.SANITIZED.json"
+      },
+      {
+        "size": "4929",
+        "id": "1Ie9Cm9AjOOelKe3msFe8r2hONNJ0Mq57",
+        "name": "openclaw.json.SANITIZED.json"
+      },
+      {
+        "size": "286",
+        "id": "1-moHd_lMyLAf16Jww1uQmfDO63G79GgR",
+        "name": "ARCHIVE_SHA256.txt"
+      },
+      {
+        "size": "341",
+        "id": "1WEyqlifHP9BozyG-pVpZbJds7xdmpD2W",
+        "name": "BACKUP_VERIFICATION.txt"
+      },
+      {
+        "size": "1471",
+        "id": "1NmwHCLyZ14sHMe6UXTt9AEhsJB-LshSZ",
+        "name": "RESTORE_SOP.md"
+      },
+      {
+        "size": "107242",
+        "id": "1e5vWdBKgOLrSA9RE6ti5K7oVObZ7pejM",
+        "name": "MANIFEST.txt"
+      },
+      {
+        "size": "44082775",
+        "id": "1mEp7v_-wolyqPrSw5ipfsBfJhmLpxMCf",
+        "name": "state-snapshot-20260709-003046.tar.gz.gpg"
+      }
+    ]
+  }
+}
