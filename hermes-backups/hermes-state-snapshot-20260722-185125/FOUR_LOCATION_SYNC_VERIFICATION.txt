@@ -1,0 +1,25 @@
+Hermes / 小馬 four-location backup verification
+Label: hermes-state-snapshot-20260722-185125
+Plan: 2 full encrypted copies (local + Google Drive) + 2 core/reference indexes (Supabase + GitHub)
+
+Encrypted SHA256: 9c0f3e450c64fb3c31675de2e7377e16413f7fa048389f642d2a877f0057c2f8
+
+Location 1 - Local disk full encrypted copy: OK
+Local archive: C:\Users\chien\_3AI_WorkSpace\HermesBackup\hermes-state-snapshot-20260722-185125.tar.gz.gpg
+
+Location 2 - Google Drive offsite full encrypted copy: OK
+Folder ID: 1r8eVV1s1rb1xo48jKpqdSOJPvW9qLTOw
+File count: 11
+
+Location 3 - Supabase core/reference index: OK
+label"|"encrypted_sha256"|"drive_folder"|"metadata_commit"|"supabase_role"|"b64_len
+hermes-state-snapshot-20260722-185125"|"9c0f3e450c64fb3c31675de2e7377e16413f7fa048389f642d2a877f0057c2f8"|"1r8eVV1s1rb1xo48jKpqdSOJPvW9qLTOw"|"699d6198e3f1aa47c7ea6546e745363e4913d5f2"|"core_reference_index"|"
+(1 row)
+
+Location 4 - GitHub core/reference restore index: OK
+Repo path: hermes-backups/hermes-state-snapshot-20260722-185125
+Metadata commit: 699d6198e3f1aa47c7ea6546e745363e4913d5f2
+Remote main before verification commit: 699d6198e3f1aa47c7ea6546e745363e4913d5f2
+Repo archive SHA256: not stored in GitHub (see GITHUB_ARCHIVE_NOTE.json)
+
+Security: raw unencrypted backup remains local only. Local disk and Google Drive contain the full encrypted archive. Supabase and GitHub contain core metadata, restore SOP, checksums, and comparison evidence only. Passphrase is never printed.
