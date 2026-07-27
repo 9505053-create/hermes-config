@@ -1,0 +1,1 @@
+e1e26c8bf739e3e00b736cee5d3bb43cde1bc9309f776760c70582752a5ad475  /mnt/c/Users/chien/_3AI_WorkSpace/HermesBackup/hermes-state-snapshot-20260727-070131/source-rollback-lite.tar.gz
