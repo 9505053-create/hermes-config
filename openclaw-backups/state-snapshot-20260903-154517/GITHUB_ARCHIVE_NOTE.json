@@ -1,0 +1,5 @@
+{
+  "encrypted_archive_name": "state-snapshot-20260903-154517.tar.gz.gpg",
+  "encrypted_archive_size_bytes": 43996898,
+  "github_policy": "Encrypted archives are intentionally not committed to GitHub. GitHub has a 100 MB per-file limit; the full encrypted archive is kept in local storage, Google Drive, and Supabase. GitHub stores restore metadata, checksums, Drive upload evidence, and sanitized config only."
+}
