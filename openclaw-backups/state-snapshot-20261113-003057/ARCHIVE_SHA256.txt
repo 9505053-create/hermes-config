@@ -1,0 +1,2 @@
+a8d792b7efd0ad0b9e5f1556bab6f3cb6af850c0b06f88162ca5aee03d8505be  /mnt/c/Users/chien/.openclaw/backups/state-snapshot-20261113-003057.tar.gz
+0dbc68039790f0264a884c5f895a70a788c8f6f050b29a271f1b8ea9a4ff20d3  /mnt/c/Users/chien/.openclaw/backups/state-snapshot-20261113-003057.tar.gz.gpg
